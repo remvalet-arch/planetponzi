@@ -14,22 +14,22 @@ export const strings = {
       tagline: "Capitalisme spatial. Un mandat par jour.",
     },
     rules: {
-      title: "Manuel interne (confidentiel)",
-      kicker: "Niveau 0 — conformité narrative",
+      title: "Règles",
+      kicker: "Grille & score",
     },
     tutorial: {
       skip: "Passer",
       next: "Suivant",
-      done: "Lancer le mandat",
-      step1Title: "Le manifeste",
+      done: "Choisir le mode",
+      step1Title: "Manifeste",
       step1Body:
-        "Chaque jour, 16 cartes dans un ordre fixe. Le manifeste te dit combien tu as de chaque type — pas où les placer.",
-      step2Title: "La grille 4×4",
+        "Chaque jour : 16 bâtiments dans un ordre fixe. Le manifeste donne les quantités par type, pas les emplacements.",
+      step2Title: "Grille",
       step2Body:
-        "Place un bâtiment par tour. Voisin uniquement haut / bas / gauche / droite. Pas de diagonale, pas de téléportation.",
-      step3Title: "Le ROI",
+        "Une case par tour, voisins = haut, bas, gauche, droite. Pas de diagonale.",
+      step3Title: "Score",
       step3Body:
-        "Chaque type a des règles de score (synergies, mines qui cassent le voisinage…). Le but : maximiser le ROI cynique.",
+        "Chaque case remplie rapporte des M$ selon son type et ses voisins. Total × coefficient du mode (menu Règles). Objectif : ROI affiché maximal.",
     },
   },
   en: {
@@ -38,22 +38,22 @@ export const strings = {
       tagline: "Orbital capitalism. One mandate per day.",
     },
     rules: {
-      title: "Internal handbook (confidential)",
-      kicker: "Level 0 — narrative compliance",
+      title: "Rules",
+      kicker: "Grid & score",
     },
     tutorial: {
       skip: "Skip",
       next: "Next",
-      done: "Start mandate",
-      step1Title: "The manifest",
+      done: "Pick mode",
+      step1Title: "Manifest",
       step1Body:
-        "Every day, 16 cards in a fixed order. The manifest shows how many of each building you have — not where to put them.",
-      step2Title: "The 4×4 grid",
+        "Each day: 16 buildings in a fixed order. The manifest shows counts per type, not positions.",
+      step2Title: "Grid",
       step2Body:
-        "Place one building per turn. Neighbors are only up / down / left / right. No diagonal, no teleport.",
-      step3Title: "ROI",
+        "One cell per turn; neighbors = up, down, left, right. No diagonals.",
+      step3Title: "Score",
       step3Body:
-        "Each type has scoring rules (synergies, mines ruining neighbors…). Maximize cynical ROI.",
+        "Each filled cell pays M$ from its type and neighbors. Total × mode multiplier (Rules menu). Goal: maximize displayed ROI.",
     },
   },
 } as const;

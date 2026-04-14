@@ -115,7 +115,7 @@ export function EndScreen({ onShareFeedback }: EndScreenProps) {
           Clôture de mandat · {seed}
         </p>
         <h2 id="end-title" className="mt-2 font-mono text-lg font-bold text-pp-text sm:text-xl">
-          Bilan consolidé
+          Bilan
         </h2>
 
         <p className="mt-6 font-mono text-xs uppercase tracking-widest text-pp-text-dim">
@@ -149,13 +149,8 @@ export function EndScreen({ onShareFeedback }: EndScreenProps) {
         </button>
 
         <p className="mt-3 text-center font-mono text-[10px] leading-relaxed text-pp-text-dim">
-          🟩 = ROI Élevé, 🟥 = ROI Nul ou Malus
-        </p>
-        <p className="mt-1 text-center font-mono text-[10px] text-pp-text-dim">
-          Échap ou zone sombre : fermer aussi.
-        </p>
-        <p className="mt-1 text-center font-mono text-[10px] text-pp-text-dim">
-          Format texte — compatible groupes WhatsApp cyniques.
+          Partage : heatmap par case (🟩 fort · 🟨 moyen · 🟥 faible / nul · ⬛ vide). Échap ou fond
+          : fermer.
         </p>
       </div>
     </div>

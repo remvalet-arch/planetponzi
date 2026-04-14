@@ -2,19 +2,15 @@
 
 import { useEffect, useState } from "react";
 
-import { DeckDifficultyGate } from "@/src/components/game/DeckDifficultyGate";
 import { EndScreen } from "@/src/components/game/EndScreen";
 import { Grid } from "@/src/components/game/Grid";
 import { Manifest } from "@/src/components/game/Manifest";
 import { AppHeader } from "@/src/components/layout/AppHeader";
-import {
-  Tutorial,
-  hasCompletedTutorial,
-  markTutorialCompleted,
-} from "@/src/components/onboarding/Tutorial";
+import { GameEntryFlow } from "@/src/components/onboarding/GameEntryFlow";
 import { RulesModal, hasSeenRulesFirstVisit, markRulesFirstVisitDone } from "@/src/components/ui/RulesModal";
 import { StatsModal } from "@/src/components/ui/StatsModal";
 import { Toast } from "@/src/components/ui/Toast";
+import { hasCompletedTutorial, markTutorialCompleted } from "@/src/lib/onboarding-flags";
 import { getLocalDateSeed } from "@/src/lib/rng";
 import { getBuildingTheme } from "@/src/lib/ui-helpers";
 import { useGameStore } from "@/src/store/useGameStore";
@@ -35,9 +31,7 @@ export default function HomePage() {
 
   const [rulesOpen, setRulesOpen] = useState(false);
   const [statsOpen, setStatsOpen] = useState(false);
-  const [tutorialOpen, setTutorialOpen] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
-  /** Tant que `persist` n’a pas relu le stockage, l’état par défaut ferait clignoter la modale puis l’écran de jeu. */
   const [persistReady, setPersistReady] = useState(false);
 
   useEffect(() => {
@@ -60,26 +54,13 @@ export default function HomePage() {
     };
   }, []);
 
-  /** Anciens joueurs : déjà vu les règles → ne pas forcer le tutoriel guidé. */
+  /** Anciens joueurs : plus de modale tutoriel séparée — marquer comme vu. */
   useEffect(() => {
     if (typeof window === "undefined") return;
     if (hasSeenRulesFirstVisit() && !hasCompletedTutorial()) {
       markTutorialCompleted();
     }
   }, []);
-
-  useEffect(() => {
-    if (!persistReady || !deckUnlocked) return;
-    if (hasCompletedTutorial()) return;
-    queueMicrotask(() => setTutorialOpen(true));
-  }, [persistReady, deckUnlocked]);
-
-  useEffect(() => {
-    if (!persistReady || !deckUnlocked) return;
-    if (!hasCompletedTutorial()) return;
-    if (hasSeenRulesFirstVisit()) return;
-    queueMicrotask(() => setRulesOpen(true));
-  }, [persistReady, deckUnlocked]);
 
   useEffect(() => {
     if (!toastMessage) return;
@@ -161,20 +142,8 @@ export default function HomePage() {
         </div>
       ) : null}
 
-      {persistReady ? (
-        <DeckDifficultyGate onOpenRules={() => setRulesOpen(true)} />
-      ) : null}
+      {persistReady ? <GameEntryFlow open={!deckUnlocked} /> : null}
       {persistReady ? <EndScreen onShareFeedback={setToastMessage} /> : null}
-      {persistReady ? (
-        <Tutorial
-          open={tutorialOpen}
-          onClose={() => setTutorialOpen(false)}
-          onComplete={() => {
-            setTutorialOpen(false);
-            markRulesFirstVisitDone();
-          }}
-        />
-      ) : null}
       <RulesModal open={rulesOpen} onClose={closeRules} />
       <StatsModal open={statsOpen} onClose={() => setStatsOpen(false)} />
       <Toast message={toastMessage} />

@@ -59,11 +59,11 @@ export function StatsModal({ open, onClose }: StatsModalProps) {
         <div className="pp-modal-header">
           <div>
             <p className="font-mono text-[10px] uppercase tracking-[0.35em] text-pp-violet/90">
-              Reporting consolidé
+              Local
             </p>
             <h2
               id="stats-modal-title"
-              className="mt-1 font-mono text-sm font-bold uppercase tracking-wide text-pp-text"
+              className="mt-1 font-mono text-base font-bold tracking-tight text-pp-text"
             >
               Statistiques
             </h2>
@@ -81,15 +81,14 @@ export function StatsModal({ open, onClose }: StatsModalProps) {
         <div className="max-h-[min(72dvh,560px)] space-y-5 overflow-y-auto px-4 py-5">
           <section aria-labelledby="stats-total-heading">
             <p id="stats-total-heading" className="font-mono text-xs text-pp-text-muted">
-              Parties terminées (toutes difficultés)
+              Parties terminées
             </p>
             <p className="mt-1 font-mono text-4xl font-black tabular-nums text-fuchsia-300">
               {totalPlayed}
             </p>
             {stats.legacyCompletions != null && stats.legacyCompletions > 0 ? (
               <p className="mt-1 font-mono text-[10px] text-pp-text-dim">
-                Dont {stats.legacyCompletions} avant le détail par mode — le board n’avait pas
-                encore exigé la granularité.
+                Inclut {stats.legacyCompletions} partie(s) sans détail par mode (ancien compteur).
               </p>
             ) : null}
           </section>
@@ -99,7 +98,7 @@ export function StatsModal({ open, onClose }: StatsModalProps) {
             aria-labelledby="stats-streak-heading"
           >
             <p id="stats-streak-heading" className="font-mono text-[10px] uppercase tracking-widest text-pp-text-dim">
-              Série (jours calendaires)
+              Série
             </p>
             <div className="mt-2 flex gap-6">
               <div>
@@ -116,14 +115,14 @@ export function StatsModal({ open, onClose }: StatsModalProps) {
               </div>
             </div>
             <p className="mt-2 font-mono text-[10px] leading-relaxed text-pp-text-dim">
-              +1 si tu termines au moins une grille un jour, puis le lendemain, etc. (fuseau local —
-              style Wordle, pas style board réel.)
+              Jours consécutifs avec au moins une grille terminée (fuseau local). Même jour : pas
+              d’incrément supplémentaire.
             </p>
           </section>
 
           <section aria-labelledby="stats-dist-heading">
             <p id="stats-dist-heading" className="font-mono text-[10px] uppercase tracking-widest text-pp-text-dim">
-              Répartition par difficulté
+              Parties par mode
             </p>
             <div className="mt-3 flex h-24 items-end justify-between gap-1.5 px-1">
               {DECK_CHALLENGE_LEVELS.map((lvl) => {
@@ -166,7 +165,7 @@ export function StatsModal({ open, onClose }: StatsModalProps) {
                         {getLevelLabel(lvl as DeckChallengeLevel)}
                       </p>
                       <p className="font-mono text-[10px] text-pp-text-dim">
-                        Bonus score {formatMultiplierFr(lvl as DeckChallengeLevel)}
+                        Coeff. ROI {formatMultiplierFr(lvl as DeckChallengeLevel)}
                       </p>
                     </div>
                     <dl className="flex shrink-0 gap-4 font-mono text-[10px] tabular-nums sm:text-xs">
@@ -189,9 +188,8 @@ export function StatsModal({ open, onClose }: StatsModalProps) {
             </ul>
           </section>
 
-          <p className="border-t border-dotted border-pp-border-strong pt-3 font-mono text-[10px] leading-relaxed text-pp-text-dim">
-            Données locales uniquement. Un leaderboard orbital arrivera quand le compliance aura
-            validé le budget « gamification ».
+          <p className="border-t border-pp-border pt-3 font-mono text-[10px] text-pp-text-dim">
+            Données enregistrées sur cet appareil uniquement.
           </p>
         </div>
       </div>
