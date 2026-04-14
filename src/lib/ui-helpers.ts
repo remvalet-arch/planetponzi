@@ -32,8 +32,16 @@ export function getBuildingTheme(type: BuildingType): BuildingTheme {
   return THEMES[type];
 }
 
-/** Lien public à intégrer quand le domaine sera figé. */
-export const PLANET_PONZI_SHARE_URL = "https://planetponzi.app";
+/** Base URL pour le texte copié (alignée sur `NEXT_PUBLIC_SITE_URL` / metadata). */
+function planetPonziShareBaseUrl(): string {
+  const raw = typeof process !== "undefined" ? process.env.NEXT_PUBLIC_SITE_URL?.trim() : "";
+  if (raw) {
+    return raw.endsWith("/") ? raw : `${raw}/`;
+  }
+  return "https://planetponzi.vercel.app/";
+}
+
+export const PLANET_PONZI_SHARE_URL = planetPonziShareBaseUrl();
 
 /** Case vide (partie incomplète) : tuile neutre pour la heatmap de partage. */
 const SHARE_EMPTY_CELL = "⬛";
