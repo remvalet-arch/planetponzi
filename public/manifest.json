@@ -1,0 +1,20 @@
+{
+  "name": "Planet Ponzi",
+  "short_name": "Planet Ponzi",
+  "description": "Puzzle quotidien — dashboard cynique du capitalisme spatial.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#050506",
+  "theme_color": "#050506",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["games", "entertainment"],
+  "lang": "fr"
+}

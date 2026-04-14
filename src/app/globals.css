@@ -1,0 +1,138 @@
+@import "tailwindcss";
+
+/*
+ * Planet Ponzi — charte « Premium Dark » (terminal financier)
+ * Tokens sémantiques : préférer bg-pp-* / border-pp-* / rounded-pp-* aux neutrals bruts.
+ */
+:root {
+  --pp-bg: #050506;
+  --pp-surface: #0c0c0e;
+  --pp-elevated: #141416;
+  --pp-border: rgba(255, 255, 255, 0.08);
+  --pp-border-strong: rgba(255, 255, 255, 0.14);
+  --pp-text: #f5f5f5;
+  --pp-text-muted: #a3a3a3;
+  --pp-text-dim: #737373;
+  --pp-accent: #22d3ee;
+  --pp-accent-glow: rgba(34, 211, 238, 0.14);
+  --pp-positive: #34d399;
+  --pp-negative: #fb7185;
+  --pp-violet: #a78bfa;
+  --pp-radius-sm: 0.375rem;
+  --pp-radius-md: 0.5rem;
+  --pp-radius-lg: 0.75rem;
+  --pp-radius-xl: 1rem;
+  --pp-radius-2xl: 1.25rem;
+  --pp-shadow-modal: 0 0 40px rgba(34, 211, 238, 0.1);
+  --pp-shadow-panel: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+}
+
+@theme inline {
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+
+  --color-pp-bg: var(--pp-bg);
+  --color-pp-surface: var(--pp-surface);
+  --color-pp-elevated: var(--pp-elevated);
+  --color-pp-border: var(--pp-border);
+  --color-pp-border-strong: var(--pp-border-strong);
+  --color-pp-text: var(--pp-text);
+  --color-pp-text-muted: var(--pp-text-muted);
+  --color-pp-text-dim: var(--pp-text-dim);
+  --color-pp-accent: var(--pp-accent);
+  --color-pp-accent-glow: var(--pp-accent-glow);
+  --color-pp-positive: var(--pp-positive);
+  --color-pp-negative: var(--pp-negative);
+  --color-pp-violet: var(--pp-violet);
+
+  --radius-pp-sm: var(--pp-radius-sm);
+  --radius-pp-md: var(--pp-radius-md);
+  --radius-pp-lg: var(--pp-radius-lg);
+  --radius-pp-xl: var(--pp-radius-xl);
+  --radius-pp-2xl: var(--pp-radius-2xl);
+
+  --shadow-pp-modal: var(--pp-shadow-modal);
+  --shadow-pp-panel: var(--pp-shadow-panel);
+}
+
+body {
+  @apply bg-pp-bg text-pp-text antialiased;
+  font-family: var(--font-geist-sans), system-ui, sans-serif;
+}
+
+@layer components {
+  /* Overlays modales (Rules, Stats, bilan) — même recette visuelle */
+  .pp-modal-backdrop {
+    @apply fixed inset-0 flex items-end justify-center bg-black/75 p-4 backdrop-blur-sm;
+    padding-bottom: max(1rem, env(safe-area-inset-bottom));
+    @apply sm:items-center sm:p-6;
+  }
+
+  .pp-modal-panel {
+    @apply max-h-[min(90dvh,640px)] w-full max-w-lg overflow-y-auto border border-pp-border-strong bg-pp-bg shadow-pp-modal;
+    @apply rounded-t-pp-xl sm:rounded-pp-xl;
+  }
+
+  .pp-modal-header {
+    @apply sticky top-0 flex items-start justify-between gap-3 border-b border-pp-border bg-pp-bg/95 px-4 py-3 backdrop-blur-sm;
+  }
+
+  .pp-kicker {
+    @apply font-mono text-[10px] uppercase tracking-[0.35em] text-pp-accent/90;
+  }
+
+  .pp-btn-icon {
+    @apply flex size-11 shrink-0 items-center justify-center rounded-pp-md border border-pp-border-strong bg-pp-elevated text-pp-text-muted transition-colors;
+    @apply hover:bg-pp-surface hover:text-white;
+    @apply focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-pp-accent/70;
+  }
+
+  .pp-btn-ghost {
+    @apply flex min-h-12 w-full items-center justify-center rounded-pp-lg border border-pp-border-strong bg-pp-elevated/60 px-4 py-2.5 font-mono text-xs font-medium text-pp-text-muted transition-colors;
+    @apply hover:border-neutral-600 hover:bg-pp-surface;
+    @apply focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-neutral-500;
+  }
+
+  .pp-panel-inset {
+    @apply rounded-pp-lg border border-pp-border bg-pp-elevated/40 shadow-pp-panel;
+  }
+
+  /* Header bar — bordure alignée charte */
+  .pp-header-bar {
+    @apply relative z-50 border-b border-pp-border bg-pp-bg/95 px-3 py-3 backdrop-blur-sm sm:px-4;
+  }
+
+  /* Toast système */
+  .pp-toast {
+    @apply pointer-events-none fixed bottom-[max(5.5rem,env(safe-area-inset-bottom)+4.5rem)] left-1/2 z-[90] w-[min(92vw,20rem)] -translate-x-1/2 rounded-pp-md border border-emerald-500/35 bg-pp-elevated/95 px-4 py-2.5 text-center font-mono text-xs text-emerald-200 shadow-lg shadow-emerald-950/40 backdrop-blur-md;
+  }
+
+  /* Carte mandat terrain (sticky bas) */
+  .pp-mandate-strip {
+    @apply sticky bottom-0 z-40 border-t border-pp-border bg-pp-bg/95 px-4 py-4 pb-[max(1rem,env(safe-area-inset-bottom))] backdrop-blur-md;
+  }
+
+  .pp-mandate-strip-inner {
+    @apply mx-auto flex w-full max-w-lg items-center gap-4 rounded-pp-lg border border-pp-border bg-pp-elevated/60 p-3 shadow-lg shadow-black/40;
+  }
+
+  /* Bilan de fin — sous les modales menu / stats, au-dessus de la grille */
+  .pp-end-backdrop {
+    @apply fixed inset-0 z-[55] flex items-end justify-center bg-black/75 p-4 backdrop-blur-[2px] sm:items-center;
+    padding-bottom: max(1rem, env(safe-area-inset-bottom));
+  }
+
+  .pp-end-panel {
+    @apply relative w-full max-w-lg rounded-t-pp-2xl border border-pp-border-strong bg-pp-bg p-5 shadow-pp-modal sm:rounded-pp-2xl sm:p-6;
+  }
+
+  /* Écran chargement persist */
+  .pp-loading-screen {
+    @apply fixed inset-0 z-[250] flex flex-col items-center justify-center bg-pp-bg px-6;
+  }
+}
+
+/* z-index explicite pour le tiroir menu (composant AppHeader) */
+#nav-drawer {
+  z-index: 70;
+}
