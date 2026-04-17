@@ -51,12 +51,16 @@ export function EndScreen({ onShareFeedback }: EndScreenProps) {
 
   const [shareLabel, setShareLabel] = useState<"idle" | "copied" | "error">("idle");
   const [minimized, setMinimized] = useState(false);
+  const [showVictoryExitBar, setShowVictoryExitBar] = useState(false);
   const committedRef = useRef(false);
   const victoryVibrateRef = useRef(false);
+  const skipAutoMapRef = useRef(false);
 
   useEffect(() => {
     if (status !== "finished") {
       committedRef.current = false;
+      skipAutoMapRef.current = false;
+      setShowVictoryExitBar(false);
       queueMicrotask(() => setMinimized(false));
     }
   }, [status]);
@@ -83,6 +87,21 @@ export function EndScreen({ onShareFeedback }: EndScreenProps) {
     const id = window.setTimeout(() => vibrateVictoryStars(), 480);
     return () => window.clearTimeout(id);
   }, [status, minimized]);
+
+  /** Après les étoiles : victoire (≥1★) → barre 3s puis /map (sauf navigation manuelle). */
+  useEffect(() => {
+    if (status !== "finished" || minimized) {
+      setShowVictoryExitBar(false);
+      return;
+    }
+    const stars = calculateStars(score, levelId);
+    if (stars <= 0) {
+      setShowVictoryExitBar(false);
+      return;
+    }
+    const id = window.setTimeout(() => setShowVictoryExitBar(true), 1300);
+    return () => window.clearTimeout(id);
+  }, [status, minimized, score, levelId]);
 
   if (status !== "finished" || levelId < 1) return null;
 
@@ -112,6 +131,8 @@ export function EndScreen({ onShareFeedback }: EndScreenProps) {
   };
 
   const handleContinue = () => {
+    skipAutoMapRef.current = true;
+    setShowVictoryExitBar(false);
     if (nextUnlocked) {
       router.push(`/level/${nextId}`);
     } else {
@@ -220,12 +241,39 @@ export function EndScreen({ onShareFeedback }: EndScreenProps) {
           )}
 
           <p className="mt-6 text-center font-mono text-[10px] leading-relaxed text-pp-text-dim">
-            <Link href="/map" className="text-pp-accent underline-offset-2 hover:underline">
+            <Link
+              href="/map"
+              className="text-pp-accent underline-offset-2 hover:underline"
+              onClick={() => {
+                skipAutoMapRef.current = true;
+              }}
+            >
               Carte
             </Link>
             {" · "}
             Échap ou fond : réduire
           </p>
+
+          {earnedStars > 0 && showVictoryExitBar ? (
+            <div className="mt-5 px-1">
+              <p className="mb-2 text-center font-mono text-[10px] text-pp-text-muted">
+                Retour au QG dans 3s…
+              </p>
+              <div className="h-1.5 w-full overflow-hidden rounded-full bg-pp-border">
+                <motion.div
+                  className="h-full origin-left rounded-full bg-gradient-to-r from-emerald-500 to-cyan-400"
+                  initial={{ scaleX: 1 }}
+                  animate={{ scaleX: 0 }}
+                  transition={{ duration: 3, ease: "linear" }}
+                  onAnimationComplete={() => {
+                    if (!skipAutoMapRef.current) {
+                      router.push("/map");
+                    }
+                  }}
+                />
+              </div>
+            </div>
+          ) : null}
         </div>
 
         <div className={thumbZone}>

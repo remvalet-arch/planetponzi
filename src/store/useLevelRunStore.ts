@@ -13,6 +13,7 @@ import { generatePlacementSequence, getDailyStats } from "@/src/lib/rng";
 import { calculateGridScore } from "@/src/lib/scoring";
 import { recordGameCompletion } from "@/src/lib/stats";
 import type {
+  ActiveBooster,
   BuildingType,
   Cell,
   DailyInventory,
@@ -20,6 +21,7 @@ import type {
   GameState,
   GameStatus,
 } from "@/src/types/game";
+import { useProgressStore } from "@/src/store/useProgressStore";
 
 const PLACED_BUILDING_TYPES = new Set<string>([
   "habitacle",
@@ -27,6 +29,14 @@ const PLACED_BUILDING_TYPES = new Set<string>([
   "serre",
   "mine",
 ]);
+
+const ALL_BUILDINGS: BuildingType[] = ["habitacle", "eau", "serre", "mine"];
+
+function randomBuildingDifferentFrom(exclude: BuildingType): BuildingType {
+  const pool = ALL_BUILDINGS.filter((t) => t !== exclude);
+  const pick = pool.length ? pool : ALL_BUILDINGS;
+  return pick[Math.floor(Math.random() * pick.length)]!;
+}
 
 function hasMeaningfulGridProgress(grid: Cell[], turn: number): boolean {
   if (typeof turn === "number" && turn > 0 && Number.isFinite(turn)) return true;
@@ -53,6 +63,7 @@ function toGameState(snapshot: {
   turn: number;
   score: number;
   status: GameStatus;
+  activeBooster: ActiveBooster | null;
 }): GameState {
   return {
     levelId: snapshot.levelId,
@@ -65,6 +76,7 @@ function toGameState(snapshot: {
     turn: snapshot.turn,
     score: snapshot.score,
     status: snapshot.status,
+    activeBooster: snapshot.activeBooster,
   };
 }
 
@@ -79,10 +91,20 @@ export type LevelRunStore = {
   turn: number;
   score: number;
   status: GameStatus;
+  activeBooster: ActiveBooster | null;
+  /** Feedback court après démolition (case vide qui clignote). */
+  demolishFlash: { index: number; nonce: number } | null;
+  /** Compteur monotone pour animer chaque démolition distinctement. */
+  demolishNonce: number;
+  /** Tours restants avec aperçu 4 pièces (espion). */
+  spyPreviewTurnsRemaining: number;
   enterLevel: (levelId: number) => void;
   beginPlacement: () => void;
   confirmDeckDifficulty: (level: DeckChallengeLevel) => void;
   placeBuilding: (cellIndex: number) => void;
+  toggleBooster: (type: ActiveBooster) => void;
+  useSpyBooster: () => void;
+  useLobbyingBooster: () => void;
   resetBoard: () => void;
   restartCurrentLevel: () => void;
   getSnapshot: () => GameState;
@@ -169,6 +191,10 @@ function mergePersistedState(persisted: unknown, current: LevelRunStore): LevelR
     turn,
     score,
     status,
+    activeBooster: null,
+    demolishFlash: null,
+    demolishNonce: current.demolishNonce,
+    spyPreviewTurnsRemaining: 0,
   };
 }
 
@@ -184,6 +210,10 @@ const emptyRun: Pick<
   | "turn"
   | "score"
   | "status"
+  | "activeBooster"
+  | "demolishFlash"
+  | "demolishNonce"
+  | "spyPreviewTurnsRemaining"
 > = {
   levelId: 0,
   seed: "",
@@ -195,6 +225,10 @@ const emptyRun: Pick<
   turn: 0,
   score: 0,
   status: "ready",
+  activeBooster: null,
+  demolishFlash: null,
+  demolishNonce: 0,
+  spyPreviewTurnsRemaining: 0,
 };
 
 export const useLevelRunStore = create<LevelRunStore>()(
@@ -222,6 +256,10 @@ export const useLevelRunStore = create<LevelRunStore>()(
           turn: 0,
           score: 0,
           status: autoStart ? "playing" : "ready",
+          activeBooster: null,
+          demolishFlash: null,
+          demolishNonce: 0,
+          spyPreviewTurnsRemaining: 0,
         });
 
         if (autoStart) {
@@ -252,23 +290,107 @@ export const useLevelRunStore = create<LevelRunStore>()(
         }
       },
 
+      toggleBooster: (type) => {
+        if (type !== "demolition") return;
+        const s = get();
+        if (s.status !== "playing") return;
+        if (s.turn >= 16) return;
+        if (s.activeBooster === "demolition") {
+          set({ activeBooster: null });
+          return;
+        }
+        const n = useProgressStore.getState().boosters.demolition;
+        if (n <= 0) return;
+        set({ activeBooster: "demolition" });
+      },
+
+      useSpyBooster: () => {
+        const s = get();
+        if (s.status !== "playing") return;
+        if (s.turn >= 16) return;
+        const stock = useProgressStore.getState().boosters.spy;
+        if (stock <= 0) return;
+        useProgressStore.getState().consumeBooster("spy");
+        set({ spyPreviewTurnsRemaining: 3 });
+      },
+
+      useLobbyingBooster: () => {
+        const s = get();
+        if (s.status !== "playing") return;
+        if (s.turn >= 16) return;
+        if (s.placementSequence.length !== 16) return;
+        const stock = useProgressStore.getState().boosters.lobbying;
+        if (stock <= 0) return;
+        const cur = s.placementSequence[s.turn];
+        const nextType = randomBuildingDifferentFrom(cur);
+        const seq = [...s.placementSequence];
+        seq[s.turn] = nextType;
+        const dailyInventory = getDailyStats(seq);
+        useProgressStore.getState().consumeBooster("lobbying");
+        set({ placementSequence: seq, dailyInventory });
+      },
+
       placeBuilding: (cellIndex) => {
         const state = get();
         if (state.status !== "playing") return;
-        if (state.turn >= 16) return;
         if (cellIndex < 0 || cellIndex > 15) return;
+
+        if (state.activeBooster === "demolition") {
+          if (state.turn >= 16) return;
+          const cell = state.grid[cellIndex];
+          if (!cell || cell.building === null) return;
+
+          const stock = useProgressStore.getState().boosters.demolition;
+          if (stock <= 0) {
+            set({ activeBooster: null });
+            return;
+          }
+
+          useProgressStore.getState().consumeBooster("demolition");
+
+          const nextGrid = state.grid.map((c, i) =>
+            i === cellIndex ? { ...c, building: null } : c,
+          );
+          const base = calculateGridScore(nextGrid);
+          const mult = getDeckScoreMultiplier(state.deckChallengeLevel);
+          const nextScore = Math.round(base * mult);
+          const nonce = state.demolishNonce + 1;
+
+          vibratePlaceBuilding();
+
+          set({
+            grid: nextGrid,
+            score: nextScore,
+            activeBooster: null,
+            demolishFlash: { index: cellIndex, nonce },
+            demolishNonce: nonce,
+          });
+
+          window.setTimeout(() => {
+            useLevelRunStore.setState((inner) =>
+              inner.demolishFlash?.index === cellIndex && inner.demolishFlash?.nonce === nonce
+                ? { demolishFlash: null }
+                : {},
+            );
+          }, 480);
+          return;
+        }
+
+        if (state.turn >= 16) return;
         if (state.grid[cellIndex]?.building !== null) return;
         if (state.placementSequence.length !== 16) return;
 
         const building = state.placementSequence[state.turn];
-        const nextGrid = state.grid.map((cell, i) =>
-          i === cellIndex ? { ...cell, building } : cell,
+        const nextGrid = state.grid.map((c, i) =>
+          i === cellIndex ? { ...c, building } : c,
         );
         const nextTurn = state.turn + 1;
         const finished = nextTurn >= 16;
         const base = calculateGridScore(nextGrid);
         const mult = getDeckScoreMultiplier(state.deckChallengeLevel);
         const nextScore = Math.round(base * mult);
+        const spyRem =
+          state.spyPreviewTurnsRemaining > 0 ? state.spyPreviewTurnsRemaining - 1 : 0;
 
         vibratePlaceBuilding();
 
@@ -277,6 +399,8 @@ export const useLevelRunStore = create<LevelRunStore>()(
           turn: nextTurn,
           score: nextScore,
           status: finished ? "finished" : "playing",
+          activeBooster: null,
+          spyPreviewTurnsRemaining: spyRem,
         });
 
         if (finished && state.levelId > 0) {
@@ -306,6 +430,10 @@ export const useLevelRunStore = create<LevelRunStore>()(
           score: 0,
           status: "ready",
           deckChallengeLockedSeed: null,
+          activeBooster: null,
+          demolishFlash: null,
+          demolishNonce: 0,
+          spyPreviewTurnsRemaining: 0,
         });
       },
 
@@ -318,15 +446,39 @@ export const useLevelRunStore = create<LevelRunStore>()(
             deckChallengeLockedSeed: s.seed,
             status: "playing",
             score: Math.round(calculateGridScore(s.grid) * getDeckScoreMultiplier(s.deckChallengeLevel)),
+            activeBooster: null,
+            demolishFlash: null,
+            demolishNonce: 0,
+            spyPreviewTurnsRemaining: 0,
           });
         } else {
-          set({ deckChallengeLockedSeed: null, status: "ready", score: 0 });
+          set({
+            deckChallengeLockedSeed: null,
+            status: "ready",
+            score: 0,
+            activeBooster: null,
+            demolishFlash: null,
+            demolishNonce: 0,
+            spyPreviewTurnsRemaining: 0,
+          });
         }
       },
 
       getSnapshot: () => {
         const s = get();
-        return toGameState(s);
+        return toGameState({
+          levelId: s.levelId,
+          seed: s.seed,
+          placementSequence: s.placementSequence,
+          dailyInventory: s.dailyInventory,
+          deckChallengeLevel: s.deckChallengeLevel,
+          deckChallengeLockedSeed: s.deckChallengeLockedSeed,
+          grid: s.grid,
+          turn: s.turn,
+          score: s.score,
+          status: s.status,
+          activeBooster: s.activeBooster,
+        });
       },
     }),
     {

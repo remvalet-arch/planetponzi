@@ -4,13 +4,30 @@ import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
 
 import { LEVELS } from "@/src/lib/levels";
+import { getLocalDateSeed } from "@/src/lib/rng";
+import { DEFAULT_BOOSTERS, type BoosterType } from "@/src/types/boosters";
 
 export type StarsCount = 0 | 1 | 2 | 3;
+
+export type BoostersState = {
+  demolition: number;
+  spy: number;
+  lobbying: number;
+};
 
 export type ProgressStore = {
   unlockedLevels: number[];
   starsByLevel: Record<string, StarsCount>;
   bestScoreByLevel: Record<string, number>;
+  boosters: BoostersState;
+  /** UUID guest stable (contrat CEO / sync serveur / classement). */
+  playerId: string | null;
+  /** Pseudo affiché (null tant que le joueur ne l’a pas choisi). */
+  pseudo: string | null;
+  /** Dernier jour (YYYY-MM-DD local) où le bonus quotidien a été encaissé. */
+  lastBonusDate: string | null;
+  /** Dernier niveau gagné (≥1★) — pour animer le CEO sur la carte ; consommé après l’anim. */
+  lastCompletedLevelId: number | null;
   /**
    * Fin de partie : meilleur score / étoiles, débloque le niveau suivant si au moins 1★.
    * Idempotent si les valeurs ne sont pas meilleures que l’existant.
@@ -20,9 +37,30 @@ export type ProgressStore = {
   commitLevelResult: (levelId: number, stars: StarsCount, score: number) => void;
   /** Remet la progression Saga locale à zéro (niveau 1 seulement débloqué). */
   resetCareer: () => void;
+  consumeBooster: (type: BoosterType) => void;
+  addBoosters: (type: BoosterType, amount: number) => void;
+  clearLastCompletedLevel: () => void;
+  setPseudo: (pseudo: string) => void;
+  /** Bonus carte : +1 démolition, +1 espion ; fixe `lastBonusDate` au jour local courant. */
+  claimDailyBonus: () => void;
 };
 
 const defaultUnlocked = (): number[] => [1];
+
+const defaultBoosters = (): BoostersState => ({ ...DEFAULT_BOOSTERS });
+
+function normalizeBoosters(raw: unknown): BoostersState {
+  const b = defaultBoosters();
+  if (!raw || typeof raw !== "object") return b;
+  const o = raw as Record<string, unknown>;
+  for (const k of Object.keys(b) as BoosterType[]) {
+    const n = o[k];
+    if (typeof n === "number" && Number.isFinite(n) && n >= 0) {
+      b[k] = Math.floor(n);
+    }
+  }
+  return b;
+}
 
 export const useProgressStore = create<ProgressStore>()(
   persist(
@@ -30,13 +68,61 @@ export const useProgressStore = create<ProgressStore>()(
       unlockedLevels: defaultUnlocked(),
       starsByLevel: {},
       bestScoreByLevel: {},
+      boosters: defaultBoosters(),
+      playerId: null,
+      pseudo: null,
+      lastBonusDate: null,
+      lastCompletedLevelId: null,
+
+      clearLastCompletedLevel: () => set({ lastCompletedLevelId: null }),
+
+      setPseudo: (raw) => {
+        const t = raw.trim().slice(0, 15);
+        if (!t) return;
+        set({ pseudo: t });
+      },
+
+      claimDailyBonus: () => {
+        const today = getLocalDateSeed();
+        set((s) => ({
+          boosters: {
+            ...s.boosters,
+            demolition: s.boosters.demolition + 1,
+            spy: s.boosters.spy + 1,
+          },
+          lastBonusDate: today,
+        }));
+      },
 
       resetCareer: () => {
-        set({
+        set((s) => ({
           unlockedLevels: defaultUnlocked(),
           starsByLevel: {},
           bestScoreByLevel: {},
+          boosters: defaultBoosters(),
+          lastCompletedLevelId: null,
+          playerId: s.playerId,
+          pseudo: s.pseudo,
+          lastBonusDate: s.lastBonusDate,
+        }));
+      },
+
+      consumeBooster: (type) => {
+        if (type !== "demolition" && type !== "spy" && type !== "lobbying") return;
+        set((s) => {
+          const prev = s.boosters[type];
+          if (prev <= 0) return s;
+          return { boosters: { ...s.boosters, [type]: prev - 1 } };
         });
+      },
+
+      addBoosters: (type, amount) => {
+        if (type !== "demolition" && type !== "spy" && type !== "lobbying") return;
+        const n = Math.floor(amount);
+        if (!Number.isFinite(n) || n <= 0) return;
+        set((s) => ({
+          boosters: { ...s.boosters, [type]: s.boosters[type] + n },
+        }));
       },
 
       commitLevelResult: (levelId, stars, score) => {
@@ -59,18 +145,24 @@ export const useProgressStore = create<ProgressStore>()(
             unlockedLevels: Array.from(unlocked).sort((a, b) => a - b),
             starsByLevel: { ...s.starsByLevel, [key]: nextStars },
             bestScoreByLevel: { ...s.bestScoreByLevel, [key]: nextBest },
+            lastCompletedLevelId: stars >= 1 ? levelId : null,
           };
         });
       },
     }),
     {
       name: "planet-ponzi-progress",
-      version: 4,
+      version: 7,
       storage: createJSONStorage(() => localStorage),
       partialize: (state) => ({
         unlockedLevels: state.unlockedLevels,
         starsByLevel: state.starsByLevel,
         bestScoreByLevel: state.bestScoreByLevel,
+        boosters: state.boosters,
+        lastCompletedLevelId: state.lastCompletedLevelId,
+        playerId: state.playerId,
+        pseudo: state.pseudo,
+        lastBonusDate: state.lastBonusDate,
       }),
       migrate: (persisted, fromVersion) => {
         let base = (persisted ?? {}) as Record<string, unknown>;
@@ -86,6 +178,41 @@ export const useProgressStore = create<ProgressStore>()(
           base = {
             ...base,
             unlockedLevels: unlocked.length ? [...new Set(unlocked)].sort((a, b) => a - b) : [1],
+          };
+        }
+        if (fromVersion < 5) {
+          const raw = base.boosters;
+          const ok =
+            raw &&
+            typeof raw === "object" &&
+            typeof (raw as { demolition?: unknown }).demolition === "number" &&
+            Number.isFinite((raw as { demolition: number }).demolition);
+          if (!ok) {
+            base = { ...base, boosters: defaultBoosters() };
+          }
+        }
+        if (fromVersion < 6) {
+          base = {
+            ...base,
+            boosters: normalizeBoosters(base.boosters),
+            lastCompletedLevelId:
+              typeof base.lastCompletedLevelId === "number" && base.lastCompletedLevelId >= 1
+                ? base.lastCompletedLevelId
+                : null,
+          };
+        }
+        if (fromVersion < 7) {
+          const pid = base.playerId;
+          const pse = base.pseudo;
+          const lbd = base.lastBonusDate;
+          const uuidRe =
+            /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+          base = {
+            ...base,
+            playerId: typeof pid === "string" && uuidRe.test(pid) ? pid : null,
+            pseudo: typeof pse === "string" && pse.trim() ? pse.trim().slice(0, 15) : null,
+            lastBonusDate:
+              typeof lbd === "string" && /^\d{4}-\d{2}-\d{2}$/.test(lbd) ? lbd : null,
           };
         }
         return base;

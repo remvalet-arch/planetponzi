@@ -1,8 +1,9 @@
 "use client";
 
-import { notFound, useParams } from "next/navigation";
+import { notFound, useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
+import { BoostersBar } from "@/src/components/game/BoostersBar";
 import { EndScreen } from "@/src/components/game/EndScreen";
 import { Grid } from "@/src/components/game/Grid";
 import { Manifest } from "@/src/components/game/Manifest";
@@ -15,6 +16,7 @@ import { getLevelById } from "@/src/lib/levels";
 import { hasCompletedTutorial, markTutorialCompleted } from "@/src/lib/onboarding-flags";
 import { getBuildingTheme } from "@/src/lib/ui-helpers";
 import { useLevelRunStore } from "@/src/store/useLevelRunStore";
+import { useProgressStore } from "@/src/store/useProgressStore";
 
 function formatRoi(score: number): string {
   const sign = score >= 0 ? "+" : "";
@@ -22,6 +24,7 @@ function formatRoi(score: number): string {
 }
 
 export default function LevelPage() {
+  const router = useRouter();
   const params = useParams<{ id: string }>();
   const id = Number(params.id);
   const levelValid = Number.isFinite(id) && Boolean(getLevelById(id));
@@ -40,8 +43,17 @@ export default function LevelPage() {
   const [persistReady, setPersistReady] = useState(false);
 
   useEffect(() => {
-    const maybeEnterLevel = () => {
+    const bump = () => {
+      if (!useLevelRunStore.persist.hasHydrated() || !useProgressStore.persist.hasHydrated()) {
+        return;
+      }
+      setPersistReady(true);
       if (!levelValid) return;
+      const unlocked = useProgressStore.getState().unlockedLevels;
+      if (!unlocked.includes(id)) {
+        router.replace("/map");
+        return;
+      }
       const s = useLevelRunStore.getState();
       const shouldEnter =
         s.levelId !== id || s.status === "finished" || s.levelId === 0;
@@ -50,22 +62,15 @@ export default function LevelPage() {
       }
     };
 
-    const unsub = useLevelRunStore.persist.onFinishHydration(() => {
-      setPersistReady(true);
-      maybeEnterLevel();
-    });
-
-    if (useLevelRunStore.persist.hasHydrated()) {
-      queueMicrotask(() => {
-        setPersistReady(true);
-        maybeEnterLevel();
-      });
-    }
+    const unsubRun = useLevelRunStore.persist.onFinishHydration(bump);
+    const unsubProg = useProgressStore.persist.onFinishHydration(bump);
+    bump();
 
     return () => {
-      unsub();
+      unsubRun();
+      unsubProg();
     };
-  }, [id, levelValid]);
+  }, [id, levelValid, router]);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -115,7 +120,12 @@ export default function LevelPage() {
 
       {persistReady && deckUnlocked ? (
         <main className="relative flex min-h-0 flex-1 flex-col items-center justify-center gap-6 overflow-y-auto px-4 py-6">
-          <Manifest />
+          <div className="flex w-full max-w-lg flex-col items-stretch gap-3 sm:flex-row sm:items-start sm:justify-center">
+            <div className="min-w-0 flex-1 sm:max-w-sm">
+              <Manifest />
+            </div>
+            <BoostersBar />
+          </div>
           <Grid />
         </main>
       ) : persistReady ? (

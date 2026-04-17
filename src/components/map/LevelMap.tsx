@@ -6,6 +6,7 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import { Check, Lock, Star } from "lucide-react";
 
+import { MapCeoAvatar } from "@/src/components/map/MapCeoAvatar";
 import { useAppStrings } from "@/src/lib/i18n/useAppStrings";
 import { vibrateLevelTap } from "@/src/lib/haptics";
 import {
@@ -67,6 +68,29 @@ type LevelMapProps = {
   scrollParentRef: RefObject<HTMLDivElement | null>;
 };
 
+const CONSTELLATION_CHAINS: number[][] = [
+  [1, 28, 55, 82, 100],
+  [12, 40, 68, 95],
+];
+
+function constellationPointsForChain(chain: number[]): string {
+  const pts: string[] = [];
+  for (const id of chain) {
+    const l = LEVELS.find((x) => x.id === id);
+    if (l) pts.push(`${l.position.x},${l.position.y}`);
+  }
+  return pts.join(" ");
+}
+
+const FLOATING_MONEY = [
+  { emoji: "💵", left: "8%", top: "18%", d: 5.2 },
+  { emoji: "💰", left: "88%", top: "22%", d: 6.1 },
+  { emoji: "💵", left: "14%", top: "72%", d: 5.5 },
+  { emoji: "💰", left: "78%", top: "58%", d: 6.8 },
+  { emoji: "💵", left: "48%", top: "12%", d: 7.2 },
+  { emoji: "💰", left: "62%", top: "88%", d: 5.9 },
+] as const;
+
 export function LevelMap({ scrollParentRef }: LevelMapProps) {
   const uid = useId().replace(/:/g, "");
   const filterId = `pp-path-glow-${uid}`;
@@ -80,12 +104,14 @@ export function LevelMap({ scrollParentRef }: LevelMapProps) {
   const [scrollBg, setScrollBg] = useState(() =>
     buildScrollGradient(PLANETS[0]!, PLANETS[0]!, 0),
   );
+  const [scrollParallax, setScrollParallax] = useState(0);
 
   const updateBgFromScroll = useCallback(() => {
     const el = scrollParentRef.current;
     if (!el) return;
     const max = Math.max(1, el.scrollHeight - el.clientHeight);
     const ratio = el.scrollTop / max;
+    setScrollParallax(ratio);
     const levelFloat = 100 - ratio * 99;
     const pf = (levelFloat - 1) / 10;
     const p0 = Math.min(9, Math.max(0, Math.floor(pf)));
@@ -192,6 +218,79 @@ export function LevelMap({ scrollParentRef }: LevelMapProps) {
           }}
         />
 
+        <motion.div
+          className="pointer-events-none absolute inset-0 z-0 overflow-hidden"
+          style={{
+            transform: `translateY(${-scrollParallax * 10}px) scale(${1 + scrollParallax * 0.025})`,
+          }}
+          aria-hidden
+        >
+          <svg
+            className="h-full w-full opacity-50"
+            viewBox="0 0 100 100"
+            preserveAspectRatio="none"
+          >
+            <defs>
+              <radialGradient id={`${filterId}-neb-a`} cx="32%" cy="22%" r="58%">
+                <stop offset="0%" stopColor="rgb(167 139 250 / 0.42)" />
+                <stop offset="55%" stopColor="rgb(99 102 241 / 0.12)" />
+                <stop offset="100%" stopColor="rgb(15 23 42 / 0)" />
+              </radialGradient>
+              <radialGradient id={`${filterId}-neb-b`} cx="78%" cy="72%" r="48%">
+                <stop offset="0%" stopColor="rgb(34 211 238 / 0.28)" />
+                <stop offset="100%" stopColor="rgb(15 23 42 / 0)" />
+              </radialGradient>
+            </defs>
+            <ellipse cx="34" cy="26" rx="42" ry="36" fill={`url(#${filterId}-neb-a)`} />
+            <ellipse cx="74" cy="70" rx="36" ry="30" fill={`url(#${filterId}-neb-b)`} />
+          </svg>
+          <motion.div
+            className="absolute inset-0 mix-blend-screen"
+            style={{
+              backgroundImage: starfieldLayer(0.16),
+              backgroundSize: "110% 110%",
+              backgroundPosition: `${12 + scrollParallax * 6}% ${8 + scrollParallax * 4}%`,
+            }}
+            animate={{ opacity: [0.28, 0.52, 0.28] }}
+            transition={{ duration: 5.2, repeat: Number.POSITIVE_INFINITY, ease: "easeInOut" }}
+          />
+        </motion.div>
+
+        <svg
+          className="pointer-events-none absolute inset-0 z-0 h-full w-full opacity-[0.85]"
+          viewBox="0 0 100 100"
+          preserveAspectRatio="none"
+          aria-hidden
+        >
+          {CONSTELLATION_CHAINS.map((chain, i) => (
+            <polyline
+              key={i}
+              fill="none"
+              points={constellationPointsForChain(chain)}
+              stroke="rgb(250 250 250)"
+              strokeOpacity={0.14}
+              strokeWidth={0.22}
+              strokeDasharray="0.6 1.1"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          ))}
+        </svg>
+
+        <div className="pointer-events-none absolute inset-0 z-0 overflow-hidden" aria-hidden>
+          {FLOATING_MONEY.map((m, i) => (
+            <motion.span
+              key={i}
+              className="absolute text-sm"
+              style={{ left: m.left, top: m.top, opacity: 0.1 }}
+              animate={{ y: [0, -8, 0], x: [0, 4, 0], rotate: [0, 6, 0] }}
+              transition={{ duration: m.d, repeat: Number.POSITIVE_INFINITY, ease: "easeInOut" }}
+            >
+              {m.emoji}
+            </motion.span>
+          ))}
+        </div>
+
         {sectorBanners.map(({ planet, first, title, subtitle, blurb }) => (
           <div
             key={planet.id}
@@ -215,7 +314,7 @@ export function LevelMap({ scrollParentRef }: LevelMapProps) {
         ))}
 
         <svg
-          className="pointer-events-none absolute inset-0 h-full w-full"
+          className="pointer-events-none absolute inset-0 z-[1] h-full w-full"
           viewBox="0 0 100 100"
           preserveAspectRatio="none"
           aria-hidden
@@ -278,7 +377,7 @@ export function LevelMap({ scrollParentRef }: LevelMapProps) {
                 transform: "translate(-50%, -50%)",
               }}
             >
-              <div className="flex flex-col items-center gap-1">
+              <div className="relative flex flex-col items-center gap-1">
                 {isLocked ? (
                   <div
                     className={`${nodeSize} relative flex cursor-not-allowed flex-col items-center justify-center rounded-full border-2 border-slate-700/90 bg-gradient-to-b from-slate-700 via-slate-800 to-slate-950 text-slate-300 shadow-[inset_0_2px_8px_rgb(0_0_0/0.5),0_4px_0_rgb(15_23_42)] ring-1 ring-black/40`}
@@ -341,6 +440,8 @@ export function LevelMap({ scrollParentRef }: LevelMapProps) {
             </div>
           );
         })}
+
+        <MapCeoAvatar />
       </div>
     </section>
   );

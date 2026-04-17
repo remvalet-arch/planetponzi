@@ -14,6 +14,9 @@ export type DailyInventory = Record<BuildingType, number>;
 /** Cycle de vie minimal d’une partie (store + UI future). */
 export type GameStatus = "ready" | "playing" | "finished";
 
+/** Booster actif sur la grille (session, non persisté). */
+export type ActiveBooster = "demolition";
+
 /** Une case de la grille 4×4 (index 0–15, ligne par ligne). */
 export type Cell = {
   index: number;
@@ -35,4 +38,6 @@ export type GameState = {
   turn: number;
   score: number;
   status: GameStatus;
+  /** Présent si le snapshot inclut l’état runtime des boosters. */
+  activeBooster?: ActiveBooster | null;
 };

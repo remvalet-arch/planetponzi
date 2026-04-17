@@ -3,6 +3,7 @@ import { getOrCreateDeviceId } from "@/src/lib/device-id";
 import { calculateStars } from "@/src/lib/levels";
 import { getLocalDateSeed } from "@/src/lib/rng";
 import { syncGameCompletionToApi } from "@/src/lib/sync-game-completion-to-api";
+import { useProgressStore } from "@/src/store/useProgressStore";
 import type { BuildingType, Cell, DeckChallengeLevel } from "@/src/types/game";
 import { DECK_CHALLENGE_LEVELS } from "@/src/types/game";
 
@@ -178,6 +179,7 @@ export function recordGameCompletion(input: {
     placementSequence.length === 16
   ) {
     const stars = calculateStars(score, levelId);
+    const { playerId, pseudo } = useProgressStore.getState();
     syncGameCompletionToApi({
       levelId,
       stars,
@@ -185,6 +187,8 @@ export function recordGameCompletion(input: {
       deckChallengeLevel,
       puzzleDate: getLocalDateSeed(),
       deviceId: getOrCreateDeviceId(),
+      playerId,
+      pseudo,
       seed: typeof seed === "string" ? seed : "",
       grid,
       placementSequence,

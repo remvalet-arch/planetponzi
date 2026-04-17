@@ -8,6 +8,8 @@ export type SagaCompletionApiPayload = {
   deckChallengeLevel: number;
   puzzleDate: string;
   deviceId: string;
+  playerId?: string | null;
+  pseudo?: string | null;
   seed: string;
   grid: Cell[];
   placementSequence: BuildingType[];
@@ -27,6 +29,8 @@ export function syncGameCompletionToApi(payload: SagaCompletionApiPayload): void
     deckChallengeLevel: payload.deckChallengeLevel,
     puzzleDate: payload.puzzleDate,
     deviceId: payload.deviceId,
+    playerId: payload.playerId ?? null,
+    pseudo: payload.pseudo ?? null,
     seed: payload.seed,
     grid: payload.grid.map((c) => ({ index: c.index, building: c.building })),
     placementSequence: [...payload.placementSequence],
@@ -41,14 +45,17 @@ export function syncGameCompletionToApi(payload: SagaCompletionApiPayload): void
       });
       if (!res.ok) {
         const text = await res.text().catch(() => "");
-        console.warn(
-          "[planet-ponzi] Sauvegarde serveur indisponible:",
+        console.error(
+          "[planet-ponzi] game_completions : HTTP",
           res.status,
-          text.slice(0, 200),
+          res.statusText,
+          "| corps:",
+          text.slice(0, 400),
+          "| Indice : 503 = clé service / URL serveur ; 400 = payload ; 500 = DB ou contraintes.",
         );
       }
     } catch (e) {
-      console.warn("[planet-ponzi] Sauvegarde serveur (offline ou erreur réseau) :", e);
+      console.error("[planet-ponzi] game_completions : échec réseau / fetch (offline ?)", e);
     }
   })();
 }

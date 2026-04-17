@@ -3,6 +3,7 @@
 import { useEffect } from "react";
 import { X } from "lucide-react";
 
+import { BottomSheetShell } from "@/src/components/ui/BottomSheetShell";
 import { RulesSummaryBody } from "@/src/components/ui/RulesSummaryBody";
 
 const FIRST_VISIT_KEY = "planet-ponzi-first-visit";
@@ -32,43 +33,26 @@ export function RulesModal({ open, onClose }: RulesModalProps) {
     return () => window.removeEventListener("keydown", onKey);
   }, [open, onClose]);
 
-  if (!open) return null;
-
   return (
-    <div
-      className="pp-modal-backdrop"
-      role="presentation"
-      onMouseDown={(e) => {
-        if (e.target === e.currentTarget) onClose();
-      }}
-    >
-      <div
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="rules-modal-title"
-        className="pp-modal-panel max-w-md"
-        onMouseDown={(e) => e.stopPropagation()}
-      >
-        <div className="pp-bottom-sheet-handle" aria-hidden />
-        <div className="pp-modal-header">
-          <div className="min-w-0">
-            <p className="pp-kicker">Règles</p>
-            <h2
-              id="rules-modal-title"
-              className="mt-1 font-mono text-base font-bold tracking-tight text-pp-text"
-            >
-              Grille & score
-            </h2>
-          </div>
-          <button type="button" onClick={onClose} className="pp-btn-icon" aria-label="Fermer">
-            <X className="size-5" strokeWidth={2} />
-          </button>
+    <BottomSheetShell open={open} onClose={onClose}>
+      <div className="pp-modal-header">
+        <div className="min-w-0">
+          <p className="pp-kicker">Règles</p>
+          <h2
+            id="rules-modal-title"
+            className="mt-1 font-mono text-base font-bold tracking-tight text-pp-text"
+          >
+            Grille & score
+          </h2>
         </div>
-
-        <div className="pp-allow-select min-h-0 flex-1 overflow-y-auto overscroll-y-contain px-4 py-5">
-          <RulesSummaryBody />
-        </div>
+        <button type="button" onClick={onClose} className="pp-btn-icon" aria-label="Fermer">
+          <X className="size-5" strokeWidth={2} />
+        </button>
       </div>
-    </div>
+
+      <div className="pp-allow-select min-h-0 flex-1 overflow-y-auto overscroll-y-contain px-4 py-5">
+        <RulesSummaryBody />
+      </div>
+    </BottomSheetShell>
   );
 }

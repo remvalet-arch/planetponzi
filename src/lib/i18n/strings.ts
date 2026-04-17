@@ -37,6 +37,7 @@ export const strings = {
     },
     nav: {
       empire: "Empire",
+      leaderboard: "Classement",
       bank: "Banque",
       support: "Soutenir",
       menu: "Menu",
@@ -44,6 +45,25 @@ export const strings = {
       languages: "Langues",
       resetCareer: "Réinitialiser ma carrière",
       resetConfirm: "Effacer toute la progression locale (niveaux, étoiles) ?",
+    },
+    ceoContract: {
+      kicker: "Identité",
+      title: "Signez votre contrat",
+      body: "Entrez votre Pseudo de CEO (15 caractères max) — présence au classement et contrat moral.",
+      label: "Pseudo de CEO",
+      placeholder: "Ex. LunaYield",
+      cta: "Signer",
+    },
+    dailyBonus: {
+      kicker: "Quotidien",
+      title: "Cadeau du Board",
+      body: "Cadeau du Board : +1 Démolition, +1 Espion !",
+      cta: "Encaisser",
+    },
+    leaderboard: {
+      empty: "Aucune donnée pour l’instant. Terminez des niveaux pour apparaître ici.",
+      you: "Vous",
+      loadError: "Classement indisponible.",
     },
     rules: {
       title: "Règles",
@@ -87,6 +107,7 @@ export const strings = {
     },
     nav: {
       empire: "Empire",
+      leaderboard: "Leaderboard",
       bank: "Bank",
       support: "Support",
       menu: "Menu",
@@ -94,6 +115,25 @@ export const strings = {
       languages: "Languages",
       resetCareer: "Reset my career",
       resetConfirm: "Erase all local progress (levels, stars)?",
+    },
+    ceoContract: {
+      kicker: "Identity",
+      title: "Sign your contract",
+      body: "Pick your CEO handle for the leaderboard and your saved profile.",
+      label: "CEO handle",
+      placeholder: "e.g. LunaYield",
+      cta: "Sign",
+    },
+    dailyBonus: {
+      kicker: "Daily",
+      title: "Board gift",
+      body: "+1 Demolition, +1 Spy — stakeholder value (yours).",
+      cta: "Claim",
+    },
+    leaderboard: {
+      empty: "No entries yet. Finish levels to show up here.",
+      you: "You",
+      loadError: "Leaderboard unavailable.",
     },
     rules: {
       title: "Rules",

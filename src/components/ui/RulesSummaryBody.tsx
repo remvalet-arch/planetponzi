@@ -14,25 +14,68 @@ function SectionTitle({ children }: { children: ReactNode }) {
   );
 }
 
+function TileBox({ emoji, label }: { emoji: string; label: string }) {
+  return (
+    <span
+      className="inline-flex min-h-10 min-w-10 items-center justify-center rounded-lg border border-pp-border-strong bg-pp-elevated px-2 text-lg shadow-inner"
+      title={label}
+    >
+      <span aria-hidden>{emoji}</span>
+      <span className="sr-only">{label}</span>
+    </span>
+  );
+}
+
+function FormulaRow({
+  left,
+  op = "+",
+  right,
+  result,
+}: {
+  left: ReactNode;
+  op?: string;
+  right: ReactNode;
+  result: ReactNode;
+}) {
+  return (
+    <div className="flex flex-wrap items-center justify-center gap-2 py-2.5 font-mono text-[11px] text-pp-text-muted">
+      <div className="flex flex-wrap items-center justify-center gap-1.5">{left}</div>
+      <span className="text-pp-text-dim">{op}</span>
+      <div className="flex flex-wrap items-center justify-center gap-1.5">{right}</div>
+      <span className="text-pp-text-dim">=</span>
+      <div className="font-semibold tabular-nums text-pp-accent">{result}</div>
+    </div>
+  );
+}
+
 /** Contenu pédagogique des règles (réutilisé par la modale menu et le flux d’entrée). */
 export function RulesSummaryBody() {
   return (
     <div className="space-y-5">
       <section className="space-y-2">
         <SectionTitle>Partie</SectionTitle>
-        <p className="font-mono text-xs leading-relaxed text-pp-text-muted">
-          4×4 cases. Un bâtiment par tour, dans l’ordre indiqué.{" "}
-          <span className="text-pp-text">Voisin</span> = haut, bas, gauche ou droite uniquement (pas
-          de diagonale).
-        </p>
+        <div className="flex flex-wrap items-center justify-center gap-2 rounded-xl border border-pp-border bg-pp-elevated/60 px-3 py-3 font-mono text-[11px] text-pp-text-muted">
+          <span className="rounded border border-pp-border-strong bg-pp-surface px-2 py-1 text-pp-text">
+            4×4
+          </span>
+          <span>ordre fixe</span>
+          <span className="text-pp-text-dim">·</span>
+          <span>voisins</span>
+          <span className="rounded border border-pp-border-strong bg-pp-surface px-2 py-1 text-pp-text">
+            ⊥
+          </span>
+          <span className="text-[10px]">pas diag.</span>
+        </div>
       </section>
 
       <section className="space-y-2 border-t border-pp-border pt-4">
         <SectionTitle>ROI affiché</SectionTitle>
-        <p className="font-mono text-xs leading-relaxed text-pp-text-muted">
-          On additionne les M$ de chaque case occupée, puis on multiplie par le coefficient du mode
-          choisi. Résultat <span className="text-pp-text">arrondi à l’unité</span>.
-        </p>
+        <FormulaRow
+          left={<span className="text-pp-text">Σ cases</span>}
+          op="×"
+          right={<span className="text-pp-text">mode</span>}
+          result={<span className="text-pp-text">arrondi</span>}
+        />
         <ul className="divide-y divide-pp-border font-mono text-[11px] text-pp-text-muted">
           {DECK_CHALLENGE_LEVELS.map((lvl) => (
             <li key={lvl} className="flex items-center justify-between gap-3 py-2">
@@ -45,47 +88,47 @@ export function RulesSummaryBody() {
         </ul>
       </section>
 
-      <section className="space-y-3 border-t border-pp-border pt-4">
-        <SectionTitle>M$ par case (une fois la case remplie)</SectionTitle>
-        <ul className="space-y-2.5 font-mono text-[11px] leading-snug text-pp-text-muted">
-          <li className="flex gap-2">
-            <span className="shrink-0 text-lg leading-none" aria-hidden>
-              ⬛
-            </span>
-            <span>
-              <span className="font-semibold text-pp-text">Mine</span> — +3 M$ (fixe).
-            </span>
-          </li>
-          <li className="flex gap-2">
-            <span className="shrink-0 text-lg leading-none" aria-hidden>
-              🧑‍🚀
-            </span>
-            <span>
-              <span className="font-semibold text-pp-text">Habitacle</span> — +2 M$, ou{" "}
-              <span className="text-pp-negative">0 M$</span> si une mine touche la case (voisin
-              direct).
-            </span>
-          </li>
-          <li className="flex gap-2">
-            <span className="shrink-0 text-lg leading-none" aria-hidden>
-              🌱
-            </span>
-            <span>
-              <span className="font-semibold text-pp-text">Serre</span> — 1 M$ +{" "}
-              <span className="text-pp-text">1 M$</span> par autre serre sur une case voisine directe.
-            </span>
-          </li>
-          <li className="flex gap-2">
-            <span className="shrink-0 text-lg leading-none" aria-hidden>
-              💧
-            </span>
-            <span>
-              <span className="font-semibold text-pp-text">Eau</span> —{" "}
-              <span className="text-pp-text">+2 M$</span> par habitacle ou serre sur une case voisine
-              directe (sinon 0 M$).
-            </span>
-          </li>
-        </ul>
+      <section className="space-y-1 border-t border-pp-border pt-4">
+        <SectionTitle>M$ par case</SectionTitle>
+        <div className="divide-y divide-pp-border rounded-xl border border-pp-border bg-pp-elevated/40">
+          <div className="flex flex-wrap items-center justify-center gap-2 py-2.5 font-mono text-[11px]">
+            <TileBox emoji="⬛" label="Mine" />
+            <span className="text-pp-text-dim">=</span>
+            <span className="font-semibold text-pp-accent">+3 M$</span>
+          </div>
+          <FormulaRow
+            left={<TileBox emoji="🧑‍🚀" label="Habitacle" />}
+            op="⊥"
+            right={<TileBox emoji="⬛" label="Mine" />}
+            result={<span className="text-pp-negative">0 M$</span>}
+          />
+          <FormulaRow
+            left={<TileBox emoji="🌱" label="Serre" />}
+            op="+"
+            right={
+              <span className="flex items-center gap-1">
+                <span className="text-pp-text-dim">n ×</span>
+                <TileBox emoji="🌱" label="Serre voisine" />
+              </span>
+            }
+            result={<span className="text-pp-text">1 + n M$</span>}
+          />
+          <FormulaRow
+            left={<TileBox emoji="💧" label="Eau" />}
+            op="+"
+            right={
+              <span className="flex items-center gap-1">
+                <TileBox emoji="🧑‍🚀" label="Habitacle" />
+                <span className="text-pp-text-dim">/</span>
+                <TileBox emoji="🌱" label="Serre" />
+              </span>
+            }
+            result={<span className="text-pp-text">+2 M$ / voisin</span>}
+          />
+        </div>
+        <p className="pt-1 text-center font-mono text-[9px] text-pp-text-dim">
+          Serre : 1 M$ de base + bonus voisins · Eau : 0 si aucun voisin éligible
+        </p>
       </section>
     </div>
   );

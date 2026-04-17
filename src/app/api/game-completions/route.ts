@@ -10,6 +10,8 @@ type Body = {
   deckChallengeLevel?: number;
   puzzleDate?: string;
   deviceId?: string;
+  playerId?: string | null;
+  pseudo?: string | null;
   seed?: string;
   grid?: Array<{ index: number; building: string | null }>;
   placementSequence?: string[];
@@ -49,10 +51,20 @@ export async function POST(req: Request) {
     deckChallengeLevel,
     puzzleDate,
     deviceId,
+    playerId,
+    pseudo,
     seed,
     grid,
     placementSequence,
   } = body;
+
+  const pseudoStr =
+    typeof pseudo === "string" ? pseudo.trim().slice(0, 15) : pseudo === null ? "" : "";
+  const pseudoOk = pseudo === null || pseudo === undefined || typeof pseudo === "string";
+  const playerIdStr = playerId === null || playerId === undefined ? null : playerId;
+  const playerIdOk =
+    playerIdStr === null ||
+    (typeof playerIdStr === "string" && isUuid(playerIdStr));
 
   if (
     typeof levelId !== "number" ||
@@ -69,6 +81,8 @@ export async function POST(req: Request) {
     !isValidDate(puzzleDate) ||
     typeof deviceId !== "string" ||
     !isUuid(deviceId) ||
+    !playerIdOk ||
+    !pseudoOk ||
     !Array.isArray(grid) ||
     grid.length !== 16 ||
     !Array.isArray(placementSequence) ||
@@ -80,6 +94,8 @@ export async function POST(req: Request) {
   const { error } = await supabase.from("game_completions").insert({
     user_id: null,
     device_id: deviceId,
+    player_id: playerIdStr,
+    pseudo: pseudoStr.length ? pseudoStr : null,
     puzzle_date: puzzleDate,
     deck_challenge_level: deckChallengeLevel,
     final_score: Math.round(score),

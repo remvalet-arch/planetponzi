@@ -1,5 +1,5 @@
-import { BriefingGate } from "@/src/components/landing/BriefingGate";
+import { HomeSplash } from "@/src/components/landing/HomeSplash";
 
 export default function HomePage() {
-  return <BriefingGate />;
+  return <HomeSplash />;
 }
