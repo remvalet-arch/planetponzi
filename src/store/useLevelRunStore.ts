@@ -393,7 +393,7 @@ export const useLevelRunStore = create<LevelRunStore>()(
         if (finished && state.levelId > 0) {
           const stars = calculateStars(nextScore, state.levelId);
           useProgressStore.getState().commitLevelResult(state.levelId, stars, nextScore);
-          if (stars > 0) {
+          if (stars > 1) {
             useEconomyStore.getState().addCoins(stars * 10);
           } else {
             useEconomyStore.getState().consumeLife();

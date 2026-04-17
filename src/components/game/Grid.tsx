@@ -22,7 +22,7 @@ export function Grid() {
       role="grid"
       aria-label={demolitionMode ? "Grille — mode démolition" : "Grille de placement 4 par 4"}
     >
-      <div className="grid min-h-0 min-w-0 flex-1 grid-cols-4 grid-rows-4 gap-2">
+      <div className="grid min-h-0 min-w-0 flex-1 grid-cols-4 grid-rows-4 gap-1.5 sm:gap-2">
         {grid.map((cell) => {
           const canPlace = status === "playing" && !demolitionMode && cell.building === null;
           const canDemolish =

@@ -56,32 +56,34 @@ export function Manifest() {
   const ambient = getManifestAmbientCopy(dailyInventory, deckChallengeLevel);
   return (
     <section
-      className="w-full max-w-sm shrink-0 rounded-pp-lg border border-pp-border-strong bg-pp-surface/90 px-3 py-2.5 shadow-lg backdrop-blur-sm"
+      className="w-full max-w-sm shrink-0 rounded-pp-lg border border-pp-border-strong bg-pp-surface/90 p-2 shadow-lg backdrop-blur-sm sm:p-3"
       aria-label="Manifeste de cargaison"
     >
-      <div className="mb-2 flex items-start justify-between gap-2 border-b border-dotted border-pp-border pb-2">
-        <p className="font-mono text-[9px] uppercase leading-snug tracking-[0.2em] text-pp-text-dim">
+      <div className="mb-1 flex items-start justify-between gap-2 border-b border-dotted border-pp-border pb-1 sm:mb-1.5 sm:pb-1.5">
+        <p className="line-clamp-1 min-w-0 font-mono text-[8px] uppercase leading-tight tracking-[0.14em] text-pp-text-dim sm:text-[9px] sm:tracking-[0.2em]">
           Cargaison · Niveau {levelId || "—"} · {seed || "—"}
         </p>
-        <span className="shrink-0 font-mono text-[9px] font-semibold text-pp-accent">FUN</span>
+        <span className="shrink-0 font-mono text-[8px] font-semibold text-pp-accent sm:text-[9px]">FUN</span>
       </div>
-      <p className="mb-1 font-mono text-[9px] uppercase tracking-widest text-pp-gold-dark">
+      <p className="mb-0.5 font-mono text-[8px] uppercase tracking-widest text-pp-gold-dark sm:text-[9px]">
         {getDeckChallengeTitle(deckChallengeLevel)} · {formatMultiplierFr(deckChallengeLevel)}
       </p>
-      <p className="mb-2 font-mono text-[11px] leading-relaxed text-pp-text-muted">{ambient}</p>
+      <p className="mb-1 hidden font-mono text-[11px] leading-relaxed text-pp-text-muted sm:mb-2 sm:block">
+        {ambient}
+      </p>
 
       {nextPieces.length > 0 ? (
-        <div className="mb-2 rounded-md border border-pp-border bg-pp-elevated/60 px-2 py-1.5">
-          <p className="mb-1 font-mono text-[8px] uppercase tracking-widest text-violet-300/90">
-            {spyPreviewTurnsRemaining > 0 ? "Ordre (espion — 4 coups)" : "Prochaines pièces"}
+        <div className="mb-1 rounded-md border border-pp-border bg-pp-elevated/60 px-1.5 py-1 sm:mb-1.5">
+          <p className="mb-0.5 font-mono text-[7px] uppercase leading-tight tracking-wider text-violet-300/90 sm:text-[8px] sm:tracking-widest">
+            {spyPreviewTurnsRemaining > 0 ? "Espion · 4" : "Suivants"}
           </p>
-          <div className="flex flex-wrap items-center gap-1">
+          <div className="flex flex-wrap items-center gap-0.5">
             {nextPieces.map((type, i) => {
               const theme = getBuildingTheme(type);
               return (
                 <span
                   key={`${i}-${type}`}
-                  className="inline-flex items-center gap-0.5 rounded border border-pp-border-strong bg-pp-surface/90 px-1 py-0.5 font-mono text-[10px] text-pp-text"
+                  className="inline-flex items-center gap-0.5 rounded border border-pp-border-strong bg-pp-surface/90 px-0.5 py-px font-mono text-[9px] text-pp-text sm:px-1 sm:py-0.5 sm:text-[10px]"
                 >
                   <span aria-hidden>{theme.emoji}</span>
                   <span className="text-pp-text-dim">{i + 1}</span>
@@ -92,7 +94,7 @@ export function Manifest() {
         </div>
       ) : null}
 
-      <div className="flex flex-wrap items-center gap-x-2 gap-y-1 font-mono text-xs text-pp-text">
+      <div className="flex flex-wrap items-center gap-x-1 gap-y-0.5 font-mono text-[10px] text-pp-text sm:gap-x-2 sm:text-xs">
         {MANIFEST_ORDER.map((type, i) => {
           const theme = getBuildingTheme(type);
           const count = dailyInventory[type];
@@ -104,7 +106,7 @@ export function Manifest() {
                   |
                 </span>
               ) : null}
-              <span className="text-base leading-none" aria-hidden>
+              <span className="text-sm leading-none sm:text-base" aria-hidden>
                 {theme.emoji}
               </span>
               <span

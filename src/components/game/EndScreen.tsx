@@ -9,6 +9,7 @@ import { PanelBottomOpen, Share2, Star, X } from "lucide-react";
 
 import { vibrateVictoryStars } from "@/src/lib/haptics";
 import { calculateStars, LEVELS } from "@/src/lib/levels";
+import { useAppStrings } from "@/src/lib/i18n/useAppStrings";
 import { copyShareToClipboard } from "@/src/lib/ui-helpers";
 import { useEconomyStore } from "@/src/store/useEconomyStore";
 import { useLevelRunStore } from "@/src/store/useLevelRunStore";
@@ -40,6 +41,7 @@ type EndScreenProps = {
 };
 
 export function EndScreen({ onShareFeedback }: EndScreenProps) {
+  const { t } = useAppStrings();
   const router = useRouter();
   const grid = useLevelRunStore((s) => s.grid);
   const score = useLevelRunStore((s) => s.score);
@@ -252,6 +254,23 @@ export function EndScreen({ onShareFeedback }: EndScreenProps) {
               );
             })}
           </motion.div>
+
+          {earnedStars <= 1 ? (
+            <div
+              className="mt-6 flex flex-col items-center gap-1.5 rounded-xl border border-rose-900/50 bg-gradient-to-b from-rose-950/50 to-slate-950/40 px-4 py-3 text-center shadow-inner"
+              role="status"
+            >
+              <span className="text-2xl leading-none" aria-hidden>
+                💔
+              </span>
+              <p className="font-mono text-sm font-bold tracking-tight text-rose-100">
+                {t.endScreen.insufficientTitle}
+              </p>
+              <p className="max-w-xs font-mono text-[10px] leading-relaxed text-rose-200/85">
+                {t.endScreen.insufficientBody}
+              </p>
+            </div>
+          ) : null}
 
           <p className="mt-8 text-center font-mono text-sm text-pp-text-muted">
             Score obtenu :{" "}

@@ -5,6 +5,7 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import { BarChart3, BookOpen, Map, Menu, RotateCcw, X } from "lucide-react";
 
+import { EconomyHeader } from "@/src/components/layout/EconomyHeader";
 import { useLevelRunStore } from "@/src/store/useLevelRunStore";
 
 const MotionLink = motion.create(Link);
@@ -44,7 +45,7 @@ export function AppHeader({
   return (
     <>
       <header className="pp-header-bar shrink-0">
-        <div className="mx-auto flex w-full max-w-lg items-center gap-2">
+        <div className="mx-auto flex w-full max-w-lg items-center gap-1.5 sm:gap-2">
           <motion.button
             type="button"
             whileTap={tap}
@@ -68,7 +69,9 @@ export function AppHeader({
             </h1>
           </div>
 
-          <div className="shrink-0 rounded-pp-md border border-pp-border-strong bg-pp-surface px-2.5 py-2 text-right shadow-md sm:px-3">
+          <EconomyHeader className="max-w-[min(42vw,12rem)] sm:max-w-none" />
+
+          <div className="shrink-0 rounded-pp-md border border-pp-border-strong bg-pp-surface px-2 py-2 text-right shadow-md sm:px-3">
             <p className="font-mono text-[9px] uppercase tracking-widest text-pp-text-dim sm:text-[10px]">
               Score
             </p>

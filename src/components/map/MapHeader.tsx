@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import { Menu, Star } from "lucide-react";
 
 import { MapNavDrawer } from "@/src/components/map/MapNavDrawer";
+import { EconomyHeader } from "@/src/components/layout/EconomyHeader";
 import { useAppStrings } from "@/src/lib/i18n/useAppStrings";
 import { useProgressStore } from "@/src/store/useProgressStore";
 
@@ -48,7 +49,7 @@ export function MapHeader() {
             </span>
           </div>
 
-          <div className="size-11 shrink-0" aria-hidden />
+          <EconomyHeader className="max-w-[min(52vw,14rem)] sm:max-w-none" />
         </div>
       </header>
 

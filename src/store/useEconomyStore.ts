@@ -8,10 +8,13 @@ import { useProgressStore } from "@/src/store/useProgressStore";
 
 const STORAGE_KEY = "planet-ponzi-economy";
 const PENDING_LAST_BONUS_KEY = "pp-pending-lastBonus-for-economy";
-const TWENTY_MIN_MS = 20 * 60 * 1000;
-
 const DEFAULT_COINS = 100;
-const MAX_LIVES = 5;
+
+/** Plafond vies (mode hardcore). Exporté pour l’UI (EconomyHeader, etc.). */
+export const MAX_LIVES = 3;
+
+/** Délai entre deux recharges +1 vie lorsque `lives` &lt; MAX_LIVES. */
+export const LIFE_RECHARGE_MS = 20 * 60 * 1000;
 
 function normalizeCoins(n: unknown): number {
   if (typeof n !== "number" || !Number.isFinite(n)) return DEFAULT_COINS;
@@ -38,7 +41,7 @@ function readPendingLastBonusFromProgressMigration(): string | null {
 export type EconomyStore = {
   coins: number;
   lives: number;
-  /** Horodatage (ms) servant d’ancre pour les recharges +1 vie / 20 min lorsque `lives` < 5. */
+  /** Horodatage (ms) servant d’ancre pour les recharges +1 vie lorsque `lives` &lt; MAX_LIVES. */
   lastLifeRechargeTime: number | null;
   /** Dernier jour (YYYY-MM-DD local) où le bonus quotidien carte a été encaissé. */
   lastBonusDate: string | null;
@@ -71,10 +74,10 @@ export const useEconomyStore = create<EconomyStore>()(
             return { ...s, lastLifeRechargeTime: now };
           }
           const elapsed = now - lastLifeRechargeTime;
-          const gained = Math.floor(elapsed / TWENTY_MIN_MS);
+          const gained = Math.floor(elapsed / LIFE_RECHARGE_MS);
           if (gained <= 0) return s;
           const newLives = Math.min(MAX_LIVES, lives + gained);
-          const newAnchor = lastLifeRechargeTime + gained * TWENTY_MIN_MS;
+          const newAnchor = lastLifeRechargeTime + gained * LIFE_RECHARGE_MS;
           return {
             ...s,
             lives: newLives,
@@ -122,7 +125,7 @@ export const useEconomyStore = create<EconomyStore>()(
     }),
     {
       name: STORAGE_KEY,
-      version: 1,
+      version: 2,
       storage: createJSONStorage(() => localStorage),
       partialize: (state) => ({
         coins: state.coins,
