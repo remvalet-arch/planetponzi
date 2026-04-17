@@ -1,4 +1,5 @@
 import { getDeckChallengeTitle } from "@/src/lib/difficulty";
+import { getLocalDateSeed } from "@/src/lib/rng";
 import type { DeckChallengeLevel } from "@/src/types/game";
 import { DECK_CHALLENGE_LEVELS } from "@/src/types/game";
 
@@ -134,17 +135,17 @@ function updateStreak(state: PlayerStatsV2, completionDate: string): void {
 }
 
 /**
- * Enregistre une partie terminée (score final + difficulté + date du puzzle).
- * Met à jour séries type Wordle (jours calendaires consécutifs avec au moins une victoire).
+ * Enregistre une partie terminée (score final + difficulté + niveau Saga).
+ * Met à jour séries type Wordle sur la date locale du jour (activité quotidienne).
  */
 export function recordGameCompletion(input: {
   score: number;
   deckChallengeLevel: DeckChallengeLevel;
-  puzzleDate: string;
+  levelId: number;
 }): void {
   if (typeof window === "undefined") return;
-  const { score, deckChallengeLevel, puzzleDate } = input;
-  if (!isValidDateSeed(puzzleDate)) return;
+  const { score, deckChallengeLevel, levelId } = input;
+  if (!Number.isFinite(levelId) || levelId < 1) return;
 
   const stats = readStats();
   const key = String(deckChallengeLevel);
@@ -155,7 +156,7 @@ export function recordGameCompletion(input: {
     bestScore: Math.max(prev.bestScore, score),
   };
 
-  updateStreak(stats, puzzleDate);
+  updateStreak(stats, getLocalDateSeed());
   writeStats(stats);
 
   const legacy = getLegacyCounterRaw();

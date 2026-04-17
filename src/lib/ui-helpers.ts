@@ -1,5 +1,6 @@
 import type { BuildingType, Cell, DeckChallengeLevel } from "@/src/types/game";
 import { formatMultiplierFr } from "@/src/lib/difficulty";
+import { calculateStars } from "@/src/lib/levels";
 import { getCellScores } from "@/src/lib/scoring";
 
 /** Thème visuel (emoji + utilitaires Tailwind) pour un type de bâtiment. */
@@ -9,22 +10,27 @@ export type BuildingTheme = {
   color: string;
 };
 
+/** Tuiles type « briques » : dégradé + bord bas épais + ombre portée (effet 3D). */
 const THEMES: Record<BuildingType, BuildingTheme> = {
   habitacle: {
     emoji: "🧑‍🚀",
-    color: "bg-orange-500 text-orange-50",
+    color:
+      "border border-orange-200/90 bg-gradient-to-b from-amber-200 to-orange-500 text-orange-950 border-b-[6px] border-b-orange-800 shadow-[0_6px_0_rgba(194,65,12,0.28)]",
   },
   eau: {
     emoji: "💧",
-    color: "bg-cyan-500 text-cyan-50",
+    color:
+      "border border-sky-200/90 bg-gradient-to-b from-sky-200 to-cyan-500 text-cyan-950 border-b-[6px] border-b-cyan-800 shadow-[0_6px_0_rgba(8,145,178,0.28)]",
   },
   serre: {
     emoji: "🌱",
-    color: "bg-green-500 text-green-50",
+    color:
+      "border border-lime-200/90 bg-gradient-to-b from-lime-200 to-green-600 text-green-950 border-b-[6px] border-b-green-800 shadow-[0_6px_0_rgba(21,128,61,0.28)]",
   },
   mine: {
     emoji: "⬛",
-    color: "bg-slate-700 text-slate-300",
+    color:
+      "border border-violet-200/90 bg-gradient-to-b from-violet-300 to-violet-700 text-violet-50 border-b-[6px] border-b-violet-950 shadow-[0_6px_0_rgba(91,33,182,0.28)]",
   },
 };
 
@@ -55,12 +61,20 @@ function heatEmojiForShare(cellScore: number, hasBuilding: boolean): string {
 
 export type ShareMeta = {
   deckChallengeLevel: DeckChallengeLevel;
+  levelId?: number;
 };
 
 /**
  * Texte de partage (heatmap de performance par case + ROI).
  * Couleurs : ≥4 🟩, 1–3 🟨, ≤0 🟥, vide ⬛.
  */
+function starLineForShare(score: number, levelId: number | undefined): string {
+  const n = levelId != null ? calculateStars(score, levelId) : 0;
+  const filled = "⭐".repeat(n);
+  const empty = "☆".repeat(3 - n);
+  return `${filled}${empty}`;
+}
+
 export function generateShareContent(
   grid: Cell[],
   score: number,
@@ -79,20 +93,29 @@ export function generateShareContent(
     rows.push(line);
   }
   const sign = score >= 0 ? "+" : "";
+  const headerLine1 =
+    meta?.levelId != null
+      ? `Planet Ponzi Saga 🚀 - Niveau ${meta.levelId}`
+      : `Planet Ponzi Saga 🚀 - ${seed}`;
+  const stars = starLineForShare(score, meta?.levelId);
   const header: string[] = [
-    `Planet Ponzi #${seed} 🚀`,
-    `ROI : ${sign}${score}M $`,
+    headerLine1,
+    `Score : ${sign}${score} pts | ${stars}`,
   ];
-  if (meta && meta.deckChallengeLevel >= 2) {
+  if (meta && meta.deckChallengeLevel >= 1) {
     const n = meta.deckChallengeLevel;
-    header.push(`Mode : ${n} inconnues (${formatMultiplierFr(n)})`);
+    header.push(
+      n === 1
+        ? `Mode : 1 inconnue (${formatMultiplierFr(n)})`
+        : `Mode : ${n} inconnues (${formatMultiplierFr(n)})`,
+    );
   }
   return [
     ...header,
     "",
     ...rows,
     "",
-    `Jouez ici : ${PLANET_PONZI_SHARE_URL}`,
+    `Devenez le CEO de la galaxie : ${PLANET_PONZI_SHARE_URL}`,
   ].join("\n");
 }
 

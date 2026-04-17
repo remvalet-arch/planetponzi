@@ -4,9 +4,6 @@ import type {
   DeckChallengeLevel,
 } from "@/src/types/game";
 
-/** Format attendu pour la seed quotidienne (date ISO locale). */
-export const DAILY_SEED_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
-
 const BUILDING_TYPES: readonly BuildingType[] = [
   "habitacle",
   "eau",
@@ -14,11 +11,9 @@ const BUILDING_TYPES: readonly BuildingType[] = [
   "mine",
 ] as const;
 
-function assertValidDailySeed(seed: string): void {
-  if (!DAILY_SEED_PATTERN.test(seed)) {
-    throw new Error(
-      `Invalid daily seed "${seed}". Expected YYYY-MM-DD (e.g. 2026-04-14).`,
-    );
+function assertNonEmptyCargoSeed(seed: string): void {
+  if (typeof seed !== "string" || seed.length === 0) {
+    throw new Error(`Invalid cargo seed: expected non-empty string.`);
   }
 }
 
@@ -51,23 +46,23 @@ function shuffleInPlace<T>(items: T[], random: () => number): void {
 
 /**
  * Pour un niveau L>0, choisit **L** types dont le compte sera masqué au manifeste.
- * Déterministe pour (dateSeed, L) — même joueur, même jour, même difficulté → mêmes cases noires.
+ * Déterministe pour (`cargoSeed`, L).
  */
 export function pickHiddenDeckBuildingTypes(
-  dateSeed: string,
+  cargoSeed: string,
   level: DeckChallengeLevel,
 ): ReadonlySet<BuildingType> {
-  assertValidDailySeed(dateSeed);
+  assertNonEmptyCargoSeed(cargoSeed);
   if (level === 0) return new Set();
   const pool = [...BUILDING_TYPES] as BuildingType[];
-  const rand = mulberry32(fnv1a32(`planet-ponzi|deck-occult|${dateSeed}|${level}`));
+  const rand = mulberry32(fnv1a32(`planet-ponzi|deck-occult|${cargoSeed}|${level}`));
   shuffleInPlace(pool, rand);
   return new Set(pool.slice(0, level));
 }
 
 /**
  * Retourne la date locale au format YYYY-MM-DD (fuseau du runtime).
- * À documenter côté produit si un fuseau fixe (ex. UTC) est requis.
+ * Utilisé côté stats (séries), pas pour la génération de niveau.
  */
 export function getLocalDateSeed(reference: Date = new Date()): string {
   const y = reference.getFullYear();
@@ -77,15 +72,11 @@ export function getLocalDateSeed(reference: Date = new Date()): string {
 }
 
 /**
- * Génère la séquence des 16 bâtiments du jour : **16 tirages indépendants**
- * parmi les 4 types, déterministes pour une seed `YYYY-MM-DD` donnée
- * (même résultat pour tous les joueurs).
+ * Génère la séquence des 16 bâtiments à placer, déterministe pour une `cargoSeed` donnée.
  */
-export function generateDailyBuildingSequence(
-  dateSeed: string,
-): BuildingType[] {
-  assertValidDailySeed(dateSeed);
-  const rand = mulberry32(fnv1a32(`planet-ponzi|deck|${dateSeed}`));
+export function generatePlacementSequence(cargoSeed: string): BuildingType[] {
+  assertNonEmptyCargoSeed(cargoSeed);
+  const rand = mulberry32(fnv1a32(`planet-ponzi|deck|${cargoSeed}`));
   const sequence: BuildingType[] = [];
   for (let i = 0; i < 16; i++) {
     const pick = Math.floor(rand() * BUILDING_TYPES.length);
@@ -94,7 +85,7 @@ export function generateDailyBuildingSequence(
   return sequence;
 }
 
-/** Compte chaque type présent dans la séquence du jour (16 entrées attendues). */
+/** Compte chaque type présent dans la séquence (16 entrées attendues). */
 export function getDailyStats(sequence: BuildingType[]): DailyInventory {
   const counts: DailyInventory = {
     habitacle: 0,

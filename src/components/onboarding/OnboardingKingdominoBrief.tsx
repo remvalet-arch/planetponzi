@@ -6,10 +6,6 @@ import {
 } from "@/src/lib/difficulty";
 import { DECK_CHALLENGE_LEVELS, type DeckChallengeLevel } from "@/src/types/game";
 
-type OnboardingKingdominoBriefProps = {
-  onSignContract: () => void;
-};
-
 function SectionLabel({ id, children }: { id?: string; children: string }) {
   return (
     <p
@@ -50,7 +46,7 @@ const ASSETS: { icon: string; name: string; short: string; detail: string }[] = 
   },
 ];
 
-export function OnboardingKingdominoBrief({ onSignContract }: OnboardingKingdominoBriefProps) {
+export function OnboardingKingdominoBrief() {
   return (
     <div className="flex flex-col gap-3 sm:gap-4">
       <header className="shrink-0">
@@ -148,21 +144,6 @@ export function OnboardingKingdominoBrief({ onSignContract }: OnboardingKingdomi
           « Regroupez vos Serres. Isolez vos Mines. Arrosez vos colons. »
         </p>
       </section>
-
-      <button
-        type="button"
-        onClick={onSignContract}
-        className="mt-1 w-full rounded-pp-lg border py-3 font-mono text-xs font-semibold transition-transform active:scale-[0.99] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 sm:text-sm"
-        style={{
-          borderColor: "color-mix(in srgb, var(--pp-accent) 45%, transparent)",
-          background:
-            "linear-gradient(90deg, color-mix(in srgb, var(--pp-accent) 12%, var(--pp-bg)), color-mix(in srgb, var(--pp-positive) 10%, var(--pp-bg)))",
-          color: "color-mix(in srgb, var(--pp-accent) 92%, white)",
-          boxShadow: "0 0 24px var(--pp-accent-glow)",
-        }}
-      >
-        Signer le contrat de profit
-      </button>
     </div>
   );
 }

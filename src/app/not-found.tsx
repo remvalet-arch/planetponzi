@@ -2,7 +2,7 @@ import Link from "next/link";
 
 export default function NotFound() {
   return (
-    <div className="flex min-h-dvh flex-col items-center justify-center bg-pp-bg px-6 py-16 text-center">
+    <div className="flex min-h-0 flex-1 flex-col items-center justify-center bg-pp-bg px-6 py-16 text-center">
       <p className="font-mono text-[10px] uppercase tracking-[0.35em] text-pp-accent/80">
         404 · Mandat introuvable
       </p>

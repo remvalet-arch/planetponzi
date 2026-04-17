@@ -29,7 +29,7 @@ export function getManifestAmbientCopy(
   stats: DailyInventory,
   deckChallengeLevel: DeckChallengeLevel = 0,
 ): string {
-  if (deckChallengeLevel >= 2) {
+  if (deckChallengeLevel >= 1) {
     return "Répartition masquée au manifeste — optimisez sans tableau croisé dynamique.";
   }
 

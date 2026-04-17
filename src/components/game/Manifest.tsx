@@ -10,7 +10,7 @@ import { pickHiddenDeckBuildingTypes } from "@/src/lib/rng";
 import { getBuildingTheme } from "@/src/lib/ui-helpers";
 import { getManifestAmbientCopy } from "@/src/lib/manifest-copy";
 import type { BuildingType } from "@/src/types/game";
-import { useGameStore } from "@/src/store/useGameStore";
+import { useLevelRunStore } from "@/src/store/useLevelRunStore";
 
 const MANIFEST_ORDER: BuildingType[] = [
   "habitacle",
@@ -20,9 +20,10 @@ const MANIFEST_ORDER: BuildingType[] = [
 ];
 
 export function Manifest() {
-  const seed = useGameStore((s) => s.seed);
-  const dailyInventory = useGameStore((s) => s.dailyInventory);
-  const deckChallengeLevel = useGameStore((s) => s.deckChallengeLevel);
+  const levelId = useLevelRunStore((s) => s.levelId);
+  const seed = useLevelRunStore((s) => s.seed);
+  const dailyInventory = useLevelRunStore((s) => s.dailyInventory);
+  const deckChallengeLevel = useLevelRunStore((s) => s.deckChallengeLevel);
 
   const hiddenTypes = useMemo(
     () => pickHiddenDeckBuildingTypes(seed, deckChallengeLevel),
@@ -30,28 +31,22 @@ export function Manifest() {
   );
 
   const ambient = getManifestAmbientCopy(dailyInventory, deckChallengeLevel);
-  const refYear = seed.slice(0, 4) || String(new Date().getFullYear());
-
   return (
     <section
-      className="w-full max-w-sm border border-neutral-800 bg-neutral-900/40 px-3 py-2.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]"
+      className="w-full max-w-sm rounded-pp-lg border border-pp-border-strong bg-pp-surface/90 px-3 py-2.5 shadow-lg backdrop-blur-sm"
       aria-label="Manifeste de cargaison"
     >
-      <div className="mb-2 flex items-start justify-between gap-2 border-b border-dotted border-neutral-700 pb-2">
-        <p className="font-mono text-[9px] uppercase leading-snug tracking-[0.2em] text-neutral-500">
-          Cargaison · ref. {refYear}-PPZ · {seed}
+      <div className="mb-2 flex items-start justify-between gap-2 border-b border-dotted border-pp-border pb-2">
+        <p className="font-mono text-[9px] uppercase leading-snug tracking-[0.2em] text-pp-text-dim">
+          Cargaison · Niveau {levelId || "—"} · {seed || "—"}
         </p>
-        <span className="shrink-0 font-mono text-[9px] text-neutral-600">
-          CONFIDENTIEL
-        </span>
+        <span className="shrink-0 font-mono text-[9px] font-semibold text-pp-accent">FUN</span>
       </div>
-      <p className="mb-1 font-mono text-[9px] uppercase tracking-widest text-amber-500/90">
+      <p className="mb-1 font-mono text-[9px] uppercase tracking-widest text-pp-gold-dark">
         {getDeckChallengeTitle(deckChallengeLevel)} · {formatMultiplierFr(deckChallengeLevel)}
       </p>
-      <p className="mb-2 font-mono text-[11px] leading-relaxed text-neutral-400">
-        {ambient}
-      </p>
-      <div className="flex flex-wrap items-center gap-x-2 gap-y-1 font-mono text-xs text-neutral-300">
+      <p className="mb-2 font-mono text-[11px] leading-relaxed text-pp-text-muted">{ambient}</p>
+      <div className="flex flex-wrap items-center gap-x-2 gap-y-1 font-mono text-xs text-pp-text">
         {MANIFEST_ORDER.map((type, i) => {
           const theme = getBuildingTheme(type);
           const count = dailyInventory[type];
@@ -59,7 +54,7 @@ export function Manifest() {
           return (
             <span key={type} className="inline-flex items-center gap-1">
               {i > 0 ? (
-                <span className="text-neutral-600" aria-hidden>
+                <span className="text-pp-text-dim" aria-hidden>
                   |
                 </span>
               ) : null}
@@ -67,7 +62,7 @@ export function Manifest() {
                 {theme.emoji}
               </span>
               <span
-                className={`tabular-nums ${hidden ? "text-neutral-500" : "text-neutral-200"}`}
+                className={`tabular-nums ${hidden ? "text-pp-text-dim" : "font-semibold text-pp-text"}`}
                 aria-label={
                   hidden
                     ? `${type}, effectif masqué pour ce mode`

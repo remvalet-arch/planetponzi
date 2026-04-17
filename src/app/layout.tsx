@@ -13,9 +13,9 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-const siteName = "Planet Ponzi";
+const siteName = "Planet Ponzi Saga";
 const siteDescription =
-  "Un puzzle quotidien façon terminal de trading : manifeste, grille 4×4, cynisme spatial. Capitalisme orbital, un bâtiment à la fois.";
+  "Le puzzle spatial addictif : grille 4×4, niveaux Saga, étoiles et progression sur la carte. Bâtissez, optimisez, progressez — PWA jouable hors-ligne.";
 
 export const metadata: Metadata = {
   metadataBase: new URL(
@@ -27,11 +27,20 @@ export const metadata: Metadata = {
     template: `%s · ${siteName}`,
   },
   description: siteDescription,
-  keywords: ["puzzle", "jeu quotidien", "wordle", "satire", "grille"],
+  keywords: ["puzzle", "jeu mobile", "PWA", "Saga", "grille", "casual", "spatial"],
   authors: [{ name: "Planet Ponzi" }],
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: siteName,
+  },
+  formatDetection: {
+    telephone: false,
+  },
   openGraph: {
     type: "website",
     locale: "fr_FR",
+    url: "/",
     siteName,
     title: siteName,
     description: siteDescription,
@@ -50,8 +59,8 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: [{ media: "(prefers-color-scheme: dark)", color: "#050506" }],
-  colorScheme: "dark",
+  themeColor: [{ media: "(prefers-color-scheme: light)", color: "#7c3aed" }],
+  colorScheme: "light",
   width: "device-width",
   initialScale: 1,
   maximumScale: 1,
@@ -64,12 +73,14 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html
-      lang="fr"
-      className={`${geistSans.variable} ${geistMono.variable} h-full`}
-    >
-      <body className="flex min-h-full flex-col bg-pp-bg text-pp-text">
-        {children}
+    <html lang="fr" className={`${geistSans.variable} ${geistMono.variable} h-full`}>
+      <body className="flex min-h-dvh justify-center bg-slate-950 text-slate-200 antialiased">
+        <main
+          className="relative mx-auto flex h-[100dvh] w-full max-w-md flex-col overflow-hidden bg-pp-bg text-pp-text shadow-2xl [transform:translateZ(0)]"
+          id="pp-game-shell"
+        >
+          <div className="flex min-h-0 min-w-0 flex-1 flex-col">{children}</div>
+        </main>
       </body>
     </html>
   );

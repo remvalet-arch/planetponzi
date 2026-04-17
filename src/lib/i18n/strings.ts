@@ -7,11 +7,43 @@
 
 export type Locale = "fr" | "en";
 
+export type PlanetStrings = {
+  name: string;
+  blurb: string;
+};
+
 export const strings = {
   fr: {
     brand: {
       name: "Planet Ponzi",
       tagline: "Capitalisme spatial. Un mandat par jour.",
+    },
+    /** Secteurs 1–10 (10 niveaux chacun) — lore cynique. */
+    planets: [
+      { name: "La Ceinture des Startups", blurb: "Débutant · on rêve en unicorn." },
+      { name: "Nébuleuse de l'Endettement", blurb: "La difficulté monte avec les taux." },
+      { name: "Archipel des Offshore", blurb: "Premières contraintes de deck, capitaux flottants." },
+      { name: "Désert de l'Austérité", blurb: "Peu d’eau sur les comptes publics." },
+      { name: "Gisement de Bulles Spéculatives", blurb: "Mines partout, promesses d’or." },
+      { name: "Plateau des Levées de fonds", blurb: "Série B ou bust — dilution cosmique." },
+      { name: "Anneau des Actifs structurés", blurb: "Titrisé, empaqueté, noté AAA par défaut." },
+      { name: "Quadrant de l'Effet de levier", blurb: "Dette bonne / mauvaise : même recette." },
+      { name: "Limite du Marché gris", blurb: "Liquidité opaque, volatilité saine (non)." },
+      { name: "Le Trou Noir de l'Exit", blurb: "Le boss final — cash-out ou absorption." },
+    ] as const satisfies readonly PlanetStrings[],
+    map: {
+      sectorFirst: "Secteur {{roman}}",
+      sectorEnter: "Vous entrez dans le Secteur {{roman}}",
+    },
+    nav: {
+      empire: "Empire",
+      bank: "Banque",
+      support: "Soutenir",
+      menu: "Menu",
+      settings: "Paramètres",
+      languages: "Langues",
+      resetCareer: "Réinitialiser ma carrière",
+      resetConfirm: "Effacer toute la progression locale (niveaux, étoiles) ?",
     },
     rules: {
       title: "Règles",
@@ -36,6 +68,32 @@ export const strings = {
     brand: {
       name: "Planet Ponzi",
       tagline: "Orbital capitalism. One mandate per day.",
+    },
+    planets: [
+      { name: "The Startup Belt", blurb: "Beginner dreams — unicorn optics." },
+      { name: "Nebula of Indebtedness", blurb: "Difficulty rises with the coupons." },
+      { name: "Offshore Archipelago", blurb: "First deck pressure — capital adrift." },
+      { name: "Desert of Austerity", blurb: "Not much water in the public wells." },
+      { name: "Speculative Bubble Field", blurb: "Mines everywhere, golden promises." },
+      { name: "Fundraising Plateau", blurb: "Series B or bust — cosmic dilution." },
+      { name: "Ring of Structured Assets", blurb: "Packaged, tranched, rated AAA by default." },
+      { name: "Leverage Quadrant", blurb: "Good debt / bad debt — same recipe." },
+      { name: "Grey Market Frontier", blurb: "Opaque liquidity, “healthy” volatility." },
+      { name: "The Exit Black Hole", blurb: "Final boss — cash out or get absorbed." },
+    ] as const satisfies readonly PlanetStrings[],
+    map: {
+      sectorFirst: "Sector {{roman}}",
+      sectorEnter: "You are entering Sector {{roman}}",
+    },
+    nav: {
+      empire: "Empire",
+      bank: "Bank",
+      support: "Support",
+      menu: "Menu",
+      settings: "Settings",
+      languages: "Languages",
+      resetCareer: "Reset my career",
+      resetConfirm: "Erase all local progress (levels, stars)?",
     },
     rules: {
       title: "Rules",

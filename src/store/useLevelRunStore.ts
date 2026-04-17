@@ -7,7 +7,9 @@ import {
   coerceDeckChallengeLevel,
   getDeckScoreMultiplier,
 } from "@/src/lib/difficulty";
-import { generateDailyBuildingSequence, getDailyStats, getLocalDateSeed } from "@/src/lib/rng";
+import { vibratePlaceBuilding } from "@/src/lib/haptics";
+import { getLevelById } from "@/src/lib/levels";
+import { generatePlacementSequence, getDailyStats } from "@/src/lib/rng";
 import { calculateGridScore } from "@/src/lib/scoring";
 import { recordGameCompletion } from "@/src/lib/stats";
 import type {
@@ -26,7 +28,6 @@ const PLACED_BUILDING_TYPES = new Set<string>([
   "mine",
 ]);
 
-/** Progrès réel (tour ou bâtiment valide) — évite les faux positifs (ex. `building: 0` en JSON). */
 function hasMeaningfulGridProgress(grid: Cell[], turn: number): boolean {
   if (typeof turn === "number" && turn > 0 && Number.isFinite(turn)) return true;
   return grid.some(
@@ -42,8 +43,9 @@ function createEmptyGrid(): Cell[] {
 }
 
 function toGameState(snapshot: {
+  levelId: number;
   seed: string;
-  dailySequence: BuildingType[];
+  placementSequence: BuildingType[];
   dailyInventory: DailyInventory;
   deckChallengeLevel: DeckChallengeLevel;
   deckChallengeLockedSeed: string | null;
@@ -53,8 +55,9 @@ function toGameState(snapshot: {
   status: GameStatus;
 }): GameState {
   return {
+    levelId: snapshot.levelId,
     seed: snapshot.seed,
-    dailySequence: [...snapshot.dailySequence],
+    placementSequence: [...snapshot.placementSequence],
     dailyInventory: { ...snapshot.dailyInventory },
     deckChallengeLevel: snapshot.deckChallengeLevel,
     deckChallengeLockedSeed: snapshot.deckChallengeLockedSeed,
@@ -65,41 +68,31 @@ function toGameState(snapshot: {
   };
 }
 
-export type GameStore = {
+export type LevelRunStore = {
+  levelId: number;
   seed: string;
-  dailySequence: BuildingType[];
+  placementSequence: BuildingType[];
   dailyInventory: DailyInventory;
   deckChallengeLevel: DeckChallengeLevel;
-  /** `null` tant que la difficulté n’est pas figée pour `seed` (écran de choix obligatoire). */
   deckChallengeLockedSeed: string | null;
   grid: Cell[];
   turn: number;
   score: number;
   status: GameStatus;
-  /** Initialise ou recharge le puzzle pour une date donnée (grille vide, tour 0). */
-  loadDay: (dateSeed: string) => void;
-  /** Charge le puzzle du jour (date locale du navigateur). */
-  loadToday: () => void;
-  /** Après rehydratation : aligne la session sur la date du jour sans effacer une partie en cours. */
-  syncTodaySession: () => void;
-  /** Passe de `ready` à `playing`. */
+  enterLevel: (levelId: number) => void;
   beginPlacement: () => void;
-  /** Figée la difficulté pour la date courante, puis démarre la partie si besoin. */
   confirmDeckDifficulty: (level: DeckChallengeLevel) => void;
-  /** Place le bâtiment courant (`dailySequence[turn]`) sur une case vide. */
   placeBuilding: (cellIndex: number) => void;
-  /** Remet la grille à zéro pour la seed courante (même séquence). */
   resetBoard: () => void;
-  /** Grille vide + même tirage du jour, puis passage direct en `playing` (tests / nouvelle tentative). */
-  restartTodayPuzzle: () => void;
-  /** Extrait un snapshot typé (tests, debug). */
+  restartCurrentLevel: () => void;
   getSnapshot: () => GameState;
 };
 
 type PersistedSlice = Pick<
-  GameStore,
+  LevelRunStore,
+  | "levelId"
   | "seed"
-  | "dailySequence"
+  | "placementSequence"
   | "dailyInventory"
   | "deckChallengeLevel"
   | "deckChallengeLockedSeed"
@@ -109,7 +102,6 @@ type PersistedSlice = Pick<
   | "status"
 >;
 
-/** Verrou **explicitement** persisté pour ce `seed` (pas d’inférence vague ici). */
 function explicitDeckLockForSeed(p: Partial<PersistedSlice>, seed: string): string | null {
   if (typeof p.deckChallengeLockedSeed === "string" && p.deckChallengeLockedSeed === seed) {
     return seed;
@@ -121,17 +113,15 @@ function isGameStatus(value: unknown): value is GameStatus {
   return value === "ready" || value === "playing" || value === "finished";
 }
 
-function mergePersistedState(
-  persisted: unknown,
-  current: GameStore,
-): GameStore {
+function mergePersistedState(persisted: unknown, current: LevelRunStore): LevelRunStore {
   if (!persisted || typeof persisted !== "object") return current;
-  const p = persisted as Partial<PersistedSlice>;
+  const p = persisted as Partial<PersistedSlice> & { dailySequence?: BuildingType[] };
 
-  const dailySequence =
-    Array.isArray(p.dailySequence) && p.dailySequence.length === 16
-      ? (p.dailySequence as BuildingType[])
-      : current.dailySequence;
+  const placementSequenceRaw = p.placementSequence ?? p.dailySequence;
+  const placementSequence =
+    Array.isArray(placementSequenceRaw) && placementSequenceRaw.length === 16
+      ? (placementSequenceRaw as BuildingType[])
+      : current.placementSequence;
 
   const grid =
     Array.isArray(p.grid) && p.grid.length === 16
@@ -142,10 +132,12 @@ function mergePersistedState(
       : current.grid;
 
   const seed = typeof p.seed === "string" ? p.seed : current.seed;
+  const levelId = typeof p.levelId === "number" && Number.isFinite(p.levelId) ? p.levelId : current.levelId;
+
   let status: GameStatus = isGameStatus(p.status) ? p.status : current.status;
   const turn = typeof p.turn === "number" ? p.turn : current.turn;
 
-  const dailyInventory = getDailyStats(dailySequence);
+  const dailyInventory = getDailyStats(placementSequence);
   const deckChallengeLevel = coerceDeckChallengeLevel(p.deckChallengeLevel);
   const progressed = hasMeaningfulGridProgress(grid, turn);
 
@@ -163,14 +155,13 @@ function mergePersistedState(
   }
 
   const baseScore = calculateGridScore(grid);
-  const score = Math.round(
-    baseScore * getDeckScoreMultiplier(deckChallengeLevel),
-  );
+  const score = Math.round(baseScore * getDeckScoreMultiplier(deckChallengeLevel));
 
   return {
     ...current,
+    levelId,
     seed,
-    dailySequence,
+    placementSequence,
     dailyInventory,
     deckChallengeLevel,
     deckChallengeLockedSeed,
@@ -181,55 +172,63 @@ function mergePersistedState(
   };
 }
 
-const initialSeed = getLocalDateSeed();
-const initialSequence = generateDailyBuildingSequence(initialSeed);
-const initialInventory = getDailyStats(initialSequence);
+const emptyRun: Pick<
+  LevelRunStore,
+  | "levelId"
+  | "seed"
+  | "placementSequence"
+  | "dailyInventory"
+  | "deckChallengeLevel"
+  | "deckChallengeLockedSeed"
+  | "grid"
+  | "turn"
+  | "score"
+  | "status"
+> = {
+  levelId: 0,
+  seed: "",
+  placementSequence: [],
+  dailyInventory: { habitacle: 0, eau: 0, serre: 0, mine: 0 },
+  deckChallengeLevel: 0,
+  deckChallengeLockedSeed: null,
+  grid: createEmptyGrid(),
+  turn: 0,
+  score: 0,
+  status: "ready",
+};
 
-export const useGameStore = create<GameStore>()(
+export const useLevelRunStore = create<LevelRunStore>()(
   persist(
     (set, get) => ({
-      seed: initialSeed,
-      dailySequence: initialSequence,
-      dailyInventory: initialInventory,
-      deckChallengeLevel: 0,
-      deckChallengeLockedSeed: null,
-      grid: createEmptyGrid(),
-      turn: 0,
-      score: 0,
-      status: "ready",
+      ...emptyRun,
 
-      loadDay: (dateSeed) => {
-        const dailySequence = generateDailyBuildingSequence(dateSeed);
-        const dailyInventory = getDailyStats(dailySequence);
+      enterLevel: (levelId) => {
+        const def = getLevelById(levelId);
+        if (!def) return;
+
+        const placementSequence = generatePlacementSequence(def.seed);
+        const dailyInventory = getDailyStats(placementSequence);
+        const deckChallengeLevel = def.deckChallengeLevel ?? 0;
+        const autoStart = deckChallengeLevel === 0;
+
         set({
-          seed: dateSeed,
-          dailySequence,
+          levelId,
+          seed: def.seed,
+          placementSequence,
           dailyInventory,
-          deckChallengeLevel: 0,
-          deckChallengeLockedSeed: null,
+          deckChallengeLevel,
+          deckChallengeLockedSeed: autoStart ? def.seed : null,
           grid: createEmptyGrid(),
           turn: 0,
           score: 0,
-          status: "ready",
+          status: autoStart ? "playing" : "ready",
         });
-      },
 
-      loadToday: () => {
-        get().loadDay(getLocalDateSeed());
-      },
-
-      syncTodaySession: () => {
-        const today = getLocalDateSeed();
-        const { seed } = get();
-        if (seed !== today) {
-          get().loadDay(today);
-        }
-        const s = get();
-        if (
-          s.status === "ready" &&
-          s.deckChallengeLockedSeed === s.seed
-        ) {
-          get().beginPlacement();
+        if (autoStart) {
+          const base = calculateGridScore(get().grid);
+          set({
+            score: Math.round(base * getDeckScoreMultiplier(deckChallengeLevel)),
+          });
         }
       },
 
@@ -259,8 +258,9 @@ export const useGameStore = create<GameStore>()(
         if (state.turn >= 16) return;
         if (cellIndex < 0 || cellIndex > 15) return;
         if (state.grid[cellIndex]?.building !== null) return;
+        if (state.placementSequence.length !== 16) return;
 
-        const building = state.dailySequence[state.turn];
+        const building = state.placementSequence[state.turn];
         const nextGrid = state.grid.map((cell, i) =>
           i === cellIndex ? { ...cell, building } : cell,
         );
@@ -270,6 +270,8 @@ export const useGameStore = create<GameStore>()(
         const mult = getDeckScoreMultiplier(state.deckChallengeLevel);
         const nextScore = Math.round(base * mult);
 
+        vibratePlaceBuilding();
+
         set({
           grid: nextGrid,
           turn: nextTurn,
@@ -277,32 +279,46 @@ export const useGameStore = create<GameStore>()(
           status: finished ? "finished" : "playing",
         });
 
-        if (finished) {
+        if (finished && state.levelId > 0) {
           recordGameCompletion({
             score: nextScore,
             deckChallengeLevel: state.deckChallengeLevel,
-            puzzleDate: state.seed,
+            levelId: state.levelId,
           });
         }
       },
 
       resetBoard: () => {
-        const { seed } = get();
-        const dailySequence = generateDailyBuildingSequence(seed);
-        const dailyInventory = getDailyStats(dailySequence);
+        const { seed, levelId } = get();
+        const def = getLevelById(levelId);
+        const cargoSeed = def?.seed ?? seed;
+        if (!cargoSeed) return;
+        const placementSequence = generatePlacementSequence(cargoSeed);
+        const dailyInventory = getDailyStats(placementSequence);
         set({
-          dailySequence,
+          placementSequence,
           dailyInventory,
           grid: createEmptyGrid(),
           turn: 0,
           score: 0,
           status: "ready",
+          deckChallengeLockedSeed: null,
         });
       },
 
-      restartTodayPuzzle: () => {
+      restartCurrentLevel: () => {
         get().resetBoard();
-        get().beginPlacement();
+        const s = get();
+        const autoStart = s.deckChallengeLevel === 0;
+        if (autoStart) {
+          set({
+            deckChallengeLockedSeed: s.seed,
+            status: "playing",
+            score: Math.round(calculateGridScore(s.grid) * getDeckScoreMultiplier(s.deckChallengeLevel)),
+          });
+        } else {
+          set({ deckChallengeLockedSeed: null, status: "ready", score: 0 });
+        }
       },
 
       getSnapshot: () => {
@@ -311,11 +327,12 @@ export const useGameStore = create<GameStore>()(
       },
     }),
     {
-      name: "planet-ponzi-game",
+      name: "planet-ponzi-level-run",
       storage: createJSONStorage(() => localStorage),
       partialize: (state): PersistedSlice => ({
+        levelId: state.levelId,
         seed: state.seed,
-        dailySequence: state.dailySequence,
+        placementSequence: state.placementSequence,
         dailyInventory: state.dailyInventory,
         deckChallengeLevel: state.deckChallengeLevel,
         deckChallengeLockedSeed: state.deckChallengeLockedSeed,
@@ -324,8 +341,7 @@ export const useGameStore = create<GameStore>()(
         score: state.score,
         status: state.status,
       }),
-      merge: (persisted, current) =>
-        mergePersistedState(persisted, current as GameStore),
+      merge: (persisted, current) => mergePersistedState(persisted, current as LevelRunStore),
       version: 1,
     },
   ),

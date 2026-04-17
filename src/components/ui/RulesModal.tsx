@@ -36,7 +36,7 @@ export function RulesModal({ open, onClose }: RulesModalProps) {
 
   return (
     <div
-      className="pp-modal-backdrop z-[110]"
+      className="pp-modal-backdrop"
       role="presentation"
       onMouseDown={(e) => {
         if (e.target === e.currentTarget) onClose();
@@ -49,6 +49,7 @@ export function RulesModal({ open, onClose }: RulesModalProps) {
         className="pp-modal-panel max-w-md"
         onMouseDown={(e) => e.stopPropagation()}
       >
+        <div className="pp-bottom-sheet-handle" aria-hidden />
         <div className="pp-modal-header">
           <div className="min-w-0">
             <p className="pp-kicker">Règles</p>
@@ -64,7 +65,7 @@ export function RulesModal({ open, onClose }: RulesModalProps) {
           </button>
         </div>
 
-        <div className="px-4 py-5">
+        <div className="pp-allow-select min-h-0 flex-1 overflow-y-auto overscroll-y-contain px-4 py-5">
           <RulesSummaryBody />
         </div>
       </div>

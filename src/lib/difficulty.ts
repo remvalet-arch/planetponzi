@@ -10,6 +10,8 @@ export function getDeckScoreMultiplier(level: DeckChallengeLevel): number {
   switch (level) {
     case 0:
       return 1;
+    case 1:
+      return 1.12;
     case 2:
       return 1.25;
     case 3:
@@ -30,6 +32,8 @@ export function getDeckChallengeTitle(level: DeckChallengeLevel): string {
   switch (level) {
     case 0:
       return "Transparent";
+    case 1:
+      return "1 inconnue";
     case 2:
       return "2 inconnues";
     case 3:
@@ -44,6 +48,5 @@ export function getDeckChallengeTitle(level: DeckChallengeLevel): string {
 export function coerceDeckChallengeLevel(value: unknown): DeckChallengeLevel {
   const n = typeof value === "number" ? value : Number(value);
   if (ALLOWED_LEVELS.has(n)) return n as DeckChallengeLevel;
-  if (n === 1) return 2;
   return 0;
 }
