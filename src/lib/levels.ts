@@ -143,14 +143,18 @@ export type LevelDefinition = {
 export const LEVEL_COUNT = 100;
 
 /**
- * Seuils d’étoiles (playtest) : index `i` = niveau − 1 (0…99 pour 100 niveaux).
- * 1★ : 35 → ~44 ; 2★ : 50 → ~62 ; 3★ : 60 → ~79.
+ * Seuils d’étoiles : rampe douce 1–10 (sans multiplicateur), puis linéaire jusqu’au dernier niveau (cibles 45/60/80).
  */
-function starThresholdsForIndex(i: number): LevelStarThresholds {
+function starThresholdsForLevelId(levelId: number, count: number): LevelStarThresholds {
+  if (levelId <= 10) {
+    return { one: 15, two: 25, three: 38 };
+  }
+  const denom = Math.max(1, count - 11);
+  const t = (levelId - 11) / denom;
   return {
-    one: Math.floor(35 + i / 10),
-    two: Math.floor(50 + i / 8),
-    three: Math.floor(60 + i / 5),
+    one: Math.round(15 + t * (45 - 15)),
+    two: Math.round(25 + t * (60 - 25)),
+    three: Math.round(38 + t * (80 - 38)),
   };
 }
 
@@ -179,7 +183,7 @@ export function generateLevels(count: number): LevelDefinition[] {
       id,
       planetId,
       seed: `pp-lvl-${String(id).padStart(4, "0")}-v1`,
-      stars: starThresholdsForIndex(i),
+      stars: starThresholdsForLevelId(id, count),
       deckChallengeLevel: deckChallengeForLevel(id),
       position: { x, y },
     });

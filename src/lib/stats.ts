@@ -1,6 +1,9 @@
 import { getDeckChallengeTitle } from "@/src/lib/difficulty";
+import { getOrCreateDeviceId } from "@/src/lib/device-id";
+import { calculateStars } from "@/src/lib/levels";
 import { getLocalDateSeed } from "@/src/lib/rng";
-import type { DeckChallengeLevel } from "@/src/types/game";
+import { syncGameCompletionToApi } from "@/src/lib/sync-game-completion-to-api";
+import type { BuildingType, Cell, DeckChallengeLevel } from "@/src/types/game";
 import { DECK_CHALLENGE_LEVELS } from "@/src/types/game";
 
 /** Ancien compteur global (avant stats par difficulté). */
@@ -142,9 +145,13 @@ export function recordGameCompletion(input: {
   score: number;
   deckChallengeLevel: DeckChallengeLevel;
   levelId: number;
+  /** Si fourni avec la grille et la séquence, envoi best-effort vers Supabase (API route). */
+  grid?: Cell[];
+  placementSequence?: BuildingType[];
+  seed?: string;
 }): void {
   if (typeof window === "undefined") return;
-  const { score, deckChallengeLevel, levelId } = input;
+  const { score, deckChallengeLevel, levelId, grid, placementSequence, seed } = input;
   if (!Number.isFinite(levelId) || levelId < 1) return;
 
   const stats = readStats();
@@ -162,6 +169,26 @@ export function recordGameCompletion(input: {
   const legacy = getLegacyCounterRaw();
   if (legacy > 0) {
     window.localStorage.removeItem(GAMES_COMPLETED_KEY);
+  }
+
+  if (
+    grid &&
+    placementSequence &&
+    grid.length === 16 &&
+    placementSequence.length === 16
+  ) {
+    const stars = calculateStars(score, levelId);
+    syncGameCompletionToApi({
+      levelId,
+      stars,
+      score,
+      deckChallengeLevel,
+      puzzleDate: getLocalDateSeed(),
+      deviceId: getOrCreateDeviceId(),
+      seed: typeof seed === "string" ? seed : "",
+      grid,
+      placementSequence,
+    });
   }
 }
 

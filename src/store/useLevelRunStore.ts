@@ -284,6 +284,9 @@ export const useLevelRunStore = create<LevelRunStore>()(
             score: nextScore,
             deckChallengeLevel: state.deckChallengeLevel,
             levelId: state.levelId,
+            grid: nextGrid,
+            placementSequence: state.placementSequence,
+            seed: state.seed,
           });
         }
       },

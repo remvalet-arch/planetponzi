@@ -14,6 +14,8 @@ export type ProgressStore = {
   /**
    * Fin de partie : meilleur score / étoiles, débloque le niveau suivant si au moins 1★.
    * Idempotent si les valeurs ne sont pas meilleures que l’existant.
+   * La persistance serveur (`game_completions`) est déclenchée dans `recordGameCompletion`
+   * au moment où la grille est complète (données grille + séquence disponibles).
    */
   commitLevelResult: (levelId: number, stars: StarsCount, score: number) => void;
   /** Remet la progression Saga locale à zéro (niveau 1 seulement débloqué). */
