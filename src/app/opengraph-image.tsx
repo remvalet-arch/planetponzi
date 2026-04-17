@@ -1,6 +1,7 @@
 import { ImageResponse } from "next/og";
 
-export const runtime = "edge";
+/** Node.js : le bundle @vercel/og + Satori dépasse la limite Edge (1 Mo) sur Vercel Hobby. */
+export const runtime = "nodejs";
 
 export const alt = "Planet Ponzi Saga — puzzle spatial";
 export const size = { width: 1200, height: 630 };
