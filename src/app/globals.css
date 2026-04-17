@@ -66,16 +66,23 @@
 
 html {
   height: 100%;
-  overscroll-behavior-y: none;
+  min-height: 100vh;
+  min-height: 100dvh;
+  overflow: hidden;
+  overscroll-behavior: none;
 }
 
 body {
+  height: 100%;
+  min-height: 100vh;
+  max-height: 100dvh;
+  overflow: hidden;
+  overscroll-behavior: none;
   font-family: var(--font-geist-sans), system-ui, sans-serif;
   -webkit-tap-highlight-color: transparent;
   user-select: none;
   -webkit-user-select: none;
   touch-action: manipulation;
-  overscroll-behavior-y: none;
 }
 
 /* Sélection autorisée (champs, modales « lisez-moi ») */
@@ -103,12 +110,12 @@ textarea,
   }
 
   .pp-modal-backdrop {
-    @apply fixed inset-0 z-[110] flex items-end justify-center bg-slate-900/45 p-0 backdrop-blur-[2px];
+    @apply fixed inset-0 z-[290] flex items-end justify-center overscroll-none bg-slate-900/45 p-0 backdrop-blur-[2px];
     padding-bottom: env(safe-area-inset-bottom);
   }
 
   .pp-modal-panel {
-    @apply flex max-h-[min(90dvh,720px)] w-full flex-col overflow-hidden border-t border-x border-pp-border-strong bg-pp-surface shadow-2xl;
+    @apply flex max-h-[min(90dvh,720px)] w-full flex-col overflow-hidden overscroll-contain border-t border-x border-pp-border-strong bg-pp-surface shadow-2xl;
     @apply rounded-t-[1.35rem] rounded-b-none;
     box-shadow: var(--pp-shadow-modal);
   }
@@ -153,7 +160,7 @@ textarea,
   }
 
   .pp-mandate-strip {
-    @apply sticky bottom-0 z-40 border-t border-pp-border bg-pp-surface/95 px-4 py-4 pb-[max(1rem,env(safe-area-inset-bottom))] backdrop-blur-md;
+    @apply shrink-0 border-t border-pp-border bg-pp-surface/95 px-4 py-4 pb-[max(1rem,env(safe-area-inset-bottom))] backdrop-blur-md;
   }
 
   .pp-mandate-strip-inner {
@@ -162,12 +169,12 @@ textarea,
   }
 
   .pp-end-backdrop {
-    @apply fixed inset-0 z-[55] flex items-end justify-center bg-slate-900/45 p-0 backdrop-blur-[2px];
+    @apply fixed inset-0 z-[280] flex items-end justify-center overscroll-none bg-slate-900/45 p-0 backdrop-blur-[2px];
     padding-bottom: env(safe-area-inset-bottom);
   }
 
   .pp-end-panel {
-    @apply relative flex max-h-[min(92dvh,720px)] w-full flex-col overflow-hidden rounded-t-[1.35rem] border-t border-x border-pp-border-strong bg-pp-surface shadow-2xl;
+    @apply relative flex max-h-[min(92dvh,720px)] w-full flex-col overflow-hidden overscroll-contain rounded-t-[1.35rem] border-t border-x border-pp-border-strong bg-pp-surface shadow-2xl;
     box-shadow: var(--pp-shadow-modal);
   }
 

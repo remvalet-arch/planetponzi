@@ -14,7 +14,7 @@ export function Grid() {
 
   return (
     <div
-      className={`pp-game-grid-panel mx-auto w-full max-w-sm transition-[box-shadow] duration-200 ${
+      className={`pp-game-grid-panel mx-auto flex aspect-square w-full max-h-full min-h-0 min-w-0 max-w-[400px] flex-col transition-[box-shadow] duration-200 ${
         demolitionMode
           ? "cursor-crosshair shadow-[0_0_0_2px_rgb(244_63_94/0.45),0_0_28px_rgb(244_63_94/0.2)]"
           : ""
@@ -22,7 +22,7 @@ export function Grid() {
       role="grid"
       aria-label={demolitionMode ? "Grille — mode démolition" : "Grille de placement 4 par 4"}
     >
-      <div className="grid grid-cols-4 gap-2">
+      <div className="grid min-h-0 min-w-0 flex-1 grid-cols-4 grid-rows-4 gap-2">
         {grid.map((cell) => {
           const canPlace = status === "playing" && !demolitionMode && cell.building === null;
           const canDemolish =

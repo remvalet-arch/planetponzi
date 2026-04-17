@@ -74,7 +74,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="fr" className={`${geistSans.variable} ${geistMono.variable} h-full`}>
-      <body className="flex min-h-dvh justify-center bg-slate-950 text-slate-200 antialiased">
+      <body className="flex h-full min-h-0 justify-center overflow-hidden overscroll-none bg-slate-950 text-slate-200 antialiased">
         <main
           className="relative mx-auto flex h-[100dvh] w-full max-w-md flex-col overflow-hidden bg-pp-bg text-pp-text shadow-2xl [transform:translateZ(0)]"
           id="pp-game-shell"

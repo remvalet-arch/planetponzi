@@ -4,7 +4,7 @@ import { useCallback } from "react";
 
 import { BottomSheetShell } from "@/src/components/ui/BottomSheetShell";
 import { useAppStrings } from "@/src/lib/i18n/useAppStrings";
-import { useProgressStore } from "@/src/store/useProgressStore";
+import { useEconomyStore } from "@/src/store/useEconomyStore";
 
 type DailyBonusModalProps = {
   open: boolean;
@@ -13,7 +13,7 @@ type DailyBonusModalProps = {
 
 export function DailyBonusModal({ open, onClose }: DailyBonusModalProps) {
   const { t } = useAppStrings();
-  const claimDailyBonus = useProgressStore((s) => s.claimDailyBonus);
+  const claimDailyBonus = useEconomyStore((s) => s.claimDailyBonus);
 
   const handleClaim = useCallback(() => {
     claimDailyBonus();

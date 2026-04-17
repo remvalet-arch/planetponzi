@@ -4,7 +4,6 @@ import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
 
 import { LEVELS } from "@/src/lib/levels";
-import { getLocalDateSeed } from "@/src/lib/rng";
 import { DEFAULT_BOOSTERS, type BoosterType } from "@/src/types/boosters";
 
 export type StarsCount = 0 | 1 | 2 | 3;
@@ -24,8 +23,6 @@ export type ProgressStore = {
   playerId: string | null;
   /** Pseudo affiché (null tant que le joueur ne l’a pas choisi). */
   pseudo: string | null;
-  /** Dernier jour (YYYY-MM-DD local) où le bonus quotidien a été encaissé. */
-  lastBonusDate: string | null;
   /** Dernier niveau gagné (≥1★) — pour animer le CEO sur la carte ; consommé après l’anim. */
   lastCompletedLevelId: number | null;
   /**
@@ -41,8 +38,6 @@ export type ProgressStore = {
   addBoosters: (type: BoosterType, amount: number) => void;
   clearLastCompletedLevel: () => void;
   setPseudo: (pseudo: string) => void;
-  /** Bonus carte : +1 démolition, +1 espion ; fixe `lastBonusDate` au jour local courant. */
-  claimDailyBonus: () => void;
 };
 
 const defaultUnlocked = (): number[] => [1];
@@ -71,7 +66,6 @@ export const useProgressStore = create<ProgressStore>()(
       boosters: defaultBoosters(),
       playerId: null,
       pseudo: null,
-      lastBonusDate: null,
       lastCompletedLevelId: null,
 
       clearLastCompletedLevel: () => set({ lastCompletedLevelId: null }),
@@ -80,18 +74,6 @@ export const useProgressStore = create<ProgressStore>()(
         const t = raw.trim().slice(0, 15);
         if (!t) return;
         set({ pseudo: t });
-      },
-
-      claimDailyBonus: () => {
-        const today = getLocalDateSeed();
-        set((s) => ({
-          boosters: {
-            ...s.boosters,
-            demolition: s.boosters.demolition + 1,
-            spy: s.boosters.spy + 1,
-          },
-          lastBonusDate: today,
-        }));
       },
 
       resetCareer: () => {
@@ -103,7 +85,6 @@ export const useProgressStore = create<ProgressStore>()(
           lastCompletedLevelId: null,
           playerId: s.playerId,
           pseudo: s.pseudo,
-          lastBonusDate: s.lastBonusDate,
         }));
       },
 
@@ -152,7 +133,7 @@ export const useProgressStore = create<ProgressStore>()(
     }),
     {
       name: "planet-ponzi-progress",
-      version: 7,
+      version: 8,
       storage: createJSONStorage(() => localStorage),
       partialize: (state) => ({
         unlockedLevels: state.unlockedLevels,
@@ -162,7 +143,6 @@ export const useProgressStore = create<ProgressStore>()(
         lastCompletedLevelId: state.lastCompletedLevelId,
         playerId: state.playerId,
         pseudo: state.pseudo,
-        lastBonusDate: state.lastBonusDate,
       }),
       migrate: (persisted, fromVersion) => {
         let base = (persisted ?? {}) as Record<string, unknown>;
@@ -214,6 +194,21 @@ export const useProgressStore = create<ProgressStore>()(
             lastBonusDate:
               typeof lbd === "string" && /^\d{4}-\d{2}-\d{2}$/.test(lbd) ? lbd : null,
           };
+        }
+        if (fromVersion < 8) {
+          const lbd = base.lastBonusDate;
+          if (
+            typeof window !== "undefined" &&
+            typeof lbd === "string" &&
+            /^\d{4}-\d{2}-\d{2}$/.test(lbd)
+          ) {
+            try {
+              localStorage.setItem("pp-pending-lastBonus-for-economy", lbd);
+            } catch {
+              /* ignore */
+            }
+          }
+          delete (base as { lastBonusDate?: unknown }).lastBonusDate;
         }
         return base;
       },

@@ -8,6 +8,7 @@ import { EndScreen } from "@/src/components/game/EndScreen";
 import { Grid } from "@/src/components/game/Grid";
 import { Manifest } from "@/src/components/game/Manifest";
 import { AppHeader } from "@/src/components/layout/AppHeader";
+import { NoEnergyModal } from "@/src/components/game/NoEnergyModal";
 import { GameEntryFlow } from "@/src/components/onboarding/GameEntryFlow";
 import { RulesModal, hasSeenRulesFirstVisit, markRulesFirstVisitDone } from "@/src/components/ui/RulesModal";
 import { StatsModal } from "@/src/components/ui/StatsModal";
@@ -15,6 +16,7 @@ import { Toast } from "@/src/components/ui/Toast";
 import { getLevelById } from "@/src/lib/levels";
 import { hasCompletedTutorial, markTutorialCompleted } from "@/src/lib/onboarding-flags";
 import { getBuildingTheme } from "@/src/lib/ui-helpers";
+import { useEconomyStore } from "@/src/store/useEconomyStore";
 import { useLevelRunStore } from "@/src/store/useLevelRunStore";
 import { useProgressStore } from "@/src/store/useProgressStore";
 
@@ -36,17 +38,24 @@ export default function LevelPage() {
   const status = useLevelRunStore((s) => s.status);
   const turn = useLevelRunStore((s) => s.turn);
   const placementSequence = useLevelRunStore((s) => s.placementSequence);
+  const lives = useEconomyStore((s) => s.lives);
 
   const [rulesOpen, setRulesOpen] = useState(false);
   const [statsOpen, setStatsOpen] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [persistReady, setPersistReady] = useState(false);
+  const [noEnergyOpen, setNoEnergyOpen] = useState(false);
 
   useEffect(() => {
     const bump = () => {
-      if (!useLevelRunStore.persist.hasHydrated() || !useProgressStore.persist.hasHydrated()) {
+      if (
+        !useLevelRunStore.persist.hasHydrated() ||
+        !useProgressStore.persist.hasHydrated() ||
+        !useEconomyStore.persist.hasHydrated()
+      ) {
         return;
       }
+      useEconomyStore.getState().checkLifeRecharge();
       setPersistReady(true);
       if (!levelValid) return;
       const unlocked = useProgressStore.getState().unlockedLevels;
@@ -54,6 +63,12 @@ export default function LevelPage() {
         router.replace("/map");
         return;
       }
+      const currentLives = useEconomyStore.getState().lives;
+      if (currentLives <= 0) {
+        setNoEnergyOpen(true);
+        return;
+      }
+      setNoEnergyOpen(false);
       const s = useLevelRunStore.getState();
       const shouldEnter =
         s.levelId !== id || s.status === "finished" || s.levelId === 0;
@@ -64,13 +79,15 @@ export default function LevelPage() {
 
     const unsubRun = useLevelRunStore.persist.onFinishHydration(bump);
     const unsubProg = useProgressStore.persist.onFinishHydration(bump);
+    const unsubEco = useEconomyStore.persist.onFinishHydration(bump);
     bump();
 
     return () => {
       unsubRun();
       unsubProg();
+      unsubEco();
     };
-  }, [id, levelValid, router]);
+  }, [id, levelValid, router, lives]);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -99,7 +116,7 @@ export default function LevelPage() {
   }
 
   return (
-    <div className="relative flex min-h-0 flex-1 flex-col bg-pp-bg text-pp-text">
+    <div className="relative flex h-full min-h-0 max-h-[100dvh] flex-1 flex-col overflow-hidden bg-pp-bg text-pp-text">
       {!persistReady ? (
         <div className="pp-loading-screen" role="status" aria-live="polite" aria-busy="true">
           <p className="pp-kicker opacity-90">Chargement du mandat</p>
@@ -116,50 +133,64 @@ export default function LevelPage() {
         onRestartLevel={() =>
           setToastMessage("Grille réinitialisée — même manifeste et même ordre de placement.")
         }
+        onNavigateToMap={() => {
+          useLevelRunStore.getState().quitGame();
+          router.push("/map");
+        }}
       />
 
-      {persistReady && deckUnlocked ? (
-        <main className="relative flex min-h-0 flex-1 flex-col items-center justify-center gap-6 overflow-y-auto px-4 py-6">
-          <div className="flex w-full max-w-lg flex-col items-stretch gap-3 sm:flex-row sm:items-start sm:justify-center">
-            <div className="min-w-0 flex-1 sm:max-w-sm">
+      {persistReady && deckUnlocked && !noEnergyOpen ? (
+        <main className="relative flex min-h-0 flex-1 flex-col overflow-hidden">
+          <div className="flex w-full shrink-0 flex-col gap-2 px-2 pt-2 md:flex-row md:items-start md:gap-4 md:px-3 md:pt-3">
+            <div className="min-w-0 shrink-0 md:w-64">
               <Manifest />
             </div>
             <BoostersBar />
           </div>
-          <Grid />
+
+          <div className="flex min-h-0 flex-1 items-center justify-center overflow-hidden p-2">
+            <Grid />
+          </div>
+
+          {status === "playing" && nextTheme && nextType ? (
+            <div className="pp-mandate-strip">
+              <div className="pp-mandate-strip-inner">
+                <div
+                  className={`flex size-14 shrink-0 items-center justify-center rounded-md text-3xl ${nextTheme.color}`}
+                >
+                  <span aria-hidden>{nextTheme.emoji}</span>
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="font-mono text-[10px] uppercase tracking-widest text-pp-text-dim">
+                    Mandat terrain
+                  </p>
+                  <p className="truncate text-sm font-semibold text-pp-text">
+                    Bâtiment à placer
+                  </p>
+                  <p className="truncate font-mono text-xs uppercase text-pp-text-muted">
+                    {nextType} · tour {turn + 1}/16
+                  </p>
+                </div>
+              </div>
+            </div>
+          ) : null}
         </main>
-      ) : persistReady ? (
+      ) : persistReady && !noEnergyOpen ? (
         <main
-          className="relative flex min-h-0 flex-1 flex-col items-center justify-center px-4 py-8"
+          className="relative flex min-h-0 flex-1 flex-col items-center justify-center overflow-hidden px-4 py-8"
           aria-hidden
         />
       ) : null}
 
-      {persistReady && deckUnlocked && status === "playing" && nextTheme && nextType ? (
-        <div className="pp-mandate-strip">
-          <div className="pp-mandate-strip-inner">
-            <div
-              className={`flex size-14 shrink-0 items-center justify-center rounded-md text-3xl ${nextTheme.color}`}
-            >
-              <span aria-hidden>{nextTheme.emoji}</span>
-            </div>
-            <div className="min-w-0 flex-1">
-              <p className="font-mono text-[10px] uppercase tracking-widest text-pp-text-dim">
-                Mandat terrain
-              </p>
-              <p className="truncate text-sm font-semibold text-pp-text">
-                Bâtiment à placer
-              </p>
-              <p className="truncate font-mono text-xs uppercase text-pp-text-muted">
-                {nextType} · tour {turn + 1}/16
-              </p>
-            </div>
-          </div>
-        </div>
-      ) : null}
-
-      {persistReady ? <GameEntryFlow open={!deckUnlocked} /> : null}
+      {persistReady ? <GameEntryFlow open={!deckUnlocked && lives > 0} /> : null}
       {persistReady ? <EndScreen onShareFeedback={setToastMessage} /> : null}
+      <NoEnergyModal
+        open={noEnergyOpen}
+        onClose={() => {
+          setNoEnergyOpen(false);
+          router.push("/map");
+        }}
+      />
       <RulesModal open={rulesOpen} onClose={closeRules} />
       <StatsModal open={statsOpen} onClose={() => setStatsOpen(false)} />
       <Toast message={toastMessage} />

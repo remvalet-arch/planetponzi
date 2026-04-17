@@ -56,7 +56,7 @@ export function Manifest() {
   const ambient = getManifestAmbientCopy(dailyInventory, deckChallengeLevel);
   return (
     <section
-      className="w-full max-w-sm rounded-pp-lg border border-pp-border-strong bg-pp-surface/90 px-3 py-2.5 shadow-lg backdrop-blur-sm"
+      className="w-full max-w-sm shrink-0 rounded-pp-lg border border-pp-border-strong bg-pp-surface/90 px-3 py-2.5 shadow-lg backdrop-blur-sm"
       aria-label="Manifeste de cargaison"
     >
       <div className="mb-2 flex items-start justify-between gap-2 border-b border-dotted border-pp-border pb-2">

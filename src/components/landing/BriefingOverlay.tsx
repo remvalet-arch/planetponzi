@@ -57,7 +57,7 @@ export function BriefingOverlay({ open, onComplete }: BriefingOverlayProps) {
       open={open}
       onClose={dismiss}
       closeOnBackdropPress={false}
-      backdropClassName="!z-[120]"
+      backdropClassName="!z-[288]"
       panelClassName="border-violet-500/35 bg-gradient-to-b from-slate-900 via-indigo-950 to-slate-950 text-pp-text shadow-[0_0_60px_rgb(124_58_237/0.35)]"
       handleClassName="bg-white/20"
     >

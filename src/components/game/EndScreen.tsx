@@ -3,12 +3,14 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import confetti from "canvas-confetti";
 import { motion } from "framer-motion";
 import { PanelBottomOpen, Share2, Star, X } from "lucide-react";
 
 import { vibrateVictoryStars } from "@/src/lib/haptics";
 import { calculateStars, LEVELS } from "@/src/lib/levels";
 import { copyShareToClipboard } from "@/src/lib/ui-helpers";
+import { useEconomyStore } from "@/src/store/useEconomyStore";
 import { useLevelRunStore } from "@/src/store/useLevelRunStore";
 import { useProgressStore } from "@/src/store/useProgressStore";
 
@@ -47,30 +49,52 @@ export function EndScreen({ onShareFeedback }: EndScreenProps) {
   const deckChallengeLevel = useLevelRunStore((s) => s.deckChallengeLevel);
   const enterLevel = useLevelRunStore((s) => s.enterLevel);
   const unlockedLevels = useProgressStore((s) => s.unlockedLevels);
-  const commitLevelResult = useProgressStore((s) => s.commitLevelResult);
 
   const [shareLabel, setShareLabel] = useState<"idle" | "copied" | "error">("idle");
   const [minimized, setMinimized] = useState(false);
   const [showVictoryExitBar, setShowVictoryExitBar] = useState(false);
-  const committedRef = useRef(false);
   const victoryVibrateRef = useRef(false);
   const skipAutoMapRef = useRef(false);
+  const confettiPlayedRef = useRef<string | null>(null);
 
   useEffect(() => {
     if (status !== "finished") {
-      committedRef.current = false;
+      confettiPlayedRef.current = null;
       skipAutoMapRef.current = false;
+      victoryVibrateRef.current = false;
       setShowVictoryExitBar(false);
       queueMicrotask(() => setMinimized(false));
     }
   }, [status]);
 
   useEffect(() => {
-    if (status !== "finished" || levelId < 1 || committedRef.current) return;
-    committedRef.current = true;
-    const stars = calculateStars(score, levelId);
-    commitLevelResult(levelId, stars, score);
-  }, [status, levelId, score, commitLevelResult]);
+    if (status !== "finished" || levelId < 1 || minimized) return;
+    if (calculateStars(score, levelId) !== 3) return;
+    const runKey = `${seed}|${levelId}|${score}`;
+    if (confettiPlayedRef.current === runKey) return;
+    confettiPlayedRef.current = runKey;
+    const burst = () => {
+      confetti({
+        particleCount: 320,
+        spread: 360,
+        startVelocity: 42,
+        ticks: 220,
+        scalar: 1.05,
+        origin: { x: 0.5, y: 0.42 },
+      });
+      window.setTimeout(() => {
+        confetti({
+          particleCount: 160,
+          spread: 100,
+          startVelocity: 35,
+          origin: { x: 0.5, y: 0.5 },
+          colors: ["#fcd34d", "#fbbf24", "#22d3ee", "#a78bfa"],
+        });
+      }, 120);
+    };
+    const id = window.requestAnimationFrame(burst);
+    return () => window.cancelAnimationFrame(id);
+  }, [status, levelId, score, seed, minimized]);
 
   useEffect(() => {
     if (status !== "finished" || minimized) return;
@@ -126,6 +150,10 @@ export function EndScreen({ onShareFeedback }: EndScreenProps) {
   };
 
   const handleReplay = () => {
+    if (useEconomyStore.getState().lives <= 0) {
+      router.push("/shop");
+      return;
+    }
     enterLevel(levelId);
     setMinimized(false);
   };
@@ -145,7 +173,7 @@ export function EndScreen({ onShareFeedback }: EndScreenProps) {
 
   if (minimized) {
     return (
-      <div className="pointer-events-none fixed inset-x-0 bottom-[max(5.5rem,env(safe-area-inset-bottom)+4rem)] z-[45] flex justify-center px-4">
+      <div className="pointer-events-none fixed inset-x-0 bottom-[max(5.5rem,env(safe-area-inset-bottom)+4rem)] z-[285] flex justify-center px-4">
         <motion.button
           type="button"
           whileTap={{ scale: 0.92 }}

@@ -7,7 +7,7 @@ import { DailyBonusModal } from "@/src/components/map/DailyBonusModal";
 import { LevelMap } from "@/src/components/map/LevelMap";
 import { MapHeader } from "@/src/components/map/MapHeader";
 import { getLocalDateSeed } from "@/src/lib/rng";
-import { useProgressStore } from "@/src/store/useProgressStore";
+import { useEconomyStore } from "@/src/store/useEconomyStore";
 
 export default function MapPage() {
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -15,12 +15,13 @@ export default function MapPage() {
 
   useEffect(() => {
     const run = () => {
-      if (!useProgressStore.persist.hasHydrated()) return;
-      const { lastBonusDate } = useProgressStore.getState();
+      if (!useEconomyStore.persist.hasHydrated()) return;
+      useEconomyStore.getState().checkLifeRecharge();
+      const { lastBonusDate } = useEconomyStore.getState();
       const today = getLocalDateSeed();
       if (lastBonusDate !== today) setBonusOpen(true);
     };
-    const unsub = useProgressStore.persist.onFinishHydration(run);
+    const unsub = useEconomyStore.persist.onFinishHydration(run);
     run();
     return unsub;
   }, []);

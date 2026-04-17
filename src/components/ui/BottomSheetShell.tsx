@@ -29,7 +29,7 @@ export function BottomSheetShell({
   onClose,
   children,
   footer,
-  backdropClassName = "z-[110]",
+  backdropClassName = "",
   panelClassName = "",
   closeOnBackdropPress = true,
   showHandle = true,

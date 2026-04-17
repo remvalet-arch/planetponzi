@@ -1,3 +1,4 @@
+import { estimateMaxScore } from "@/src/lib/solver";
 import type { DeckChallengeLevel } from "@/src/types/game";
 
 /** Seuils de score final pour 1 / 2 / 3 étoiles (inclus). */
@@ -142,20 +143,18 @@ export type LevelDefinition = {
 /** Nombre de niveaux Saga générés (carte + progression). */
 export const LEVEL_COUNT = 100;
 
-/**
- * Seuils d’étoiles : rampe douce 1–10 (sans multiplicateur), puis linéaire jusqu’au dernier niveau (cibles 45/60/80).
- */
-function starThresholdsForLevelId(levelId: number, count: number): LevelStarThresholds {
-  if (levelId <= 10) {
-    return { one: 15, two: 25, three: 38 };
-  }
-  const denom = Math.max(1, count - 11);
-  const t = (levelId - 11) / denom;
-  return {
-    one: Math.round(15 + t * (45 - 15)),
-    two: Math.round(25 + t * (60 - 25)),
-    three: Math.round(38 + t * (80 - 38)),
-  };
+/** Seuils dérivés du score max estimé (solver glouton + marges 35 % / 60 % / 85 %). */
+function dynamicStarThresholds(
+  cargoSeed: string,
+  deck: DeckChallengeLevel,
+): LevelStarThresholds {
+  const maxScore = estimateMaxScore(cargoSeed, deck);
+  let three = Math.floor(maxScore * 0.85);
+  let two = Math.floor(maxScore * 0.6);
+  const one = Math.max(15, Math.floor(maxScore * 0.35));
+  if (two <= one) two = one + 1;
+  if (three <= two) three = two + 1;
+  return { one, two, three };
 }
 
 /** Campagne : pas de mode 4 (réservé futur hardcore). */
@@ -179,12 +178,14 @@ export function generateLevels(count: number): LevelDefinition[] {
     const x = Math.min(92, Math.max(8, Math.round(xRaw * 10) / 10));
     const planetId = planetIdForLevel(id);
 
+    const seed = `pp-lvl-${String(id).padStart(4, "0")}-v1`;
+    const deckChallengeLevel = deckChallengeForLevel(id);
     out.push({
       id,
       planetId,
-      seed: `pp-lvl-${String(id).padStart(4, "0")}-v1`,
-      stars: starThresholdsForLevelId(id, count),
-      deckChallengeLevel: deckChallengeForLevel(id),
+      seed,
+      stars: dynamicStarThresholds(seed, deckChallengeLevel),
+      deckChallengeLevel,
       position: { x, y },
     });
   }

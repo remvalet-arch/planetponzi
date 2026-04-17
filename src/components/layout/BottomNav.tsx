@@ -2,12 +2,13 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { BarChart3, Coffee, Map, Trophy } from "lucide-react";
+import { BarChart3, Coffee, Map, ShoppingCart, Trophy } from "lucide-react";
 
 import { useAppStrings } from "@/src/lib/i18n/useAppStrings";
 
 const tabs = [
   { href: "/map", labelKey: "empire" as const, Icon: Map },
+  { href: "/shop", labelKey: "shop" as const, Icon: ShoppingCart },
   { href: "/leaderboard", labelKey: "leaderboard" as const, Icon: Trophy },
   { href: "/stats", labelKey: "bank" as const, Icon: BarChart3 },
   { href: "/support", labelKey: "support" as const, Icon: Coffee },

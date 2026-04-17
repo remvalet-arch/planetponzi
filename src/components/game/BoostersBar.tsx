@@ -73,8 +73,8 @@ export function BoostersBar() {
   const activeBooster = useLevelRunStore((s) => s.activeBooster);
   const status = useLevelRunStore((s) => s.status);
   const toggleBooster = useLevelRunStore((s) => s.toggleBooster);
-  const useSpyBooster = useLevelRunStore((s) => s.useSpyBooster);
-  const useLobbyingBooster = useLevelRunStore((s) => s.useLobbyingBooster);
+  const activateSpyBooster = useLevelRunStore((s) => s.activateSpyBooster);
+  const activateLobbyingBooster = useLevelRunStore((s) => s.activateLobbyingBooster);
 
   const playing = status === "playing";
   const demolitionActive = activeBooster === "demolition";
@@ -82,7 +82,7 @@ export function BoostersBar() {
 
   return (
     <aside
-      className="flex w-full max-h-[min(52vh,22rem)] shrink-0 flex-col overflow-y-auto rounded-pp-lg border border-pp-border-strong bg-pp-surface/90 px-3 py-2.5 shadow-lg backdrop-blur-sm sm:max-w-[11rem]"
+      className="flex w-full max-h-[min(30dvh,12rem)] shrink-0 flex-col overflow-y-auto overscroll-contain rounded-pp-lg border border-pp-border-strong bg-pp-surface/90 px-3 py-2.5 shadow-lg backdrop-blur-sm sm:max-h-[min(52vh,22rem)] sm:max-w-[11rem]"
       aria-label="Mallette CEO — boosters"
     >
       <p className="mb-2 shrink-0 font-mono text-[9px] uppercase tracking-[0.22em] text-pp-text-dim">
@@ -109,7 +109,7 @@ export function BoostersBar() {
           count={spy}
           disabled={!playing || spy <= 0}
           icon={<Eye className="size-4 text-violet-300" strokeWidth={2.25} aria-hidden />}
-          onClick={() => useSpyBooster()}
+          onClick={() => activateSpyBooster()}
           ariaLabel={`Espion industriel, ${spy} restant${spy > 1 ? "s" : ""}`}
         />
         <BoosterRow
@@ -118,7 +118,7 @@ export function BoostersBar() {
           count={lobbying}
           disabled={!playing || lobbying <= 0}
           icon={<Shuffle className="size-4 text-amber-300" strokeWidth={2.25} aria-hidden />}
-          onClick={() => useLobbyingBooster()}
+          onClick={() => activateLobbyingBooster()}
           ariaLabel={`Lobbying, ${lobbying} restant${lobbying > 1 ? "s" : ""}`}
         />
       </div>

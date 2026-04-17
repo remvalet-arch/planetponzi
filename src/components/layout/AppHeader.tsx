@@ -16,6 +16,8 @@ type AppHeaderProps = {
   onOpenRules: () => void;
   onOpenStats: () => void;
   onRestartLevel?: () => void;
+  /** Partie en cours : abandon + navigation (ex. vers /map). */
+  onNavigateToMap?: () => void;
 };
 
 export function AppHeader({
@@ -23,8 +25,10 @@ export function AppHeader({
   onOpenRules,
   onOpenStats,
   onRestartLevel,
+  onNavigateToMap,
 }: AppHeaderProps) {
   const score = useLevelRunStore((s) => s.score);
+  const status = useLevelRunStore((s) => s.status);
   const [menuOpen, setMenuOpen] = useState(false);
 
   useEffect(() => {
@@ -68,13 +72,17 @@ export function AppHeader({
             <p className="font-mono text-[9px] uppercase tracking-widest text-pp-text-dim sm:text-[10px]">
               Score
             </p>
-            <p
+            <motion.p
+              key={score}
+              initial={{ scale: 1 }}
+              animate={{ scale: [1, 1.2, 1] }}
+              transition={{ duration: 0.38, ease: [0.22, 1, 0.36, 1] }}
               className={`font-mono text-sm font-semibold tabular-nums sm:text-base ${
                 score >= 0 ? "text-pp-positive" : "text-pp-negative"
               }`}
             >
               {formatRoi(score)}
-            </p>
+            </motion.p>
           </div>
         </div>
       </header>
@@ -133,7 +141,13 @@ export function AppHeader({
                 href="/map"
                 whileTap={tap}
                 className="flex min-h-14 w-full items-center gap-3 rounded-pp-lg border border-pp-border-strong bg-pp-elevated/90 px-4 py-3 font-mono text-sm text-pp-text transition-colors hover:border-pp-gold/50 hover:bg-pp-surface"
-                onClick={() => setMenuOpen(false)}
+                onClick={(e) => {
+                  setMenuOpen(false);
+                  if (status === "playing" && onNavigateToMap) {
+                    e.preventDefault();
+                    onNavigateToMap();
+                  }
+                }}
               >
                 <Map className="size-5 shrink-0 text-pp-gold-dark" strokeWidth={2} />
                 Carte des niveaux

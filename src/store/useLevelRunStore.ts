@@ -8,7 +8,7 @@ import {
   getDeckScoreMultiplier,
 } from "@/src/lib/difficulty";
 import { vibratePlaceBuilding } from "@/src/lib/haptics";
-import { getLevelById } from "@/src/lib/levels";
+import { calculateStars, getLevelById } from "@/src/lib/levels";
 import { generatePlacementSequence, getDailyStats } from "@/src/lib/rng";
 import { calculateGridScore } from "@/src/lib/scoring";
 import { recordGameCompletion } from "@/src/lib/stats";
@@ -21,6 +21,7 @@ import type {
   GameState,
   GameStatus,
 } from "@/src/types/game";
+import { useEconomyStore } from "@/src/store/useEconomyStore";
 import { useProgressStore } from "@/src/store/useProgressStore";
 
 const PLACED_BUILDING_TYPES = new Set<string>([
@@ -99,14 +100,16 @@ export type LevelRunStore = {
   /** Tours restants avec aperçu 4 pièces (espion). */
   spyPreviewTurnsRemaining: number;
   enterLevel: (levelId: number) => void;
+  /** Verrouille le mandat du jour et passe en jeu (deck imposé par la définition Saga). */
   beginPlacement: () => void;
-  confirmDeckDifficulty: (level: DeckChallengeLevel) => void;
   placeBuilding: (cellIndex: number) => void;
   toggleBooster: (type: ActiveBooster) => void;
-  useSpyBooster: () => void;
-  useLobbyingBooster: () => void;
+  activateSpyBooster: () => void;
+  activateLobbyingBooster: () => void;
   resetBoard: () => void;
   restartCurrentLevel: () => void;
+  /** Abandon en cours de partie : −1 vie, reset mandat. Retourne `true` si une partie était en cours. */
+  quitGame: () => boolean;
   getSnapshot: () => GameState;
 };
 
@@ -243,7 +246,6 @@ export const useLevelRunStore = create<LevelRunStore>()(
         const placementSequence = generatePlacementSequence(def.seed);
         const dailyInventory = getDailyStats(placementSequence);
         const deckChallengeLevel = def.deckChallengeLevel ?? 0;
-        const autoStart = deckChallengeLevel === 0;
 
         set({
           levelId,
@@ -251,43 +253,28 @@ export const useLevelRunStore = create<LevelRunStore>()(
           placementSequence,
           dailyInventory,
           deckChallengeLevel,
-          deckChallengeLockedSeed: autoStart ? def.seed : null,
+          deckChallengeLockedSeed: null,
           grid: createEmptyGrid(),
           turn: 0,
           score: 0,
-          status: autoStart ? "playing" : "ready",
+          status: "ready",
           activeBooster: null,
           demolishFlash: null,
           demolishNonce: 0,
           spyPreviewTurnsRemaining: 0,
         });
-
-        if (autoStart) {
-          const base = calculateGridScore(get().grid);
-          set({
-            score: Math.round(base * getDeckScoreMultiplier(deckChallengeLevel)),
-          });
-        }
       },
 
       beginPlacement: () => {
-        const { status } = get();
-        if (status !== "ready") return;
-        set({ status: "playing" });
-      },
-
-      confirmDeckDifficulty: (level) => {
         const s = get();
+        if (s.status !== "ready") return;
         if (s.deckChallengeLockedSeed === s.seed) return;
         const base = calculateGridScore(s.grid);
         set({
-          deckChallengeLevel: level,
           deckChallengeLockedSeed: s.seed,
-          score: Math.round(base * getDeckScoreMultiplier(level)),
+          status: "playing",
+          score: Math.round(base * getDeckScoreMultiplier(s.deckChallengeLevel)),
         });
-        if (get().status === "ready") {
-          get().beginPlacement();
-        }
       },
 
       toggleBooster: (type) => {
@@ -304,7 +291,7 @@ export const useLevelRunStore = create<LevelRunStore>()(
         set({ activeBooster: "demolition" });
       },
 
-      useSpyBooster: () => {
+      activateSpyBooster: () => {
         const s = get();
         if (s.status !== "playing") return;
         if (s.turn >= 16) return;
@@ -314,7 +301,7 @@ export const useLevelRunStore = create<LevelRunStore>()(
         set({ spyPreviewTurnsRemaining: 3 });
       },
 
-      useLobbyingBooster: () => {
+      activateLobbyingBooster: () => {
         const s = get();
         if (s.status !== "playing") return;
         if (s.turn >= 16) return;
@@ -404,6 +391,13 @@ export const useLevelRunStore = create<LevelRunStore>()(
         });
 
         if (finished && state.levelId > 0) {
+          const stars = calculateStars(nextScore, state.levelId);
+          useProgressStore.getState().commitLevelResult(state.levelId, stars, nextScore);
+          if (stars > 0) {
+            useEconomyStore.getState().addCoins(stars * 10);
+          } else {
+            useEconomyStore.getState().consumeLife();
+          }
           recordGameCompletion({
             score: nextScore,
             deckChallengeLevel: state.deckChallengeLevel,
@@ -422,9 +416,11 @@ export const useLevelRunStore = create<LevelRunStore>()(
         if (!cargoSeed) return;
         const placementSequence = generatePlacementSequence(cargoSeed);
         const dailyInventory = getDailyStats(placementSequence);
+        const deckChallengeLevel = def?.deckChallengeLevel ?? get().deckChallengeLevel;
         set({
           placementSequence,
           dailyInventory,
+          deckChallengeLevel,
           grid: createEmptyGrid(),
           turn: 0,
           score: 0,
@@ -439,29 +435,14 @@ export const useLevelRunStore = create<LevelRunStore>()(
 
       restartCurrentLevel: () => {
         get().resetBoard();
+      },
+
+      quitGame: () => {
         const s = get();
-        const autoStart = s.deckChallengeLevel === 0;
-        if (autoStart) {
-          set({
-            deckChallengeLockedSeed: s.seed,
-            status: "playing",
-            score: Math.round(calculateGridScore(s.grid) * getDeckScoreMultiplier(s.deckChallengeLevel)),
-            activeBooster: null,
-            demolishFlash: null,
-            demolishNonce: 0,
-            spyPreviewTurnsRemaining: 0,
-          });
-        } else {
-          set({
-            deckChallengeLockedSeed: null,
-            status: "ready",
-            score: 0,
-            activeBooster: null,
-            demolishFlash: null,
-            demolishNonce: 0,
-            spyPreviewTurnsRemaining: 0,
-          });
-        }
+        if (s.status !== "playing") return false;
+        useEconomyStore.getState().consumeLife();
+        get().resetBoard();
+        return true;
       },
 
       getSnapshot: () => {
