@@ -110,7 +110,7 @@ export default function EmpirePage() {
       </header>
 
       <div className="mx-auto flex min-h-0 w-full max-w-lg flex-1 flex-col overflow-y-auto overscroll-y-contain px-3 py-4 pb-[calc(5.5rem+env(safe-area-inset-bottom))]">
-        <div className="flex min-h-0 flex-col gap-4 pb-16">
+        <div className="flex w-full shrink-0 flex-col gap-6 pb-16">
           {floorsAsc.map((floor, i) => {
             const owned = Boolean(unlockedNodes[floor.id]);
             const unlockable = canUnlock(floor.id);
@@ -123,7 +123,7 @@ export default function EmpirePage() {
                 initial={{ opacity: 0, y: 16 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.04 * i, duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
-                className={`relative h-auto min-h-0 overflow-visible rounded-2xl border p-4 shadow-lg ${
+                className={`relative flex h-auto min-h-min shrink-0 flex-col overflow-visible rounded-2xl border p-4 shadow-lg ${
                   owned
                     ? "border-emerald-500/40 bg-emerald-950/35"
                     : "border-violet-500/35 bg-slate-900/70 backdrop-blur-sm"
@@ -137,18 +137,18 @@ export default function EmpirePage() {
                   <span className="shrink-0 text-3xl leading-none" aria-hidden>
                     {floor.emoji}
                   </span>
-                  <div className="min-w-0 flex-1">
+                  <div className="flex min-w-0 flex-1 flex-col gap-2">
                     <h2 className="font-mono text-sm font-bold text-white">{floor.name}</h2>
-                    <p className="mt-2 whitespace-normal break-words text-left text-sm font-mono leading-relaxed text-slate-400">
+                    <p className="whitespace-normal break-words text-left text-sm font-mono leading-relaxed text-slate-400">
                       {floor.description}
                     </p>
-                    <p className="mt-3 font-mono text-[10px] uppercase tracking-widest text-violet-300/90">
+                    <p className="font-mono text-[10px] uppercase tracking-widest text-violet-300/90">
                       {owned ? t.empirePage.purchased : blocked ? t.empirePage.locked : t.empirePage.buyFor}
                     </p>
                   </div>
                 </div>
                 {!owned ? (
-                  <div className="mt-4">
+                  <div className="mt-4 shrink-0">
                     {blocked ? (
                       <p className="flex items-center gap-2 font-mono text-xs text-amber-200/90">
                         <Lock className="size-4 shrink-0" strokeWidth={2} aria-hidden />
@@ -172,7 +172,7 @@ export default function EmpirePage() {
             );
           })}
 
-          <section className="mt-2 rounded-2xl border border-rose-500/30 bg-slate-950/60 p-4 shadow-lg backdrop-blur-sm">
+          <section className="mt-2 shrink-0 rounded-2xl border border-rose-500/30 bg-slate-950/60 p-4 shadow-lg backdrop-blur-sm">
             <p className="font-mono text-[10px] font-bold uppercase tracking-[0.2em] text-rose-200/90">
               {t.empirePage.prestigeKicker}
             </p>
