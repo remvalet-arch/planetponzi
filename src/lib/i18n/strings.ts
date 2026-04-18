@@ -68,6 +68,10 @@ export const strings = {
       cta: "Lancer l'exploitation",
       ctaSub: "Jouer",
       loading: "Chargement du mandat…",
+      maxEstimatedLabel: "Rendement maximal estimé",
+      starCard1: "Seuil 1★",
+      starCard2: "Seuil 2★",
+      starCard3: "Seuil 3★",
     },
     leaderboard: {
       empty: "Aucune donnée pour l’instant. Terminez des niveaux pour apparaître ici.",
@@ -91,6 +95,8 @@ export const strings = {
     endScreen: {
       insufficientTitle: "Rendement Insuffisant",
       insufficientBody: "Une vie a été déduite.",
+      optimalBanner: "RENDEMENT OPTIMAL ATTEINT !",
+      coinsEarned: (n: number) => `+${n} 💰`,
     },
     energy: {
       kicker: "Énergie",
@@ -172,6 +178,10 @@ export const strings = {
       cta: "Start extraction",
       ctaSub: "Play",
       loading: "Loading mandate…",
+      maxEstimatedLabel: "Estimated max yield",
+      starCard1: "1★ target",
+      starCard2: "2★ target",
+      starCard3: "3★ target",
     },
     leaderboard: {
       empty: "No entries yet. Finish levels to show up here.",
@@ -195,6 +205,8 @@ export const strings = {
     endScreen: {
       insufficientTitle: "Insufficient yield",
       insufficientBody: "A life was lost.",
+      optimalBanner: "OPTIMAL YIELD ACHIEVED!",
+      coinsEarned: (n: number) => `+${n} 💰`,
     },
     energy: {
       kicker: "Energy",

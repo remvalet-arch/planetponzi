@@ -131,22 +131,44 @@ export function LevelMap({ scrollParentRef }: LevelMapProps) {
     return () => el.removeEventListener("scroll", updateBgFromScroll);
   }, [scrollParentRef, updateBgFromScroll]);
 
+  const scrollCurrentLevelIntoView = useCallback(
+    (behavior: ScrollBehavior) => {
+      const root = scrollParentRef.current;
+      const node = root?.querySelector(`[data-pp-map-level="${currentLevel}"]`);
+      node?.scrollIntoView({ behavior, block: "center" });
+      updateBgFromScroll();
+    },
+    [currentLevel, scrollParentRef, updateBgFromScroll],
+  );
+
   useLayoutEffect(() => {
     let cancelled = false;
     const id = requestAnimationFrame(() => {
       requestAnimationFrame(() => {
         if (cancelled) return;
-        const root = scrollParentRef.current;
-        const node = root?.querySelector(`[data-pp-map-level="${currentLevel}"]`);
-        node?.scrollIntoView({ behavior: "smooth", block: "center" });
-        updateBgFromScroll();
+        scrollCurrentLevelIntoView("smooth");
       });
     });
     return () => {
       cancelled = true;
       cancelAnimationFrame(id);
     };
-  }, [currentLevel, scrollParentRef, updateBgFromScroll]);
+  }, [scrollCurrentLevelIntoView]);
+
+  /** Après hydratation Zustand, recentrer la carte (évite rester en tête de piste au premier rendu). */
+  useEffect(() => {
+    const bump = () => {
+      scrollCurrentLevelIntoView("smooth");
+      window.setTimeout(() => scrollCurrentLevelIntoView("smooth"), 320);
+    };
+    if (useProgressStore.persist.hasHydrated()) {
+      window.setTimeout(bump, 80);
+    }
+    const unsub = useProgressStore.persist.onFinishHydration(() => {
+      window.setTimeout(bump, 80);
+    });
+    return unsub;
+  }, [scrollCurrentLevelIntoView]);
 
   const pathD = orderedLevels.map((l) => `${l.position.x},${l.position.y}`).join(" ");
   const progressLevels = orderedLevels.filter((l) => l.id <= currentLevel);
@@ -294,21 +316,21 @@ export function LevelMap({ scrollParentRef }: LevelMapProps) {
         {sectorBanners.map(({ planet, first, title, subtitle, blurb }) => (
           <div
             key={planet.id}
-            className="pointer-events-none absolute z-[3] w-[min(92%,20rem)]"
+            className="pointer-events-none absolute z-[1] w-[min(88%,18rem)] max-w-[18rem]"
             style={{
               left: "50%",
               top: `${first.position.y}%`,
-              transform: "translate(-50%, calc(-100% - 0.75rem))",
+              transform: "translate(-50%, calc(-100% - 0.35rem))",
             }}
           >
-            <div className="rounded-2xl border border-white/20 bg-slate-950/75 px-3 py-2 text-center shadow-lg backdrop-blur-md">
-              <p className="font-mono text-[10px] font-bold uppercase tracking-[0.2em] text-cyan-200/95">
+            <div className="rounded-xl border border-cyan-500/25 bg-slate-950/55 px-2.5 py-1.5 text-center shadow-md backdrop-blur-sm">
+              <p className="font-mono text-[9px] font-bold uppercase tracking-[0.18em] text-cyan-200/95">
                 {title}
               </p>
               {planet.id > 0 ? (
-                <p className="mt-0.5 text-sm font-bold leading-tight text-white">{subtitle}</p>
+                <p className="mt-0.5 line-clamp-1 text-xs font-bold leading-tight text-white/95">{subtitle}</p>
               ) : null}
-              <p className="mt-1 font-mono text-[10px] leading-snug text-slate-300/90">{blurb}</p>
+              <p className="mt-0.5 line-clamp-2 font-mono text-[9px] leading-snug text-slate-300/85">{blurb}</p>
             </div>
           </div>
         ))}
@@ -370,7 +392,7 @@ export function LevelMap({ scrollParentRef }: LevelMapProps) {
             <div
               key={level.id}
               data-pp-map-level={level.id}
-              className="absolute z-[2]"
+              className="absolute z-[15]"
               style={{
                 left: `${x}%`,
                 top: `${y}%`,

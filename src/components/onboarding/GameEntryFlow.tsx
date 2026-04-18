@@ -1,17 +1,19 @@
 "use client";
 
-import { useCallback } from "react";
+import { useCallback, useMemo } from "react";
 import { motion } from "framer-motion";
+import { Sparkles, Star } from "lucide-react";
 
 import { BottomSheetShell } from "@/src/components/ui/BottomSheetShell";
 import { markRulesFirstVisitDone } from "@/src/components/ui/RulesModal";
 import { useAppStrings } from "@/src/lib/i18n/useAppStrings";
 import { getLevelById } from "@/src/lib/levels";
+import { estimateMaxScore } from "@/src/lib/solver";
 import { markTutorialCompleted } from "@/src/lib/onboarding-flags";
 import { useLevelRunStore } from "@/src/store/useLevelRunStore";
 
 const thumbPad =
-  "pb-[max(1rem,env(safe-area-inset-bottom))] pt-3 px-4 border-t border-pp-border-strong bg-pp-surface/95 backdrop-blur-sm";
+  "border-t border-cyan-500/25 bg-gradient-to-t from-slate-950 via-slate-950 to-indigo-950/90 pb-[max(1rem,env(safe-area-inset-bottom))] pt-3 px-4 backdrop-blur-md";
 
 type GameEntryFlowProps = {
   /** Afficher le flux (mandat prêt, exploitation pas encore lancée). */
@@ -31,6 +33,11 @@ export function GameEntryFlow({ open }: GameEntryFlowProps) {
   const sheetOpen = open && lockedSeed !== seed;
   const def = levelId > 0 ? getLevelById(levelId) : undefined;
 
+  const maxEstimated = useMemo(() => {
+    if (!def) return null;
+    return estimateMaxScore(def.seed, def.deckChallengeLevel ?? 0);
+  }, [def]);
+
   const handlePlay = useCallback(() => {
     markRulesFirstVisitDone();
     markTutorialCompleted();
@@ -41,13 +48,18 @@ export function GameEntryFlow({ open }: GameEntryFlowProps) {
     <div className={thumbPad}>
       <motion.button
         type="button"
-        whileTap={{ scale: 0.92 }}
+        whileTap={{ scale: 0.96 }}
         onClick={handlePlay}
         disabled={!def}
-        className="pp-tap-bounce flex min-h-14 w-full flex-col items-center justify-center gap-0.5 rounded-pp-xl border-2 border-pp-gold-dark/40 bg-gradient-to-r from-pp-gold via-amber-300 to-pp-gold px-4 font-mono text-sm font-bold text-amber-950 shadow-lg transition-[filter] hover:brightness-105 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-pp-accent/50 disabled:cursor-not-allowed disabled:opacity-50"
+        className="pp-tap-bounce relative flex min-h-14 w-full flex-col items-center justify-center gap-0.5 overflow-hidden rounded-pp-xl border-2 border-cyan-400/50 bg-gradient-to-r from-violet-600 via-fuchsia-600 to-cyan-500 px-4 font-mono text-sm font-bold text-white shadow-[0_0_28px_rgb(34_211_238/0.35)] transition-[filter] hover:brightness-110 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-300/70 disabled:cursor-not-allowed disabled:opacity-45"
       >
-        <span>{t.entryFlow.cta}</span>
-        <span className="text-[11px] font-semibold uppercase tracking-widest text-amber-900/90">
+        <motion.span
+          className="pointer-events-none absolute inset-0 bg-gradient-to-t from-white/20 to-transparent"
+          animate={{ opacity: [0.2, 0.45, 0.2] }}
+          transition={{ duration: 2.2, repeat: Number.POSITIVE_INFINITY, ease: "easeInOut" }}
+        />
+        <span className="relative">{t.entryFlow.cta}</span>
+        <span className="relative text-[11px] font-semibold uppercase tracking-widest text-cyan-100/90">
           {t.entryFlow.ctaSub}
         </span>
       </motion.button>
@@ -60,43 +72,84 @@ export function GameEntryFlow({ open }: GameEntryFlowProps) {
       onClose={() => {}}
       closeOnBackdropPress={false}
       backdropClassName="!z-[285]"
-      panelClassName="!max-h-[min(92dvh,720px)] flex flex-col overflow-hidden border-t border-pp-border-strong bg-pp-surface"
+      panelClassName="!max-h-[min(92dvh,720px)] flex flex-col overflow-hidden border-t border-x border-violet-500/35 bg-gradient-to-b from-slate-950 via-indigo-950 to-slate-950 text-slate-100 shadow-[0_0_48px_rgb(124_58_237/0.25)]"
       footer={footer}
+      handleClassName="bg-cyan-400/40"
     >
-      <div className="flex min-h-0 flex-1 flex-col overflow-y-auto overscroll-y-contain px-4 pb-4 pt-4">
-        <p className="font-mono text-[10px] uppercase tracking-widest text-pp-text-dim">
-          {t.entryFlow.mandate} · {seed || "—"}
-        </p>
+      <div className="flex min-h-0 flex-1 flex-col overflow-y-auto overscroll-y-contain px-4 pb-4 pt-5">
+        <div className="flex items-center gap-2">
+          <Sparkles className="size-4 shrink-0 text-cyan-300" strokeWidth={2} aria-hidden />
+          <p className="font-mono text-[10px] uppercase tracking-widest text-cyan-200/80">
+            {t.entryFlow.mandate} · <span className="text-violet-200/90">{seed || "—"}</span>
+          </p>
+        </div>
+
+        {maxEstimated != null ? (
+          <motion.div
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+            className="mt-4 rounded-xl border border-amber-400/35 bg-gradient-to-br from-amber-500/20 via-slate-900/80 to-violet-900/30 px-3 py-2.5 shadow-inner"
+          >
+            <p className="text-center font-mono text-[9px] font-bold uppercase tracking-[0.28em] text-amber-200/90">
+              🎯 {t.entryFlow.maxEstimatedLabel}
+            </p>
+            <p className="mt-1 text-center font-mono text-xl font-black tabular-nums tracking-tight text-amber-100">
+              {maxEstimated} <span className="text-sm font-bold text-amber-200/80">{t.entryFlow.ptsSuffix}</span>
+            </p>
+          </motion.div>
+        ) : null}
+
         <h2
           id="entry-flow-title"
-          className="mt-3 font-mono text-lg font-bold tracking-tight text-pp-text"
+          className="mt-5 font-mono text-lg font-bold tracking-tight text-white"
         >
           {t.entryFlow.objectives}
         </h2>
 
         {def ? (
-          <ul
-            className="mt-5 space-y-3 font-mono text-sm leading-relaxed text-pp-text"
+          <div
+            className="mt-4 grid grid-cols-1 gap-2.5 sm:grid-cols-3"
             aria-label={t.entryFlow.objectives}
           >
-            <li>
-              1★ ={" "}
-              <span className="font-bold tabular-nums text-amber-200">{def.stars.one}</span>{" "}
-              {t.entryFlow.ptsSuffix}
-            </li>
-            <li>
-              2★ ={" "}
-              <span className="font-bold tabular-nums text-amber-200">{def.stars.two}</span>{" "}
-              {t.entryFlow.ptsSuffix}
-            </li>
-            <li>
-              3★ ={" "}
-              <span className="font-bold tabular-nums text-amber-200">{def.stars.three}</span>{" "}
-              {t.entryFlow.ptsSuffix}
-            </li>
-          </ul>
+            {[
+              { k: "1" as const, label: t.entryFlow.starCard1, pts: def.stars.one, hue: "from-amber-500/25 to-slate-900/90 border-amber-400/40" },
+              { k: "2" as const, label: t.entryFlow.starCard2, pts: def.stars.two, hue: "from-cyan-500/20 to-slate-900/90 border-cyan-400/35" },
+              { k: "3" as const, label: t.entryFlow.starCard3, pts: def.stars.three, hue: "from-violet-500/25 to-slate-900/90 border-violet-400/40" },
+            ].map((row, i) => (
+              <motion.div
+                key={row.k}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.08 + i * 0.07, duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+                className={`relative overflow-hidden rounded-xl border bg-gradient-to-br ${row.hue} px-3 py-3 shadow-lg`}
+              >
+                <div className="flex items-center justify-between gap-2">
+                  <span className="font-mono text-[10px] font-bold uppercase tracking-wider text-slate-300">
+                    {row.label}
+                  </span>
+                  <Star className="size-4 shrink-0 fill-amber-400/90 text-amber-500" strokeWidth={1.5} aria-hidden />
+                </div>
+                <p className="mt-2 font-mono text-2xl font-black tabular-nums text-white">{row.pts}</p>
+                <p className="mt-0.5 font-mono text-[10px] uppercase tracking-widest text-slate-400">
+                  {t.entryFlow.ptsSuffix}
+                </p>
+                <div
+                  className="mt-2 h-1.5 overflow-hidden rounded-full bg-slate-800/80"
+                  aria-hidden
+                >
+                  <motion.div
+                    className="h-full rounded-full bg-gradient-to-r from-cyan-400 to-violet-400"
+                    initial={{ width: "0%" }}
+                    animate={{ width: `${Math.min(100, (row.pts / Math.max(def.stars.three, 1)) * 100)}%` }}
+                    transition={{ delay: 0.25 + i * 0.08, duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
+                  />
+                </div>
+              </motion.div>
+            ))}
+          </div>
         ) : (
-          <p className="mt-5 font-mono text-sm text-pp-text-muted">{t.entryFlow.loading}</p>
+          <p className="mt-5 font-mono text-sm text-slate-400">{t.entryFlow.loading}</p>
         )}
       </div>
     </BottomSheetShell>

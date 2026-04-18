@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import confetti from "canvas-confetti";
@@ -8,7 +8,8 @@ import { motion } from "framer-motion";
 import { PanelBottomOpen, Share2, Star, X } from "lucide-react";
 
 import { vibrateVictoryStars } from "@/src/lib/haptics";
-import { calculateStars, LEVELS } from "@/src/lib/levels";
+import { calculateStars, getLevelById, LEVELS } from "@/src/lib/levels";
+import { estimateMaxScore } from "@/src/lib/solver";
 import { useAppStrings } from "@/src/lib/i18n/useAppStrings";
 import { copyShareToClipboard } from "@/src/lib/ui-helpers";
 import { useEconomyStore } from "@/src/store/useEconomyStore";
@@ -129,9 +130,19 @@ export function EndScreen({ onShareFeedback }: EndScreenProps) {
     return () => window.clearTimeout(id);
   }, [status, minimized, score, levelId]);
 
+  const levelDef = useMemo(() => (levelId >= 1 ? getLevelById(levelId) : undefined), [levelId]);
+  const maxScoreEstimate = useMemo(() => {
+    if (!levelDef) return 0;
+    const deck = levelDef.deckChallengeLevel ?? 0;
+    return estimateMaxScore(levelDef.seed, deck);
+  }, [levelDef]);
+
   if (status !== "finished" || levelId < 1) return null;
 
   const earnedStars = calculateStars(score, levelId);
+  const isOptimalYield = maxScoreEstimate > 0 && score >= maxScoreEstimate;
+  const coinsEarnedThisRun = earnedStars > 1 ? earnedStars * 10 : 0;
+
   const nextId = levelId + 1;
   const hasNextLevel = LEVELS.some((l) => l.id === nextId);
   const nextUnlocked = hasNextLevel && unlockedLevels.includes(nextId);
@@ -254,6 +265,37 @@ export function EndScreen({ onShareFeedback }: EndScreenProps) {
               );
             })}
           </motion.div>
+
+          {isOptimalYield ? (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.92, y: 12 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              transition={{ type: "spring", stiffness: 380, damping: 22, delay: 0.35 }}
+              className="mt-6 flex justify-center px-1"
+            >
+              <div className="relative w-full max-w-md overflow-hidden rounded-2xl border-2 border-amber-400/70 bg-gradient-to-r from-amber-600/95 via-yellow-500/90 to-amber-500/95 px-4 py-3 text-center shadow-[0_0_32px_rgb(251_191_36/0.45)]">
+                <motion.div
+                  className="pointer-events-none absolute inset-0 bg-gradient-to-t from-white/25 to-transparent"
+                  animate={{ opacity: [0.35, 0.65, 0.35] }}
+                  transition={{ duration: 2.4, repeat: Number.POSITIVE_INFINITY, ease: "easeInOut" }}
+                />
+                <p className="relative font-mono text-sm font-black uppercase tracking-[0.12em] text-amber-950 drop-shadow-sm">
+                  🏆 {t.endScreen.optimalBanner}
+                </p>
+              </div>
+            </motion.div>
+          ) : null}
+
+          {earnedStars > 1 ? (
+            <motion.p
+              className="mt-5 text-center font-mono text-lg font-bold tabular-nums text-amber-200"
+              initial={{ opacity: 0, y: 22 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ type: "spring", stiffness: 420, damping: 24, delay: 0.28 }}
+            >
+              {t.endScreen.coinsEarned(coinsEarnedThisRun)}
+            </motion.p>
+          ) : null}
 
           {earnedStars <= 1 ? (
             <div
