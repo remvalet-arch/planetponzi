@@ -76,3 +76,27 @@ export function playEmpirePurchase(): void {
   beep(659, 0.1, "triangle", 0.09, base);
   beep(880, 0.14, "sine", 0.1, base + 0.08);
 }
+
+/**
+ * Fusion industrielle 2×2 : arpège ascendant + brillante finale (récompense « juice »).
+ */
+export function playMegaFusion(): void {
+  resumeAudio();
+  const c = getAudioContext();
+  if (!c) return;
+  let t = c.currentTime + 0.02;
+  const rung: [number, number, OscillatorType, number][] = [
+    [392, 0.1, "triangle", 0.085],
+    [493.88, 0.1, "triangle", 0.09],
+    [523.25, 0.11, "sine", 0.095],
+    [659.25, 0.12, "sine", 0.105],
+    [783.99, 0.13, "sine", 0.115],
+    [987.77, 0.14, "sine", 0.12],
+    [1174.66, 0.16, "triangle", 0.125],
+  ];
+  for (const [f, dur, type, gain] of rung) {
+    beep(f, dur, type, gain, t);
+    t += 0.072;
+  }
+  beep(1318.51, 0.32, "sine", 0.095, t + 0.04);
+}

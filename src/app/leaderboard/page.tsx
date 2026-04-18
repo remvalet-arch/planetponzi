@@ -4,8 +4,23 @@ import { useCallback, useEffect, useState } from "react";
 import { BottomNav } from "@/src/components/layout/BottomNav";
 import { HubShellBar } from "@/src/components/layout/HubShellBar";
 import { useAppStrings } from "@/src/lib/i18n/useAppStrings";
+import { getSupabaseBrowser } from "@/src/lib/supabase";
 import type { LeaderboardRow } from "@/src/types/leaderboard";
 import { useProgressStore } from "@/src/store/useProgressStore";
+
+/** Méritocratie côté client (alignée sur le RPC) si l’API renvoie un ordre inattendu. */
+function sortLeaderboardRows(rows: LeaderboardRow[]): LeaderboardRow[] {
+  const sorted = [...rows].sort((a, b) => {
+    const pr = (b.prestige_level ?? 0) - (a.prestige_level ?? 0);
+    if (pr !== 0) return pr;
+    const st = (b.total_stars ?? 0) - (a.total_stars ?? 0);
+    if (st !== 0) return st;
+    const mx = (b.max_score ?? 0) - (a.max_score ?? 0);
+    if (mx !== 0) return mx;
+    return String(a.player_key).localeCompare(String(b.player_key));
+  });
+  return sorted.map((row, i) => ({ ...row, rank: i + 1 }));
+}
 
 function rowSurfaceClasses(prestige: number, isYou: boolean): string {
   const p = Math.max(0, Math.floor(prestige));
@@ -46,8 +61,26 @@ function LeaderboardSkeleton() {
 export default function LeaderboardPage() {
   const { t } = useAppStrings();
   const playerId = useProgressStore((s) => s.playerId);
+  const [authUserId, setAuthUserId] = useState<string | null>(null);
   const [entries, setEntries] = useState<LeaderboardRow[] | null>(null);
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const sb = getSupabaseBrowser();
+    if (!sb) {
+      queueMicrotask(() => setAuthUserId(null));
+      return;
+    }
+    void sb.auth.getSession().then(({ data: { session } }) => {
+      setAuthUserId(session?.user?.id ?? null);
+    });
+    const {
+      data: { subscription },
+    } = sb.auth.onAuthStateChange((_event, session) => {
+      setAuthUserId(session?.user?.id ?? null);
+    });
+    return () => subscription.unsubscribe();
+  }, []);
 
   const load = useCallback(async () => {
     setError(null);
@@ -60,12 +93,12 @@ export default function LeaderboardPage() {
         setEntries([]);
         return;
       }
-      setEntries(
-        json.entries.map((e) => ({
-          ...e,
-          prestige_level: Number.isFinite(Number(e.prestige_level)) ? Number(e.prestige_level) : 0,
-        })),
-      );
+      const normalized = json.entries.map((e) => ({
+        ...e,
+        prestige_level: Number.isFinite(Number(e.prestige_level)) ? Number(e.prestige_level) : 0,
+        max_score: Number.isFinite(Number(e.max_score)) ? Math.max(0, Math.floor(Number(e.max_score))) : 0,
+      }));
+      setEntries(sortLeaderboardRows(normalized));
     } catch {
       setError(t.leaderboard.loadError);
       setEntries([]);
@@ -89,9 +122,15 @@ export default function LeaderboardPage() {
         ) : entries.length === 0 ? (
           <p className="px-4 py-8 text-center font-mono text-sm text-pp-text-muted">{t.leaderboard.empty}</p>
         ) : (
-          <ol className="flex flex-col gap-2 px-3 py-3 pb-16">
+          <>
+            <p className="px-4 pt-3 font-mono text-[10px] uppercase tracking-widest text-pp-text-dim">
+              {t.leaderboard.meritHint}
+            </p>
+            <ol className="flex flex-col gap-2 px-3 py-3 pb-16">
             {entries.map((row) => {
-              const isYou = Boolean(playerId && row.player_key === playerId);
+              const isYou = Boolean(
+                (playerId && row.player_key === playerId) || (authUserId && row.player_key === authUserId),
+              );
               const pl = Number.isFinite(row.prestige_level) ? Math.max(0, row.prestige_level) : 0;
               const tierEmoji = pl >= 5 ? "💎" : pl >= 3 ? "👑" : "";
               const ringYou =
@@ -122,18 +161,25 @@ export default function LeaderboardPage() {
                           {t.leaderboard.you}
                         </span>
                       ) : null}
-                      {pl >= 1 ? (
-                        <span className="shrink-0 rounded-md border border-amber-400/35 bg-amber-500/15 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-amber-100/95">
-                          {t.leaderboard.prestigeShort(pl)}
-                        </span>
-                      ) : null}
                     </div>
-                    <p className="whitespace-nowrap text-xs text-pp-text-muted">{row.total_stars} ★</p>
+                    <p className="whitespace-nowrap text-xs text-pp-text-muted">
+                      {pl > 0 ? (
+                        <>
+                          <span className="font-semibold text-amber-200/90">{t.leaderboard.prestigeShort(pl)}</span>
+                          <span className="text-pp-text-dim"> · </span>
+                        </>
+                      ) : null}
+                      {row.total_stars} ★
+                      <span className="text-pp-text-dim"> · </span>
+                      {t.leaderboard.maxScoreLabel}{" "}
+                      {Number(row.max_score ?? 0).toLocaleString()}
+                    </p>
                   </div>
                 </li>
               );
             })}
-          </ol>
+            </ol>
+          </>
         )}
       </div>
       <BottomNav />

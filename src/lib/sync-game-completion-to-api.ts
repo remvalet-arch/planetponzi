@@ -1,3 +1,4 @@
+import { getSupabaseBrowser } from "@/src/lib/supabase";
 import type { BuildingType } from "@/src/types/game";
 import type { Cell } from "@/src/types/game";
 
@@ -44,9 +45,19 @@ export function syncGameCompletionToApi(payload: SagaCompletionApiPayload): void
 
   void (async () => {
     try {
+      const headers: Record<string, string> = { "Content-Type": "application/json" };
+      const sb = getSupabaseBrowser();
+      if (sb) {
+        const {
+          data: { session },
+        } = await sb.auth.getSession();
+        if (session?.access_token) {
+          headers.Authorization = `Bearer ${session.access_token}`;
+        }
+      }
       const res = await fetch("/api/game-completions", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers,
         body: JSON.stringify(body),
       });
       if (!res.ok) {

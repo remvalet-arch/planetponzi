@@ -54,6 +54,8 @@ export type EconomyStore = {
   /** Retourne `false` si solde insuffisant (aucune dépense). */
   spendCoins: (amount: number) => boolean;
   consumeLife: () => void;
+  /** Ajoute des vies sans dépasser le plafond effectif (ex. bonus partage). */
+  addLives: (amount: number) => void;
   refillLives: () => void;
   claimDailyBonus: () => void;
   /** Prestige : solde à zéro + aligne les vies sur le nouveau plafond passif. */
@@ -115,6 +117,18 @@ export const useEconomyStore = create<EconomyStore>()(
           const next = s.lives - 1;
           const lastLifeRechargeTime =
             next < maxLives ? (s.lastLifeRechargeTime ?? Date.now()) : null;
+          return { ...s, lives: next, lastLifeRechargeTime };
+        });
+      },
+
+      addLives: (amount) => {
+        const n = Math.floor(amount);
+        if (!Number.isFinite(n) || n <= 0) return;
+        const maxLives = getEffectiveMaxLives();
+        set((s) => {
+          const next = Math.min(maxLives, s.lives + n);
+          const lastLifeRechargeTime =
+            next >= maxLives ? null : (s.lastLifeRechargeTime ?? Date.now());
           return { ...s, lives: next, lastLifeRechargeTime };
         });
       },

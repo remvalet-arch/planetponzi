@@ -39,6 +39,16 @@ export const strings = {
         "Accumulez plus d'étoiles dans ce secteur pour affronter le Boss !",
       starGateBadge: (n: number, cap: number) => `⭐ ${n} / ${cap}`,
     },
+    installPwa: {
+      bannerText: "Téléchargez Planet Ponzi pour jouer hors-ligne ! 🚀",
+      installCta: "Installer",
+      dismissAria: "Masquer pour cette session",
+      bannerAria: "Proposition d’installation de l’application",
+      iosModalTitle: "Sur l’écran d’accueil (iOS)",
+      iosModalBody:
+        "Touchez l’icône Partage ⬆️ en bas, puis « Sur l’écran d’accueil » pour ajouter Planet Ponzi comme une app.",
+      closeCta: "OK",
+    },
     nav: {
       map: "Carte",
       empire: "Tour",
@@ -57,6 +67,34 @@ export const strings = {
       resetCareer: "Réinitialiser ma carrière",
       resetConfirm: "Effacer toute la progression locale (niveaux, étoiles) ?",
       restartLevel: "Recommencer le niveau",
+    },
+    cloudSave: {
+      sectionTitle: "Sauvegarde Cloud",
+      sectionBody:
+        "Connectez-vous pour synchroniser niveaux, étoiles, prestige et économie entre appareils. Sans compte, la partie reste 100 % locale (invité).",
+      missingEnv:
+        "Supabase n’est pas configuré (URL / clé anon). Ajoutez NEXT_PUBLIC_SUPABASE_URL et NEXT_PUBLIC_SUPABASE_ANON_KEY.",
+      signedInAs: (email: string) => `Connecté : ${email}`,
+      signOut: "Se déconnecter",
+      emailLabel: "E-mail",
+      emailPlaceholder: "vous@exemple.com",
+      sendMagicLink: "Envoyer le lien magique",
+      magicLinkSent: "Vérifiez votre boîte mail : le lien arrive sous peu.",
+      googleCta: "Continuer avec Google",
+      orDivider: "ou",
+      errorGeneric: "Une erreur est survenue. Réessayez.",
+    },
+    ceoDisplayName: {
+      kicker: "Identité",
+      title: "Nom de PDG",
+      bodyAuth: "Ce nom apparaît sur le classement public lorsque vous êtes connecté.",
+      bodyGuest: "Pseudo stocké localement pour le classement (invité). Connectez-vous pour le lier au cloud.",
+      label: "Affichage",
+      placeholder: "Ex. LunaYield",
+      save: "Enregistrer",
+      saved: "Enregistré.",
+      error: "Impossible d’enregistrer.",
+      empty: "Entrez au moins un caractère.",
     },
     ceoContract: {
       kicker: "Identité",
@@ -134,6 +172,8 @@ export const strings = {
       you: "Vous",
       loadError: "Classement indisponible.",
       prestigeShort: (n: number) => `P${n}`,
+      maxScoreLabel: "Record",
+      meritHint: "Tri : prestige → étoiles → meilleur score.",
     },
     shop: {
       coinsLabel: "Vos Ponzi Coins :",
@@ -220,6 +260,12 @@ export const strings = {
       title: "Plus d’énergie !",
       body: "Revenez plus tard (recharge automatique) ou visitez la boutique.",
       dismiss: "Fermer",
+      shareForLife: "Gagner 1 Vie 🎁",
+      shareForLifeHint: "Partagez le jeu : +1 vie (une fois par jour).",
+      shareForLifeUsed: "Bonus partage déjà utilisé aujourd’hui.",
+      shareTwitter: "Partager sur X",
+      shareCopy: (gameUrl: string) =>
+        `Je viens de ruiner l'économie sur Planet Ponzi ! Battez mon score : ${gameUrl}`,
     },
     rules: {
       title: "Règles",
@@ -278,6 +324,16 @@ export const strings = {
       starGateHint: "Earn more stars in this sector to challenge the Boss!",
       starGateBadge: (n: number, cap: number) => `⭐ ${n} / ${cap}`,
     },
+    installPwa: {
+      bannerText: "Install Planet Ponzi to play offline! 🚀",
+      installCta: "Install",
+      dismissAria: "Dismiss for this session",
+      bannerAria: "App install offer",
+      iosModalTitle: "Add to Home Screen (iOS)",
+      iosModalBody:
+        "Tap the Share button ⬆️ at the bottom, then “Add to Home Screen” to install Planet Ponzi like an app.",
+      closeCta: "OK",
+    },
     nav: {
       map: "Map",
       empire: "Tower",
@@ -294,6 +350,34 @@ export const strings = {
       resetCareer: "Reset my career",
       resetConfirm: "Erase all local progress (levels, stars)?",
       restartLevel: "Restart level",
+    },
+    cloudSave: {
+      sectionTitle: "Cloud save",
+      sectionBody:
+        "Sign in to sync levels, stars, prestige, and economy across devices. Without an account, progress stays 100% local (guest).",
+      missingEnv:
+        "Supabase is not configured (URL / anon key). Set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY.",
+      signedInAs: (email: string) => `Signed in: ${email}`,
+      signOut: "Sign out",
+      emailLabel: "Email",
+      emailPlaceholder: "you@example.com",
+      sendMagicLink: "Send magic link",
+      magicLinkSent: "Check your inbox — the link should arrive shortly.",
+      googleCta: "Continue with Google",
+      orDivider: "or",
+      errorGeneric: "Something went wrong. Try again.",
+    },
+    ceoDisplayName: {
+      kicker: "Identity",
+      title: "CEO display name",
+      bodyAuth: "Shown on the public leaderboard when you are signed in.",
+      bodyGuest: "Stored locally for the leaderboard (guest). Sign in to sync it to the cloud.",
+      label: "Handle",
+      placeholder: "e.g. LunaYield",
+      save: "Save",
+      saved: "Saved.",
+      error: "Could not save.",
+      empty: "Enter at least one character.",
     },
     ceoContract: {
       kicker: "Identity",
@@ -371,6 +455,8 @@ export const strings = {
       you: "You",
       loadError: "Leaderboard unavailable.",
       prestigeShort: (n: number) => `P${n}`,
+      maxScoreLabel: "Best",
+      meritHint: "Order: prestige → stars → best score.",
     },
     shop: {
       coinsLabel: "Your Ponzi Coins:",
@@ -457,6 +543,12 @@ export const strings = {
       title: "Out of energy!",
       body: "Come back later (auto recharge) or visit the shop.",
       dismiss: "Close",
+      shareForLife: "Earn 1 life 🎁",
+      shareForLifeHint: "Share the game: +1 life (once per day).",
+      shareForLifeUsed: "Share bonus already claimed today.",
+      shareTwitter: "Share on X",
+      shareCopy: (gameUrl: string) =>
+        `I just wrecked the economy on Planet Ponzi! Beat my score: ${gameUrl}`,
     },
     rules: {
       title: "Rules",

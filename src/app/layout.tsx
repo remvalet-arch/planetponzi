@@ -2,6 +2,10 @@ import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 
 import { PostHogProvider } from "@/src/components/analytics/PostHogProvider";
+import { CloudSaveSyncProvider } from "@/src/components/settings/CloudSaveSyncProvider";
+import { InstallAppBanner } from "@/src/components/pwa/InstallAppBanner";
+
+import { OG_TITLE, SITE_DESCRIPTION, SITE_NAME_SHORT } from "@/src/lib/site-metadata-copy";
 
 import "./globals.css";
 
@@ -15,26 +19,34 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-const siteName = "Planet Ponzi Saga";
-const siteDescription =
-  "Le puzzle spatial addictif : grille 4×4, niveaux Saga, étoiles et progression sur la carte. Bâtissez, optimisez, progressez — PWA jouable hors-ligne.";
-
 export const metadata: Metadata = {
   metadataBase: new URL(
     process.env.NEXT_PUBLIC_SITE_URL ?? "https://planetponzi.vercel.app/",
   ),
-  applicationName: siteName,
+  applicationName: SITE_NAME_SHORT,
   title: {
-    default: siteName,
-    template: `%s · ${siteName}`,
+    default: SITE_NAME_SHORT,
+    template: `%s · ${SITE_NAME_SHORT}`,
   },
-  description: siteDescription,
-  keywords: ["puzzle", "jeu mobile", "PWA", "Saga", "grille", "casual", "spatial"],
-  authors: [{ name: "Planet Ponzi" }],
+  description: SITE_DESCRIPTION,
+  keywords: [
+    "puzzle",
+    "jeu mobile",
+    "PWA",
+    "Saga",
+    "grille",
+    "casual",
+    "spatial",
+    "Planet Ponzi",
+    "open graph",
+  ],
+  authors: [{ name: "Planet Ponzi", url: "https://planetponzi.vercel.app/" }],
+  creator: "Planet Ponzi",
+  publisher: "Planet Ponzi",
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
-    title: siteName,
+    title: SITE_NAME_SHORT,
   },
   formatDetection: {
     telephone: false,
@@ -42,15 +54,26 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     locale: "fr_FR",
+    alternateLocale: ["en_US"],
     url: "/",
-    siteName,
-    title: siteName,
-    description: siteDescription,
+    siteName: SITE_NAME_SHORT,
+    title: OG_TITLE,
+    description: SITE_DESCRIPTION,
+    images: [
+      {
+        url: "/og-image.png",
+        width: 1200,
+        height: 630,
+        alt: OG_TITLE,
+        type: "image/png",
+      },
+    ],
   },
   twitter: {
     card: "summary_large_image",
-    title: siteName,
-    description: siteDescription,
+    title: OG_TITLE,
+    description: SITE_DESCRIPTION,
+    images: ["/og-image.png"],
   },
   icons: {
     icon: [{ url: "/icon.svg", type: "image/svg+xml" }],
@@ -84,7 +107,10 @@ export default function RootLayout({
         >
           <div className="scanlines" aria-hidden />
           <div className="relative z-[40] flex min-h-0 min-w-0 flex-1 flex-col">
-            <PostHogProvider>{children}</PostHogProvider>
+            <PostHogProvider>
+              <CloudSaveSyncProvider>{children}</CloudSaveSyncProvider>
+            </PostHogProvider>
+            <InstallAppBanner />
           </div>
         </main>
       </body>

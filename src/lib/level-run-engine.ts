@@ -120,7 +120,7 @@ export function evaluateTriggers(input: EvaluateTriggersInput): EvaluateTriggers
   const newEffects: GridTemporaryEffect[] = [];
   let working = input.gridAfterPlacement;
 
-  const gridShake = megaJustFormed(input.gridBeforePlacement, working);
+  let gridShake = megaJustFormed(input.gridBeforePlacement, working);
   if (gridShake) {
     const mega = detectIndustrialMega2x2(working);
     if (mega) {
@@ -155,6 +155,7 @@ export function evaluateTriggers(input: EvaluateTriggersInput): EvaluateTriggers
     if (idx != null) {
       working = clearBuildingAt(working, idx);
       newEffects.push({ kind: "seismic_rift", turn: input.newTurn, cellIndex: idx });
+      gridShake = true;
     }
   }
 

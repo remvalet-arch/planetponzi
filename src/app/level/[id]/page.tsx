@@ -19,6 +19,7 @@ import { getLevelById } from "@/src/lib/levels";
 import { useAppStrings } from "@/src/lib/i18n/useAppStrings";
 import { hasCompletedTutorial, markTutorialCompleted } from "@/src/lib/onboarding-flags";
 import { canPlayLevel } from "@/src/lib/star-gate";
+import { playMegaFusion } from "@/src/lib/game-sounds";
 import { getBuildingTheme } from "@/src/lib/ui-helpers";
 import { useEconomyStore } from "@/src/store/useEconomyStore";
 import { useLevelRunStore } from "@/src/store/useLevelRunStore";
@@ -55,6 +56,7 @@ export default function LevelPage() {
   const [noEnergyOpen, setNoEnergyOpen] = useState(false);
   const [fiscalModalOpen, setFiscalModalOpen] = useState(false);
   const fusionToastShownRef = useRef(false);
+  const megaFusionSfxPlayedRef = useRef(false);
 
   useEffect(() => {
     const bump = () => {
@@ -113,23 +115,32 @@ export default function LevelPage() {
     if (!persistReady) return;
     const hasFiscalFreeze = gridTemporaryEffects.some((e) => e.kind === "fiscal_freeze");
     if (!hasFiscalFreeze || hasSeenFiscalFreezeTutorial) return;
-    setFiscalModalOpen(true);
-    markFiscalFreezeTutorialSeen();
+    const tid = window.setTimeout(() => {
+      setFiscalModalOpen(true);
+      markFiscalFreezeTutorialSeen();
+    }, 0);
+    return () => window.clearTimeout(tid);
   }, [persistReady, gridTemporaryEffects, hasSeenFiscalFreezeTutorial, markFiscalFreezeTutorialSeen]);
 
   useEffect(() => {
-    if (id !== 1) {
-      fusionToastShownRef.current = false;
-      return;
-    }
-    if (turn === 0 && status === "ready") {
-      fusionToastShownRef.current = false;
-    }
-  }, [id, turn, status]);
+    fusionToastShownRef.current = false;
+    megaFusionSfxPlayedRef.current = false;
+  }, [id]);
 
   useEffect(() => {
-    if (id !== 1) return;
+    if (turn === 0 && status === "ready") {
+      fusionToastShownRef.current = false;
+      megaFusionSfxPlayedRef.current = false;
+    }
+  }, [turn, status]);
+
+  useEffect(() => {
     const hasMega = gridTemporaryEffects.some((e) => e.kind === "mega_industrial_fusion");
+    if (hasMega && !megaFusionSfxPlayedRef.current) {
+      megaFusionSfxPlayedRef.current = true;
+      queueMicrotask(() => playMegaFusion());
+    }
+    if (id !== 1) return;
     if (hasMega && !fusionToastShownRef.current) {
       fusionToastShownRef.current = true;
       queueMicrotask(() =>

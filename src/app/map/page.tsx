@@ -36,8 +36,10 @@ export default function MapPage() {
       const msg = sessionStorage.getItem("pp-map-hint");
       if (msg) {
         sessionStorage.removeItem("pp-map-hint");
-        setMapHint(msg);
-        window.setTimeout(() => setMapHint(null), 4200);
+        queueMicrotask(() => {
+          setMapHint(msg);
+          window.setTimeout(() => setMapHint(null), 4200);
+        });
       }
     } catch {
       /* ignore */

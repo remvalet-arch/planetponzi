@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 
+import { getBearerAuthUserId } from "@/src/lib/supabase-auth-from-request";
 import { getSupabaseServiceRole } from "@/src/lib/supabase-server";
 import type { BuildingType } from "@/src/types/game";
 
@@ -73,6 +74,8 @@ export async function POST(req: Request) {
     playerIdStr === null ||
     (typeof playerIdStr === "string" && isUuid(playerIdStr));
 
+  const authUserId = await getBearerAuthUserId(req);
+
   if (
     typeof levelId !== "number" ||
     !Number.isFinite(levelId) ||
@@ -100,7 +103,7 @@ export async function POST(req: Request) {
   }
 
   const { error } = await supabase.from("game_completions").insert({
-    user_id: null,
+    user_id: authUserId,
     device_id: deviceId,
     player_id: playerIdStr,
     pseudo: pseudoStr.length ? pseudoStr : null,

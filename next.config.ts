@@ -13,6 +13,11 @@ const withSerwist = withSerwistInit({
   additionalPrecacheEntries: [{ url: "/~offline", revision: offlineRevision }],
 });
 
-const nextConfig: NextConfig = {};
+const nextConfig: NextConfig = {
+  /** OG statique `/og-image.png` → image générée (`opengraph-image.tsx`) tant que l’asset PNG n’est pas fourni. */
+  async rewrites() {
+    return [{ source: "/og-image.png", destination: "/opengraph-image" }];
+  },
+};
 
 export default withSerwist(nextConfig);

@@ -31,19 +31,35 @@ const starContainer = {
   hidden: { opacity: 0 },
   show: {
     opacity: 1,
-    transition: { staggerChildren: 0.22, delayChildren: 0.12 },
+    transition: { staggerChildren: 0.2, delayChildren: 0.1 },
   },
 };
 
-const starItem = {
-  hidden: { scale: 0, opacity: 0, rotate: -28 },
+const starItemDim = {
+  hidden: { scale: 0.35, opacity: 0, rotate: -12 },
   show: {
     scale: 1,
     opacity: 1,
     rotate: 0,
-    transition: { type: "spring" as const, stiffness: 520, damping: 18 },
+    transition: { type: "spring" as const, stiffness: 380, damping: 22 },
   },
 };
+
+const starItemFilled = {
+  hidden: { scale: 0, opacity: 0, rotate: -42 },
+  show: {
+    scale: [0, 1.18, 1],
+    opacity: 1,
+    rotate: [0, -18, 14, -9, 6, 0],
+    transition: {
+      scale: { type: "spring" as const, stiffness: 440, damping: 13 },
+      opacity: { duration: 0.2 },
+      rotate: { duration: 0.58, ease: [0.33, 1.4, 0.64, 1] as const },
+    },
+  },
+};
+
+const VICTORY_CONFETTI_GOLD = ["#FFD700", "#FFA500", "#FFEC8B", "#E6AC00", "#FFC107"];
 
 const thumbZone =
   "shrink-0 space-y-3 border-t border-pp-border bg-pp-surface px-4 py-4 pb-[max(1rem,env(safe-area-inset-bottom))]";
@@ -82,8 +98,10 @@ export function EndScreen({ onShareFeedback }: EndScreenProps) {
       victorySoundPlayedRef.current = null;
       skipAutoMapRef.current = false;
       victoryVibrateRef.current = false;
-      setShowVictoryExitBar(false);
-      queueMicrotask(() => setMinimized(false));
+      queueMicrotask(() => {
+        setShowVictoryExitBar(false);
+        setMinimized(false);
+      });
     }
   }, [status]);
 
@@ -95,22 +113,35 @@ export function EndScreen({ onShareFeedback }: EndScreenProps) {
     confettiPlayedRef.current = runKey;
     const burst = () => {
       confetti({
-        particleCount: 320,
+        particleCount: 340,
         spread: 360,
-        startVelocity: 42,
-        ticks: 220,
-        scalar: 1.05,
-        origin: { x: 0.5, y: 0.42 },
+        startVelocity: 44,
+        ticks: 240,
+        scalar: 1.08,
+        origin: { x: 0.5, y: 0.4 },
+        colors: VICTORY_CONFETTI_GOLD,
       });
       window.setTimeout(() => {
         confetti({
-          particleCount: 160,
-          spread: 100,
-          startVelocity: 35,
-          origin: { x: 0.5, y: 0.5 },
-          colors: ["#fcd34d", "#fbbf24", "#22d3ee", "#a78bfa"],
+          particleCount: 200,
+          spread: 88,
+          startVelocity: 36,
+          ticks: 200,
+          scalar: 1.05,
+          origin: { x: 0.5, y: 0.52 },
+          colors: VICTORY_CONFETTI_GOLD,
         });
-      }, 120);
+      }, 140);
+      window.setTimeout(() => {
+        confetti({
+          particleCount: 90,
+          angle: 270,
+          spread: 55,
+          startVelocity: 28,
+          origin: { x: 0.5, y: 0.12 },
+          colors: VICTORY_CONFETTI_GOLD,
+        });
+      }, 260);
     };
     const id = window.requestAnimationFrame(burst);
     return () => window.cancelAnimationFrame(id);
@@ -145,12 +176,12 @@ export function EndScreen({ onShareFeedback }: EndScreenProps) {
   /** Après les étoiles : victoire (≥1★) → barre 3s puis /map (sauf navigation manuelle). */
   useEffect(() => {
     if (status !== "finished" || minimized) {
-      setShowVictoryExitBar(false);
+      queueMicrotask(() => setShowVictoryExitBar(false));
       return;
     }
     const stars = calculateStars(score, levelId, grid);
     if (stars <= 0) {
-      setShowVictoryExitBar(false);
+      queueMicrotask(() => setShowVictoryExitBar(false));
       return;
     }
     const id = window.setTimeout(() => setShowVictoryExitBar(true), 1300);
@@ -310,7 +341,11 @@ export function EndScreen({ onShareFeedback }: EndScreenProps) {
             {[0, 1, 2].map((index) => {
               const filled = index < earnedStars;
               return (
-                <motion.div key={index} variants={starItem} role="listitem">
+                <motion.div
+                  key={index}
+                  variants={filled ? starItemFilled : starItemDim}
+                  role="listitem"
+                >
                   <Star
                     className={`size-[clamp(3rem,14vw,4.25rem)] drop-shadow-md ${
                       filled

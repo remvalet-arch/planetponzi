@@ -183,6 +183,63 @@ const FLOATING_MONEY = [
   { emoji: "💰", left: "62%", top: "88%", d: 5.9 },
 ] as const;
 
+/** Jauge Star Gate : animation « récolte » quand le total du secteur augmente. */
+function StarGateQuotaBadge({ gateStars }: { gateStars: number }) {
+  const { t } = useAppStrings();
+  return (
+    <motion.span
+      key={gateStars}
+      className="rounded-full border border-amber-500/40 bg-amber-950/80 px-1.5 py-0.5 font-mono text-[9px] font-bold tabular-nums text-amber-200"
+      initial={{ scale: 0.35, rotate: -42, opacity: 0.35 }}
+      animate={{ scale: 1, rotate: 0, opacity: 1 }}
+      transition={{ type: "spring", stiffness: 440, damping: 14 }}
+    >
+      {t.map.starGateBadge(gateStars, STAR_GATE_QUOTA)}
+    </motion.span>
+  );
+}
+
+/** Étoiles sous un nœud terminé : pop échelonné quand le score du niveau augmente. */
+function LevelCompletedStars({ earned }: { earned: 0 | 1 | 2 | 3 }) {
+  return (
+    <motion.div
+      key={earned}
+      className="flex h-4 items-center justify-center gap-0.5"
+      aria-hidden
+      initial="hidden"
+      animate="show"
+      variants={{
+        hidden: {},
+        show: { transition: { staggerChildren: 0.08, delayChildren: 0.04 } },
+      }}
+    >
+      {[0, 1, 2].map((i) => (
+        <motion.div
+          key={i}
+          variants={{
+            hidden: { scale: 0.2, opacity: 0.25, rotate: -52 },
+            show: {
+              scale: 1,
+              opacity: 1,
+              rotate: 0,
+              transition: { type: "spring", stiffness: 500, damping: 13 },
+            },
+          }}
+        >
+          <Star
+            className={`size-3.5 ${
+              i < earned
+                ? "fill-amber-400 text-amber-600 drop-shadow-[0_0_4px_rgb(251_191_36/0.8)]"
+                : "fill-slate-600/50 text-slate-500"
+            }`}
+            strokeWidth={1.25}
+          />
+        </motion.div>
+      ))}
+    </motion.div>
+  );
+}
+
 export function LevelMap({ scrollParentRef }: LevelMapProps) {
   const uid = useId().replace(/:/g, "");
   const filterId = `pp-path-glow-${uid}`;
@@ -555,9 +612,7 @@ export function LevelMap({ scrollParentRef }: LevelMapProps) {
                             🔒
                           </span>
                           <Lock className="size-[0.65rem] shrink-0 opacity-70" strokeWidth={2.5} aria-hidden />
-                          <span className="rounded-full border border-amber-500/40 bg-amber-950/80 px-1.5 py-0.5 font-mono text-[9px] font-bold tabular-nums text-amber-200">
-                            {t.map.starGateBadge(gateStars, STAR_GATE_QUOTA)}
-                          </span>
+                          <StarGateQuotaBadge gateStars={gateStars} />
                           <span className="absolute bottom-0.5 font-mono text-[10px] font-black tabular-nums leading-none text-amber-200/80">
                             {level.id}
                           </span>
@@ -574,9 +629,7 @@ export function LevelMap({ scrollParentRef }: LevelMapProps) {
                           🔒
                         </span>
                         <Lock className="size-[0.65rem] shrink-0 opacity-70" strokeWidth={2.5} aria-hidden />
-                        <span className="rounded-full border border-amber-500/40 bg-amber-950/80 px-1.5 py-0.5 font-mono text-[9px] font-bold tabular-nums text-amber-200">
-                          {t.map.starGateBadge(gateStars, STAR_GATE_QUOTA)}
-                        </span>
+                        <StarGateQuotaBadge gateStars={gateStars} />
                         <span className="absolute bottom-0.5 font-mono text-[10px] font-black tabular-nums leading-none text-amber-200/80">
                           {level.id}
                         </span>
@@ -594,19 +647,7 @@ export function LevelMap({ scrollParentRef }: LevelMapProps) {
                       >
                         <Check className="size-6 stroke-[3] text-emerald-200 drop-shadow-[0_0_6px_rgba(167,243,208,0.7)]" aria-hidden />
                       </div>
-                      <div className="flex h-4 items-center justify-center gap-0.5" aria-hidden>
-                        {[0, 1, 2].map((i) => (
-                          <Star
-                            key={i}
-                            className={`size-3.5 ${
-                              i < earned
-                                ? "fill-amber-400 text-amber-600 drop-shadow-[0_0_4px_rgb(251_191_36/0.8)]"
-                                : "fill-slate-600/50 text-slate-500"
-                            }`}
-                            strokeWidth={1.25}
-                          />
-                        ))}
-                      </div>
+                      <LevelCompletedStars earned={earned} />
                     </Link>
                   ) : isActive ? (
                     <motion.div

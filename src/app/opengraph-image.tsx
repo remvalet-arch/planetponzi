@@ -3,7 +3,9 @@ import { ImageResponse } from "next/og";
 /** Node.js : le bundle @vercel/og + Satori dépasse la limite Edge (1 Mo) sur Vercel Hobby. */
 export const runtime = "nodejs";
 
-export const alt = "Planet Ponzi Saga — puzzle spatial";
+import { WEB_SHARE_TITLE } from "@/src/lib/share-branding";
+
+export const alt = WEB_SHARE_TITLE;
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
@@ -137,10 +139,10 @@ export default function OpenGraphImage() {
         >
           <div
             style={{
-              fontSize: 96,
+              fontSize: 64,
               fontWeight: 900,
               letterSpacing: "-0.03em",
-              lineHeight: 1.05,
+              lineHeight: 1.08,
               color: "#ffffff",
               fontFamily:
                 'ui-rounded, system-ui, "Segoe UI", "Apple SD Gothic Neo", sans-serif',
@@ -148,7 +150,7 @@ export default function OpenGraphImage() {
                 "0 4px 0 #4c1d95, 0 8px 0 #312e81, 0 12px 0 rgba(15,23,42,0.35), 0 16px 28px rgba(0,0,0,0.25)",
             }}
           >
-            Planet Ponzi Saga
+            {WEB_SHARE_TITLE}
           </div>
           <div
             style={{
@@ -161,7 +163,7 @@ export default function OpenGraphImage() {
               textShadow: "0 2px 12px rgba(15,23,42,0.35)",
             }}
           >
-            Le puzzle spatial addictif. Bâtissez, optimisez, progressez !
+            Grille 4×4 · Saga · étoiles · PWA hors-ligne
           </div>
         </div>
       </div>

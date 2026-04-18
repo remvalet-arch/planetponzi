@@ -1,11 +1,22 @@
 "use client";
 
 import { useMemo } from "react";
-import { motion } from "framer-motion";
+import { motion, type Variants } from "framer-motion";
 
 import { Cell } from "@/src/components/game/Cell";
 import { TutorialOverlay } from "@/src/components/game/TutorialOverlay";
 import { useLevelRunStore } from "@/src/store/useLevelRunStore";
+
+/** Tremblement : fusion méga-industrielle + faille sismique (`gridShakeNonce` côté store). */
+const gridShakeVariants: Variants = {
+  idle: { x: 0, y: 0, rotate: 0 },
+  shake: {
+    x: [0, -10, 10, -8, 8, -5, 5, -3, 3, 0],
+    y: [0, 6, -6, 4, -4, 2, -2, 0],
+    rotate: [0, -0.7, 0.7, -0.5, 0.5, -0.25, 0.25, 0],
+    transition: { duration: 0.52, ease: [0.22, 1, 0.36, 1] },
+  },
+};
 
 export function Grid() {
   const grid = useLevelRunStore((s) => s.grid);
@@ -32,13 +43,9 @@ export function Grid() {
     >
       <motion.div
         key={gridShakeNonce}
-        initial={false}
-        animate={
-          gridShakeNonce > 0
-            ? { x: [0, -6, 6, -5, 5, -3, 3, 0], rotate: [0, -0.45, 0.45, -0.35, 0.35, 0] }
-            : { x: 0, rotate: 0 }
-        }
-        transition={{ duration: 0.48, ease: [0.22, 1, 0.36, 1] }}
+        variants={gridShakeVariants}
+        initial={gridShakeNonce > 0 ? "shake" : false}
+        animate={gridShakeNonce > 0 ? "shake" : "idle"}
         className="relative grid min-h-0 min-w-0 flex-1 grid-cols-4 grid-rows-4 gap-1.5 sm:gap-2"
       >
         {grid.map((cell) => {
@@ -48,7 +55,7 @@ export function Grid() {
             cell.isPlayable &&
             cell.building === null;
           const canDemolish =
-            status === "playing" && demolitionMode && cell.isPlayable && cell.building !== null;
+            status === "playing" && demolitionMode && cell.building !== null;
           const onClick =
             canPlace || canDemolish ? () => placeBuilding(cell.index) : undefined;
           const flashNonce =
