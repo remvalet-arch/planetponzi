@@ -13,13 +13,23 @@ import {
   getMapCurrentLevel,
   LEVELS,
   PLANETS,
-  planetIdForLevel,
   type PlanetDefinition,
 } from "@/src/lib/levels";
 import { toRomanSector } from "@/src/lib/roman";
 import { useProgressStore } from "@/src/store/useProgressStore";
 
 const orderedLevels = [...LEVELS].sort((a, b) => a.id - b.id);
+
+/** Espacement vertical nominal entre centres de nœuds consécutifs. */
+const STEP_PX = 56;
+/** Espace réservé entre la fin d’un bloc ×10 et le suivant (bannière + respiration du tracé). */
+const BANNER_GAP_PX = 250;
+const PAD_PX = 28;
+
+const CONSTELLATION_CHAINS: number[][] = [
+  [1, 28, 55, 82, 100],
+  [12, 40, 68, 95],
+];
 
 function mixRgb(
   a: [number, number, number],
@@ -65,26 +75,77 @@ function starfieldLayer(opacity: number): string {
   return dots.join(", ");
 }
 
-type LevelMapProps = {
-  scrollParentRef: RefObject<HTMLDivElement | null>;
+/** Abscisse % (8–92) : même logique sinusoïdale que `generateLevels` pour une courbe continue. */
+function xPercentForLevelId(levelId: number): number {
+  const i = levelId - 1;
+  const xRaw = 50 + 42 * Math.sin(i * 0.52 + 0.45) + 6 * Math.sin(i * 0.31);
+  return Math.min(92, Math.max(8, Math.round(xRaw * 10) / 10));
+}
+
+type BannerLayout = {
+  planet: PlanetDefinition;
+  yCenterPx: number;
+  title: string;
+  subtitle: string;
+  blurb: string;
 };
 
-const CONSTELLATION_CHAINS: number[][] = [
-  [1, 28, 55, 82, 100],
-  [12, 40, 68, 95],
-];
+type MapLayout = {
+  heightPx: number;
+  /** Centre vertical du nœud en % du conteneur (0 = haut). */
+  yPctByLevelId: Record<number, number>;
+  banners: BannerLayout[];
+};
 
-function constellationPointsForChainStacked(
-  chain: number[],
-  topPct: (levelId: number) => number,
-): string {
+function buildMapLayout(
+  levels: typeof orderedLevels,
+  getBannerCopy: (planet: PlanetDefinition) => { title: string; subtitle: string; blurb: string },
+): MapLayout {
+  const maxId = levels[levels.length - 1]?.id ?? 1;
+  let y = PAD_PX;
+  const yCenterPxByLevelId: Record<number, number> = {};
+  const banners: BannerLayout[] = [];
+
+  for (let id = maxId; id >= 1; id--) {
+    if (id < maxId && id % 10 === 0) {
+      const planetIdx = id / 10;
+      const planet = PLANETS[planetIdx];
+      if (planet) {
+        const copy = getBannerCopy(planet);
+        banners.push({
+          planet,
+          yCenterPx: y + BANNER_GAP_PX / 2,
+          ...copy,
+        });
+      }
+      y += BANNER_GAP_PX;
+    }
+    yCenterPxByLevelId[id] = y + STEP_PX / 2;
+    y += STEP_PX;
+  }
+
+  const heightPx = Math.max(y + PAD_PX, 800);
+  const yPctByLevelId: Record<number, number> = {};
+  for (const l of levels) {
+    const py = yCenterPxByLevelId[l.id];
+    yPctByLevelId[l.id] = py != null ? (py / heightPx) * 100 : 50;
+  }
+
+  return { heightPx, yPctByLevelId, banners };
+}
+
+function constellationPointsForChain(chain: number[], yPctByLevelId: Record<number, number>): string {
   const pts: string[] = [];
   for (const id of chain) {
-    const l = LEVELS.find((x) => x.id === id);
-    if (l) pts.push(`${l.position.x},${topPct(id)}`);
+    const x = xPercentForLevelId(id);
+    pts.push(`${x},${yPctByLevelId[id] ?? 50}`);
   }
   return pts.join(" ");
 }
+
+type LevelMapProps = {
+  scrollParentRef: RefObject<HTMLDivElement | null>;
+};
 
 const FLOATING_MONEY = [
   { emoji: "💵", left: "8%", top: "18%", d: 5.2 },
@@ -104,6 +165,38 @@ export function LevelMap({ scrollParentRef }: LevelMapProps) {
   const unlockedLevels = useProgressStore((s) => s.unlockedLevels);
   const starsByLevel = useProgressStore((s) => s.starsByLevel);
   const currentLevel = getMapCurrentLevel(unlockedLevels, starsByLevel);
+
+  const layout = useMemo(() => {
+    return buildMapLayout(orderedLevels, (planet) => {
+      const roman = toRomanSector(planet.id + 1);
+      const meta = t.planets[planet.id];
+      const title =
+        planet.id === 0
+          ? `${t.map.sectorFirst.replace("{{roman}}", roman)} · ${meta?.name ?? ""}`
+          : t.map.sectorEnter.replace("{{roman}}", roman);
+      return {
+        title,
+        subtitle: meta?.name ?? "",
+        blurb: meta?.blurb ?? "",
+      };
+    });
+  }, [t]);
+
+  const { heightPx, yPctByLevelId, banners } = layout;
+
+  const pathD = useMemo(
+    () => orderedLevels.map((l) => `${xPercentForLevelId(l.id)},${yPctByLevelId[l.id] ?? 50}`).join(" "),
+    [layout],
+  );
+
+  const progressD = useMemo(() => {
+    const pts = orderedLevels
+      .filter((l) => l.id <= currentLevel)
+      .map((l) => `${xPercentForLevelId(l.id)},${yPctByLevelId[l.id] ?? 50}`);
+    if (pts.length >= 2) return pts.join(" ");
+    if (pts.length === 1) return `${pts[0]} ${pts[0]}`;
+    return "";
+  }, [currentLevel, layout]);
 
   const [scrollBg, setScrollBg] = useState(() =>
     buildScrollGradient(PLANETS[0]!, PLANETS[0]!, 0),
@@ -159,7 +252,6 @@ export function LevelMap({ scrollParentRef }: LevelMapProps) {
     };
   }, [scrollCurrentLevelIntoView]);
 
-  /** Après hydratation Zustand, recentrer la carte (évite rester en tête de piste au premier rendu). */
   useEffect(() => {
     const bump = () => {
       scrollCurrentLevelIntoView("smooth");
@@ -174,83 +266,15 @@ export function LevelMap({ scrollParentRef }: LevelMapProps) {
     return unsub;
   }, [scrollCurrentLevelIntoView]);
 
-  const trackHeightPx = Math.max(3200, orderedLevels.length * 52);
-  const sectorBodyPx = Math.ceil(trackHeightPx / PLANETS.length);
-  /** Espace réservé bannière secteur (my-10 + carte) en flux — calibrage visuel scroll. */
-  const SECTOR_BANNER_STACK_PX = 220;
-  const totalMapHeightPx = PLANETS.length * (SECTOR_BANNER_STACK_PX + sectorBodyPx);
-
-  const stackedTopPercent = useCallback(
-    (levelId: number) => {
-      const idx = planetIdForLevel(levelId);
-      let px = 0;
-      for (let i = 0; i < idx; i++) {
-        px += SECTOR_BANNER_STACK_PX + sectorBodyPx;
-      }
-      px += SECTOR_BANNER_STACK_PX;
-      const planet = PLANETS[idx]!;
-      const lvls = orderedLevels.filter(
-        (l) => l.id >= planet.levelMin && l.id <= planet.levelMax,
-      );
-      const ys = lvls.map((l) => l.position.y);
-      const yMin = Math.min(...ys);
-      const yMax = Math.max(...ys);
-      const den = Math.max(yMax - yMin, 1e-6);
-      const lvl = orderedLevels.find((l) => l.id === levelId);
-      if (!lvl) return 50;
-      px += ((lvl.position.y - yMin) / den) * sectorBodyPx;
-      return (px / totalMapHeightPx) * 100;
-    },
-    [sectorBodyPx, totalMapHeightPx],
-  );
-
-  const pathD = useMemo(
-    () => orderedLevels.map((l) => `${l.position.x},${stackedTopPercent(l.id)}`).join(" "),
-    [stackedTopPercent],
-  );
-
-  const progressD = useMemo(() => {
-    const levels = orderedLevels.filter((l) => l.id <= currentLevel);
-    const pts = levels.map((l) => `${l.position.x},${stackedTopPercent(l.id)}`);
-    if (pts.length >= 2) return pts.join(" ");
-    if (pts.length === 1) return `${pts[0]} ${pts[0]}`;
-    return "";
-  }, [currentLevel, stackedTopPercent]);
-
-  const sectorBanners = useMemo(() => {
-    const out: Array<{
-      planet: PlanetDefinition;
-      title: string;
-      subtitle: string;
-      blurb: string;
-    }> = [];
-    for (const planet of PLANETS) {
-      if (!orderedLevels.some((l) => l.id === planet.levelMin)) continue;
-      const roman = toRomanSector(planet.id + 1);
-      const meta = t.planets[planet.id];
-      const title =
-        planet.id === 0
-          ? `${t.map.sectorFirst.replace("{{roman}}", roman)} · ${meta?.name ?? ""}`
-          : t.map.sectorEnter.replace("{{roman}}", roman);
-      out.push({
-        planet,
-        title,
-        subtitle: meta?.name ?? "",
-        blurb: meta?.blurb ?? "",
-      });
-    }
-    return out;
-  }, [t]);
-
   return (
     <section
-      className="relative w-full min-w-0 px-2 pb-[calc(5.5rem+env(safe-area-inset-bottom))] pt-2"
+      className="relative w-full min-w-0 px-2 pb-[calc(5.5rem+env(safe-area-inset-bottom))] pt-0"
       aria-label="Carte de progression des niveaux"
     >
       <div
         className="relative overflow-hidden rounded-2xl border border-violet-500/25 shadow-[0_0_40px_rgba(124,58,237,0.15)] transition-[background] duration-300 ease-out"
         style={{
-          minHeight: totalMapHeightPx,
+          minHeight: heightPx,
           background: scrollBg,
           boxShadow: "inset 0 0 80px rgb(0 0 0 / 0.35)",
         }}
@@ -310,27 +334,6 @@ export function LevelMap({ scrollParentRef }: LevelMapProps) {
           />
         </motion.div>
 
-        <svg
-          className="pointer-events-none absolute inset-0 z-0 h-full w-full opacity-[0.85]"
-          viewBox="0 0 100 100"
-          preserveAspectRatio="none"
-          aria-hidden
-        >
-          {CONSTELLATION_CHAINS.map((chain, i) => (
-            <polyline
-              key={i}
-              fill="none"
-              points={constellationPointsForChainStacked(chain, stackedTopPercent)}
-              stroke="rgb(250 250 250)"
-              strokeOpacity={0.14}
-              strokeWidth={0.22}
-              strokeDasharray="0.6 1.1"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          ))}
-        </svg>
-
         <div className="pointer-events-none absolute inset-0 z-0 overflow-hidden" aria-hidden>
           {FLOATING_MONEY.map((m, i) => (
             <motion.span
@@ -345,6 +348,7 @@ export function LevelMap({ scrollParentRef }: LevelMapProps) {
           ))}
         </div>
 
+        {/* Un seul SVG : constellations + tracé continu (sous les bannières, au-dessus du fond). */}
         <svg
           className="pointer-events-none absolute inset-0 z-[5] h-full w-full"
           viewBox="0 0 100 100"
@@ -366,11 +370,24 @@ export function LevelMap({ scrollParentRef }: LevelMapProps) {
               <stop offset="100%" stopColor="#c4b5fd" />
             </linearGradient>
           </defs>
+          {CONSTELLATION_CHAINS.map((chain, i) => (
+            <polyline
+              key={`c-${i}`}
+              fill="none"
+              points={constellationPointsForChain(chain, yPctByLevelId)}
+              stroke="rgb(250 250 250)"
+              strokeOpacity={0.14}
+              strokeWidth={0.22}
+              strokeDasharray="0.6 1.1"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          ))}
           <polyline
             fill="none"
             points={pathD}
             stroke="rgb(15 23 42 / 0.55)"
-            strokeWidth="0.45"
+            strokeWidth={0.45}
             strokeDasharray="1.2 1.8"
             strokeLinecap="round"
             strokeLinejoin="round"
@@ -380,7 +397,7 @@ export function LevelMap({ scrollParentRef }: LevelMapProps) {
               fill="none"
               points={progressD}
               stroke={`url(#${gradId})`}
-              strokeWidth="0.9"
+              strokeWidth={0.9}
               strokeLinecap="round"
               strokeLinejoin="round"
               filter={`url(#${filterId})`}
@@ -388,131 +405,113 @@ export function LevelMap({ scrollParentRef }: LevelMapProps) {
           ) : null}
         </svg>
 
-        <div className="relative z-20 flex w-full flex-col items-stretch">
-          {PLANETS.map((planet) => {
-            const banner = sectorBanners.find((b) => b.planet.id === planet.id);
-            if (!banner) return null;
-            const levelsIn = orderedLevels.filter(
-              (l) => l.id >= planet.levelMin && l.id <= planet.levelMax,
-            );
-            const ys = levelsIn.map((l) => l.position.y);
-            const yMin = Math.min(...ys);
-            const yMax = Math.max(...ys);
-            const yDen = Math.max(yMax - yMin, 1e-6);
-            const { title, subtitle, blurb } = banner;
+        {banners.map((b) => (
+          <header
+            key={`banner-${b.planet.id}`}
+            className="absolute left-1/2 z-[12] w-[min(92%,22rem)] -translate-x-1/2 -translate-y-1/2 px-1"
+            style={{ top: `${(b.yCenterPx / heightPx) * 100}%` }}
+          >
+            <div className="rounded-2xl border border-cyan-500/50 bg-slate-900 px-4 py-4 text-center shadow-[0_0_15px_rgba(6,182,212,0.4)] backdrop-blur-md">
+              <p className="font-mono text-[11px] font-bold uppercase tracking-[0.22em] text-cyan-200">{b.title}</p>
+              {b.planet.id > 0 ? (
+                <p className="mt-3 text-base font-bold leading-snug text-white sm:text-lg">{b.subtitle}</p>
+              ) : null}
+              <p className="mt-3 whitespace-normal break-words font-mono text-xs leading-relaxed text-slate-200 sm:text-sm">
+                {b.blurb}
+              </p>
+            </div>
+          </header>
+        ))}
+
+        <div className="relative z-20 min-h-0 w-full">
+          {orderedLevels.map((level) => {
+            const xPct = xPercentForLevelId(level.id);
+            const topPct = yPctByLevelId[level.id] ?? 50;
+            const unlocked = unlockedLevels.includes(level.id);
+            const isLocked = !unlocked || level.id > currentLevel;
+            const isActive = unlocked && level.id === currentLevel;
+            const isDone = unlocked && level.id < currentLevel;
+            const earned = (starsByLevel[String(level.id)] ?? 0) as 0 | 1 | 2 | 3;
+
+            const nodeSize = "size-[clamp(2.85rem,12vw,3.35rem)]";
 
             return (
-              <section key={planet.id} className="flex w-full flex-col items-stretch">
-                <header className="mx-auto my-10 w-[min(92%,22rem)] shrink-0 px-1">
-                  <div className="rounded-2xl border border-cyan-500/50 bg-slate-900 px-4 py-4 text-center shadow-[0_0_15px_rgba(6,182,212,0.4)] backdrop-blur-md">
-                    <p className="font-mono text-[11px] font-bold uppercase tracking-[0.22em] text-cyan-200">
-                      {title}
-                    </p>
-                    {planet.id > 0 ? (
-                      <p className="mt-3 text-base font-bold leading-snug text-white sm:text-lg">{subtitle}</p>
-                    ) : null}
-                    <p className="mt-3 whitespace-normal break-words font-mono text-xs leading-relaxed text-slate-200 sm:text-sm">
-                      {blurb}
-                    </p>
-                  </div>
-                </header>
-                <div
-                  className="relative mx-auto w-full max-w-[min(100%,26rem)] shrink-0"
-                  style={{ height: sectorBodyPx }}
-                  aria-label={`Secteur niveaux ${planet.levelMin}–${planet.levelMax}`}
-                >
-                  {levelsIn.map((level) => {
-                    const { x, y } = level.position;
-                    const localTop = ((y - yMin) / yDen) * 100;
-                    const unlocked = unlockedLevels.includes(level.id);
-                    const isLocked = !unlocked || level.id > currentLevel;
-                    const isActive = unlocked && level.id === currentLevel;
-                    const isDone = unlocked && level.id < currentLevel;
-                    const earned = (starsByLevel[String(level.id)] ?? 0) as 0 | 1 | 2 | 3;
-
-                    const nodeSize = "size-[clamp(2.85rem,12vw,3.35rem)]";
-
-                    return (
+              <div
+                key={level.id}
+                data-pp-map-level={level.id}
+                className="absolute z-20"
+                style={{
+                  left: `${xPct}%`,
+                  top: `${topPct}%`,
+                  transform: "translate(-50%, -50%)",
+                }}
+              >
+                <div className="relative flex flex-col items-center gap-1">
+                  {isLocked ? (
+                    <div
+                      className={`${nodeSize} relative flex cursor-not-allowed flex-col items-center justify-center rounded-full border-2 border-slate-700/90 bg-gradient-to-b from-slate-700 via-slate-800 to-slate-950 text-slate-300 shadow-[inset_0_2px_8px_rgb(0_0_0/0.5),0_4px_0_rgb(15_23_42)] ring-1 ring-black/40`}
+                      title={`Niveau ${level.id} verrouillé`}
+                    >
+                      <Lock className="size-[1.1rem] shrink-0 opacity-80" strokeWidth={2.5} aria-hidden />
+                      <span className="sr-only">Niveau {level.id} verrouillé</span>
+                      <span className="absolute bottom-1 font-mono text-[10px] font-black tabular-nums leading-none text-slate-500">
+                        {level.id}
+                      </span>
+                    </div>
+                  ) : isDone ? (
+                    <Link
+                      href={`/level/${level.id}`}
+                      onPointerDown={() => vibrateLevelTap()}
+                      className="group flex flex-col items-center gap-1 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-cyan-400/70"
+                      aria-label={`Niveau ${level.id} terminé, rejouer`}
+                    >
                       <div
-                        key={level.id}
-                        data-pp-map-level={level.id}
-                        className="absolute z-20"
-                        style={{
-                          left: `${x}%`,
-                          top: `${localTop}%`,
-                          transform: "translate(-50%, -50%)",
-                        }}
+                        className={`${nodeSize} flex items-center justify-center rounded-full border-2 border-emerald-400/70 bg-gradient-to-b from-amber-300 via-emerald-400 to-emerald-700 font-mono text-sm font-black text-emerald-950 shadow-[0_0_20px_rgb(52_211_153/0.55),inset_0_2px_6px_rgb(255_255_255/0.35)] ring-2 ring-emerald-300/40 transition-transform group-hover:scale-[1.04] group-active:scale-[0.96]`}
                       >
-                        <div className="relative flex flex-col items-center gap-1">
-                          {isLocked ? (
-                            <div
-                              className={`${nodeSize} relative flex cursor-not-allowed flex-col items-center justify-center rounded-full border-2 border-slate-700/90 bg-gradient-to-b from-slate-700 via-slate-800 to-slate-950 text-slate-300 shadow-[inset_0_2px_8px_rgb(0_0_0/0.5),0_4px_0_rgb(15_23_42)] ring-1 ring-black/40`}
-                              title={`Niveau ${level.id} verrouillé`}
-                            >
-                              <Lock className="size-[1.1rem] shrink-0 opacity-80" strokeWidth={2.5} aria-hidden />
-                              <span className="sr-only">Niveau {level.id} verrouillé</span>
-                              <span className="absolute bottom-1 font-mono text-[10px] font-black tabular-nums leading-none text-slate-500">
-                                {level.id}
-                              </span>
-                            </div>
-                          ) : isDone ? (
-                            <Link
-                              href={`/level/${level.id}`}
-                              onPointerDown={() => vibrateLevelTap()}
-                              className="group flex flex-col items-center gap-1 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-cyan-400/70"
-                              aria-label={`Niveau ${level.id} terminé, rejouer`}
-                            >
-                              <div
-                                className={`${nodeSize} flex items-center justify-center rounded-full border-2 border-emerald-400/70 bg-gradient-to-b from-amber-300 via-emerald-400 to-emerald-700 font-mono text-sm font-black text-emerald-950 shadow-[0_0_20px_rgb(52_211_153/0.55),inset_0_2px_6px_rgb(255_255_255/0.35)] ring-2 ring-emerald-300/40 transition-transform group-hover:scale-[1.04] group-active:scale-[0.96]`}
-                              >
-                                <Check className="size-6 stroke-[3] text-emerald-950 drop-shadow-sm" aria-hidden />
-                              </div>
-                              <div className="flex h-4 items-center justify-center gap-0.5" aria-hidden>
-                                {[0, 1, 2].map((i) => (
-                                  <Star
-                                    key={i}
-                                    className={`size-3.5 ${
-                                      i < earned
-                                        ? "fill-amber-400 text-amber-600 drop-shadow-[0_0_4px_rgb(251_191_36/0.8)]"
-                                        : "fill-slate-600/50 text-slate-500"
-                                    }`}
-                                    strokeWidth={1.25}
-                                  />
-                                ))}
-                              </div>
-                            </Link>
-                          ) : isActive ? (
-                            <motion.div
-                              animate={{ y: [0, -5, 0] }}
-                              transition={{ duration: 2.2, repeat: Number.POSITIVE_INFINITY, ease: "easeInOut" }}
-                              className="flex flex-col items-center gap-1"
-                            >
-                              <Link
-                                href={`/level/${level.id}`}
-                                onPointerDown={() => vibrateLevelTap()}
-                                className="group flex flex-col items-center focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-violet-400/80"
-                                aria-current="step"
-                                aria-label={`Niveau ${level.id} — à jouer`}
-                              >
-                                <div
-                                  className={`${nodeSize} flex items-center justify-center rounded-full border-2 border-cyan-200/90 bg-gradient-to-b from-violet-200 via-fuchsia-300 to-cyan-300 font-mono text-base font-black text-violet-950 shadow-[0_0_28px_rgb(34_211_238/0.65),0_0_14px_rgb(167_139_250/0.9),inset_0_2px_8px_rgb(255_255_255/0.5)] ring-2 ring-cyan-200/50 transition-transform group-hover:scale-[1.05] group-active:scale-[0.95]`}
-                                >
-                                  {level.id}
-                                </div>
-                              </Link>
-                            </motion.div>
-                          ) : null}
-                        </div>
+                        <Check className="size-6 stroke-[3] text-emerald-950 drop-shadow-sm" aria-hidden />
                       </div>
-                    );
-                  })}
+                      <div className="flex h-4 items-center justify-center gap-0.5" aria-hidden>
+                        {[0, 1, 2].map((i) => (
+                          <Star
+                            key={i}
+                            className={`size-3.5 ${
+                              i < earned
+                                ? "fill-amber-400 text-amber-600 drop-shadow-[0_0_4px_rgb(251_191_36/0.8)]"
+                                : "fill-slate-600/50 text-slate-500"
+                            }`}
+                            strokeWidth={1.25}
+                          />
+                        ))}
+                      </div>
+                    </Link>
+                  ) : isActive ? (
+                    <motion.div
+                      animate={{ y: [0, -5, 0] }}
+                      transition={{ duration: 2.2, repeat: Number.POSITIVE_INFINITY, ease: "easeInOut" }}
+                      className="flex flex-col items-center gap-1"
+                    >
+                      <Link
+                        href={`/level/${level.id}`}
+                        onPointerDown={() => vibrateLevelTap()}
+                        className="group flex flex-col items-center focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-violet-400/80"
+                        aria-current="step"
+                        aria-label={`Niveau ${level.id} — à jouer`}
+                      >
+                        <div
+                          className={`${nodeSize} flex items-center justify-center rounded-full border-2 border-cyan-200/90 bg-gradient-to-b from-violet-200 via-fuchsia-300 to-cyan-300 font-mono text-base font-black text-violet-950 shadow-[0_0_28px_rgb(34_211_238/0.65),0_0_14px_rgb(167_139_250/0.9),inset_0_2px_8px_rgb(255_255_255/0.5)] ring-2 ring-cyan-200/50 transition-transform group-hover:scale-[1.05] group-active:scale-[0.95]`}
+                        >
+                          {level.id}
+                        </div>
+                      </Link>
+                    </motion.div>
+                  ) : null}
                 </div>
-              </section>
+              </div>
             );
           })}
         </div>
 
-        <MapCeoAvatar stackedTopPercent={stackedTopPercent} />
+        <MapCeoAvatar stackedTopPercent={(id) => yPctByLevelId[id] ?? 50} />
       </div>
     </section>
   );

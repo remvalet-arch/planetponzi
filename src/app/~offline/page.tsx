@@ -7,7 +7,7 @@ export const metadata: Metadata = {
 
 export default function OfflinePage() {
   return (
-    <div className="flex min-h-0 flex-1 flex-col items-center justify-center gap-6 bg-pp-bg px-6 py-10 text-center text-pp-text">
+    <div className="flex min-h-0 flex-1 flex-col items-center justify-center gap-6 bg-pp-bg px-6 pb-10 pt-[max(2.5rem,calc(env(safe-area-inset-top)+1.5rem))] text-center text-pp-text">
       <p className="pp-kicker">Planet Ponzi Saga</p>
       <h1 className="max-w-sm text-2xl font-bold tracking-tight">Vous êtes hors ligne</h1>
       <p className="max-w-md font-mono text-sm text-pp-text-muted">

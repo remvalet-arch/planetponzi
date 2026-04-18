@@ -111,16 +111,38 @@ textarea,
     @apply active:scale-[0.92];
   }
 
+  /* Bottom sheet mobile (full width, arrondi haut) · Desktop centré (max-w-md, arrondi complet). */
   .pp-modal-backdrop {
-    @apply fixed inset-0 z-[100] flex items-end justify-center overscroll-none overscroll-y-none bg-slate-900/45 p-0 backdrop-blur-[2px];
-    padding-bottom: env(safe-area-inset-bottom);
-    padding-top: env(safe-area-inset-top);
+    @apply fixed inset-0 z-[100] flex w-full overscroll-none overscroll-y-none bg-slate-900/45 backdrop-blur-[2px];
+    @apply items-end justify-center p-0;
+    @apply sm:items-center sm:justify-center sm:p-4;
+    padding-bottom: max(0.75rem, env(safe-area-inset-bottom));
+    padding-top: max(1rem, env(safe-area-inset-top));
   }
 
   .pp-modal-panel {
-    @apply relative z-[101] flex max-h-[min(90dvh,720px)] w-full min-h-0 flex-col overflow-hidden overscroll-contain border-t border-x border-pp-border-strong bg-pp-surface shadow-2xl;
-    @apply rounded-t-[1.35rem] rounded-b-none;
+    @apply relative z-[101] mx-auto flex w-full max-w-md min-h-0 flex-col overflow-hidden overscroll-contain shadow-2xl;
+    @apply max-h-[min(92dvh,720px)] sm:max-h-[min(86dvh,680px)];
+    @apply rounded-t-[1.35rem] rounded-b-none border-t border-x border-pp-border-strong bg-pp-surface;
+    @apply sm:rounded-2xl sm:border;
     box-shadow: var(--pp-shadow-modal);
+  }
+
+  .pp-modal-panel--dark {
+    @apply border-white/15 bg-gradient-to-b from-slate-900 to-slate-950 text-slate-100;
+  }
+
+  .pp-modal-scroll {
+    @apply min-h-0 flex-1 overflow-y-auto overscroll-y-contain px-4 py-3;
+  }
+
+  .pp-modal-footer {
+    @apply shrink-0 border-t border-pp-border bg-pp-surface/95 px-4 py-3 backdrop-blur-sm;
+    padding-bottom: max(0.75rem, env(safe-area-inset-bottom));
+  }
+
+  .pp-modal-panel--dark .pp-modal-footer {
+    @apply border-white/10 bg-slate-950/95;
   }
 
   .pp-bottom-sheet-handle {
@@ -155,8 +177,8 @@ textarea,
   }
 
   .pp-header-bar {
-    @apply relative z-40 border-b border-pp-border bg-pp-surface/90 px-3 py-3 backdrop-blur-md sm:px-4;
-    padding-top: max(0.5rem, env(safe-area-inset-top));
+    @apply relative z-40 min-h-0 border-b border-pp-border bg-pp-surface/90 px-3 pb-3 backdrop-blur-md sm:px-4;
+    padding-top: max(env(safe-area-inset-top), 1rem);
   }
 
   .pp-toast {
@@ -173,13 +195,17 @@ textarea,
   }
 
   .pp-end-backdrop {
-    @apply fixed inset-0 z-[100] flex items-end justify-center overscroll-none overscroll-y-none bg-slate-900/45 p-0 backdrop-blur-[2px];
-    padding-bottom: env(safe-area-inset-bottom);
-    padding-top: env(safe-area-inset-top);
+    @apply fixed inset-0 z-[100] flex w-full overscroll-none overscroll-y-none bg-slate-900/45 p-0 backdrop-blur-[2px];
+    @apply items-end justify-center;
+    @apply sm:items-center sm:justify-center sm:p-4;
+    padding-bottom: max(0.75rem, env(safe-area-inset-bottom));
+    padding-top: max(1rem, env(safe-area-inset-top));
   }
 
   .pp-end-panel {
-    @apply relative z-[101] flex max-h-[min(92dvh,720px)] w-full min-h-0 flex-col overflow-hidden overscroll-contain rounded-t-[1.35rem] border-t border-x border-pp-border-strong bg-pp-surface shadow-2xl;
+    @apply relative z-[101] mx-auto flex max-h-[min(92dvh,720px)] w-full max-w-md min-h-0 flex-col overflow-hidden overscroll-contain shadow-2xl;
+    @apply rounded-t-[1.35rem] rounded-b-none border-t border-x border-pp-border-strong bg-pp-surface;
+    @apply sm:rounded-2xl sm:border;
     box-shadow: var(--pp-shadow-modal);
   }
 

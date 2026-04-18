@@ -56,7 +56,7 @@ export function MapNavDrawer({ open, onClose }: MapNavDrawerProps) {
             transition={{ type: "spring", stiffness: 420, damping: 38 }}
             className="relative z-[101] flex h-full w-[min(100%,20rem)] flex-col border-l border-pp-border-strong bg-pp-surface shadow-2xl"
           >
-            <div className="flex items-center justify-between border-b border-pp-border px-3 pb-3 pt-[max(0.5rem,env(safe-area-inset-top))]">
+            <div className="flex min-h-0 items-center justify-between border-b border-pp-border px-3 pb-3 pt-[max(1rem,env(safe-area-inset-top))]">
               <p className="font-mono text-xs uppercase tracking-widest text-pp-text-dim">{t.nav.menu}</p>
               <motion.button
                 type="button"

@@ -246,7 +246,7 @@ export function EndScreen({ onShareFeedback }: EndScreenProps) {
         <button
           type="button"
           onClick={() => setMinimized(true)}
-          className="pp-btn-icon absolute right-2 top-[max(0.5rem,env(safe-area-inset-top))] z-[1] min-h-[44px] min-w-[44px]"
+          className="pp-btn-icon absolute right-2 top-[max(1rem,env(safe-area-inset-top))] z-[1] min-h-[44px] min-w-[44px]"
           aria-label="Réduire le bilan"
         >
           <X className="size-5" strokeWidth={2} />

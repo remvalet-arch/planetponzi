@@ -64,7 +64,7 @@ export function BriefingOverlay({ open, onComplete }: BriefingOverlayProps) {
       <button
         type="button"
         onClick={dismiss}
-        className="pp-btn-icon absolute right-2 top-[max(0.75rem,env(safe-area-inset-top))] z-[1] min-h-[44px] min-w-[44px] border-white/10 bg-white/5 text-pp-text"
+        className="pp-btn-icon absolute right-2 top-[max(1rem,env(safe-area-inset-top))] z-[1] min-h-[44px] min-w-[44px] border-white/10 bg-white/5 text-pp-text"
         aria-label="Fermer le briefing"
       >
         <X className="size-5" strokeWidth={2} />

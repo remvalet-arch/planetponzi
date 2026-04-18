@@ -44,7 +44,7 @@ export function AppHeader({
 
   return (
     <>
-      <header className="pp-header-bar shrink-0">
+      <header className="pp-header-bar min-h-0 shrink-0">
         <div className="mx-auto flex w-full max-w-lg items-center gap-1.5 sm:gap-2">
           <motion.button
             type="button"
@@ -100,7 +100,7 @@ export function AppHeader({
             onClick={() => setMenuOpen(false)}
           />
           <div className="relative z-[101] flex h-full w-[min(100%,22rem)] flex-col border-l border-pp-border-strong bg-pp-surface shadow-2xl">
-            <div className="flex items-center justify-between border-b border-pp-border px-3 pb-3 pt-[max(0.5rem,env(safe-area-inset-top))]">
+            <div className="flex min-h-0 items-center justify-between border-b border-pp-border px-3 pb-3 pt-[max(1rem,env(safe-area-inset-top))]">
               <p className="font-mono text-xs uppercase tracking-widest text-pp-text-dim">Menu</p>
               <motion.button
                 type="button"

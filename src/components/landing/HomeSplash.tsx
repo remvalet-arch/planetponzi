@@ -93,7 +93,7 @@ export function HomeSplash() {
         transition={{ duration: 28, repeat: Number.POSITIVE_INFINITY, ease: "linear" }}
       />
 
-      <div className="relative z-[1] flex min-h-0 flex-1 flex-col items-center justify-center px-6 pb-8 pt-12">
+      <div className="relative z-[1] flex min-h-0 flex-1 flex-col items-center justify-center px-6 pb-8 pt-[max(3rem,calc(env(safe-area-inset-top)+2.5rem))]">
         <motion.div
           className="flex flex-col items-center text-center"
           initial={{ opacity: 0, y: 12 }}

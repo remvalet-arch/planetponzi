@@ -117,7 +117,7 @@ export default function LevelPage() {
   }
 
   return (
-    <div className="relative flex h-full min-h-0 max-h-[100dvh] flex-1 flex-col overflow-hidden overscroll-y-none bg-pp-bg text-pp-text">
+    <div className="relative flex h-full min-h-0 max-h-[100dvh] flex-1 flex-col overflow-hidden overscroll-y-none overscroll-x-none bg-pp-bg text-pp-text [overscroll-behavior-y:none]">
       {!persistReady ? (
         <div className="pp-loading-screen" role="status" aria-live="polite" aria-busy="true">
           <p className="pp-kicker opacity-90">Chargement du mandat</p>

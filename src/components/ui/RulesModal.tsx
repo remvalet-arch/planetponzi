@@ -50,7 +50,7 @@ export function RulesModal({ open, onClose }: RulesModalProps) {
         </button>
       </div>
 
-      <div className="pp-allow-select min-h-0 flex-1 overflow-y-auto overscroll-y-contain px-4 py-5">
+      <div className="pp-modal-scroll pp-allow-select py-5">
         <RulesSummaryBody />
       </div>
     </BottomSheetShell>

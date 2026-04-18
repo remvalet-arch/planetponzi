@@ -81,7 +81,7 @@ export default function LeaderboardPage() {
 
   return (
     <div className="flex min-h-0 flex-1 flex-col bg-pp-bg text-pp-text">
-      <header className="relative z-40 shrink-0 border-b border-pp-border bg-pp-bg/95 px-4 pb-3 pt-[max(0.5rem,env(safe-area-inset-top))] backdrop-blur-md">
+      <header className="relative z-40 min-h-0 shrink-0 border-b border-pp-border bg-pp-bg/95 px-4 pb-3 pt-[max(1rem,env(safe-area-inset-top))] backdrop-blur-md">
         <div className="flex items-center justify-center gap-2">
           <Trophy className="size-5 text-amber-300/90" strokeWidth={2.2} aria-hidden />
           <h1 className="text-center font-mono text-lg font-bold tracking-tight text-pp-text">

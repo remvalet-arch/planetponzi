@@ -92,7 +92,7 @@ export default function EmpirePage() {
 
   return (
     <div className="flex min-h-0 flex-1 flex-col bg-gradient-to-b from-slate-950 via-indigo-950 to-slate-950 text-slate-100">
-      <header className="relative z-40 shrink-0 border-b border-cyan-500/20 bg-slate-950/90 px-3 pb-3 pt-[max(0.5rem,env(safe-area-inset-top))] backdrop-blur-md">
+      <header className="relative z-40 min-h-0 shrink-0 border-b border-cyan-500/20 bg-slate-950/90 px-3 pb-3 pt-[max(env(safe-area-inset-top),1rem)] backdrop-blur-md">
         <div className="mx-auto flex max-w-lg items-center gap-2">
           <Link
             href="/map"
@@ -123,7 +123,7 @@ export default function EmpirePage() {
                 initial={{ opacity: 0, y: 16 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.04 * i, duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
-                className={`relative flex h-auto min-h-min shrink-0 flex-col overflow-visible rounded-2xl border p-4 shadow-lg ${
+                className={`relative flex h-auto shrink-0 flex-col overflow-visible rounded-2xl border p-4 shadow-lg ${
                   owned
                     ? "border-emerald-500/40 bg-emerald-950/35"
                     : "border-violet-500/35 bg-slate-900/70 backdrop-blur-sm"
@@ -199,11 +199,11 @@ export default function EmpirePage() {
 
       {bankruptcyOpen ? (
         <div
-          className="fixed inset-0 z-[100] flex items-end justify-center overscroll-y-none bg-black/70 p-4 pb-[max(1rem,env(safe-area-inset-bottom))] pt-[env(safe-area-inset-top)] sm:items-center"
+          className="pp-modal-backdrop bg-black/75"
           role="dialog"
           aria-modal="true"
           aria-labelledby="pp-bankruptcy-title"
-          onClick={(e) => {
+          onMouseDown={(e) => {
             if (e.target === e.currentTarget) setBankruptcyOpen(false);
           }}
         >

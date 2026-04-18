@@ -64,6 +64,7 @@ export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   maximumScale: 1,
+  userScalable: false,
   viewportFit: "cover",
 };
 
@@ -74,9 +75,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="fr" className={`${geistSans.variable} ${geistMono.variable} h-full`}>
-      <body className="flex h-full min-h-0 justify-center overflow-hidden overscroll-none overscroll-y-none bg-slate-950 text-slate-200 antialiased">
+      <body className="flex min-h-0 min-h-dvh w-full justify-center overflow-hidden overscroll-y-none bg-zinc-950 text-slate-200 antialiased">
         <main
-          className="relative mx-auto flex h-[100dvh] w-full max-w-md flex-col overflow-hidden overscroll-y-none bg-pp-bg text-pp-text shadow-2xl [transform:translateZ(0)]"
+          className="relative flex h-[100dvh] min-h-0 w-full max-w-md flex-col overflow-hidden overscroll-y-none bg-pp-bg text-pp-text shadow-2xl ring-1 ring-black/15 [transform:translateZ(0)] sm:my-2 sm:max-h-[min(100dvh,56rem)] sm:rounded-3xl"
           id="pp-game-shell"
         >
           <div className="flex min-h-0 min-w-0 flex-1 flex-col">{children}</div>

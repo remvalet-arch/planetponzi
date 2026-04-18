@@ -28,7 +28,7 @@ export function MapHeader() {
 
   return (
     <>
-      <header className="relative z-40 shrink-0 border-b border-pp-border bg-pp-bg/95 px-3 pb-3 pt-[max(0.5rem,env(safe-area-inset-top))] backdrop-blur-md">
+      <header className="relative z-40 min-h-0 shrink-0 border-b border-pp-border bg-pp-bg/95 px-3 pb-3 pt-[max(env(safe-area-inset-top),1rem)] backdrop-blur-md">
         <div className="mx-auto flex max-w-lg items-center justify-between gap-2">
           <motion.button
             type="button"

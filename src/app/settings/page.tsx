@@ -4,7 +4,7 @@ import { SettingsLanguageRow } from "@/src/components/settings/SettingsLanguageR
 
 export default function SettingsPage() {
   return (
-    <div className="flex min-h-0 flex-1 flex-col items-center justify-center gap-4 bg-pp-bg px-6 py-8 text-pp-text">
+    <div className="flex min-h-0 flex-1 flex-col items-center justify-center gap-4 bg-pp-bg px-6 pb-8 pt-[max(2rem,calc(env(safe-area-inset-top)+1rem))] text-pp-text">
       <h1 className="font-mono text-lg font-semibold">Paramètres</h1>
       <SettingsLanguageRow />
       <p className="max-w-sm text-center font-mono text-sm text-pp-text-muted">

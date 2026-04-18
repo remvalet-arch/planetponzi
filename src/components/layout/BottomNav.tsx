@@ -20,7 +20,7 @@ export function BottomNav() {
 
   return (
     <nav
-      className="pointer-events-auto fixed bottom-0 left-0 right-0 z-50 border-t border-pp-border-strong bg-pp-surface/80 pb-[max(0.35rem,env(safe-area-inset-bottom))] pt-1 backdrop-blur-lg"
+      className="pointer-events-auto fixed bottom-0 left-0 right-0 z-50 border-t border-pp-border-strong bg-pp-surface/80 pb-[max(0.5rem,env(safe-area-inset-bottom))] pt-1 backdrop-blur-lg"
       aria-label="Navigation principale"
     >
       <div className="mx-auto flex max-w-md items-stretch justify-around gap-1 px-2">

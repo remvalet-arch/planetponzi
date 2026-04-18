@@ -52,7 +52,9 @@ export function BottomSheetShell({
           }}
         >
           <motion.div
-            className={`pp-modal-panel max-w-md rounded-t-[1.35rem] ${panelClassName}`.trim()}
+            role="dialog"
+            aria-modal="true"
+            className={`pp-modal-panel ${panelClassName}`.trim()}
             initial={{ y: 28, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             exit={{ y: 20, opacity: 0 }}

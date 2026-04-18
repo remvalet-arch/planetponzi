@@ -54,7 +54,7 @@ export function StatsModal({ open, onClose }: StatsModalProps) {
         </button>
       </div>
 
-      <div className="min-h-0 flex-1 overflow-y-auto overscroll-y-contain">
+      <div className="pp-modal-scroll px-0 py-0">
         <StatsScreen />
       </div>
     </BottomSheetShell>
