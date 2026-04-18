@@ -3,7 +3,7 @@ import { getDeckScoreMultiplier } from "@/src/lib/difficulty";
 import { buildGridFromObstacles, getPlacementLengthFromObstacles } from "@/src/lib/grid-terrain";
 import { clearBuildingAt } from "@/src/lib/level-run-engine";
 import { generatePlacementSequence } from "@/src/lib/rng";
-import { calculateGridScore } from "@/src/lib/scoring";
+import { calculateGridScore, type CellScoringOptions } from "@/src/lib/scoring";
 import type { BuildingType, Cell, DeckChallengeLevel, ObstacleSpec } from "@/src/types/game";
 
 const scoreCache = new Map<string, number>();
@@ -20,6 +20,8 @@ export type SolverLevelContext = {
   seismicRift?: SeismicRiftSolverSpec;
   /** Requis si faille sismique. */
   cargoSeed?: string;
+  /** Bonus Tour Ponzi : +N par mine (hors méga 2×2 — aligné sur `session-scoring`). */
+  mineScoreBonusPerMine?: number;
 };
 
 function cacheKey(cargoSeed: string, deckChallengeLevel: DeckChallengeLevel, ctx: SolverLevelContext): string {
@@ -30,8 +32,8 @@ function cloneGrid(grid: Cell[]): Cell[] {
   return grid.map((c) => ({ ...c }));
 }
 
-function totalRoiScore(grid: Cell[], mult: number): number {
-  return Math.round(calculateGridScore(grid) * mult);
+function totalRoiScore(grid: Cell[], mult: number, scoring: CellScoringOptions): number {
+  return Math.round(calculateGridScore(grid, scoring) * mult);
 }
 
 function greedyPlaythrough(
@@ -45,6 +47,9 @@ function greedyPlaythrough(
   const placementCount = sequence.length;
   const cargoSeed = ctx.cargoSeed ?? "";
   const seismic = ctx.seismicRift;
+  const scoring: CellScoringOptions = {
+    mineScoreBonusPerMine: ctx.mineScoreBonusPerMine ?? 0,
+  };
 
   for (let turn = 0; turn < placementCount; turn++) {
     const building = sequence[turn]!;
@@ -59,7 +64,7 @@ function greedyPlaythrough(
     for (const idx of candidates) {
       const trial = cloneGrid(grid);
       trial[idx] = { ...trial[idx]!, building };
-      const s = totalRoiScore(trial, mult) + tieNoise(idx) * 0.001;
+      const s = totalRoiScore(trial, mult, scoring) + tieNoise(idx) * 0.001;
       if (s > best) {
         best = s;
         bestIdx = idx;
@@ -75,7 +80,7 @@ function greedyPlaythrough(
       }
     }
   }
-  return totalRoiScore(grid, mult);
+  return totalRoiScore(grid, mult, scoring);
 }
 
 /**

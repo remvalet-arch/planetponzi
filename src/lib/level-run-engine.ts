@@ -63,8 +63,12 @@ export function isFiscalBossLevel(levelId: number): boolean {
 /**
  * Choisit la case occupée (hors déjà gelée) avec la plus forte contribution de score de base.
  */
-export function pickFiscalFreezeTarget(grid: Cell[], frozenCellIndices: readonly number[]): number | null {
-  const scores = getCellScores(grid);
+export function pickFiscalFreezeTarget(
+  grid: Cell[],
+  frozenCellIndices: readonly number[],
+  mineScoreBonusPerMine = 0,
+): number | null {
+  const scores = getCellScores(grid, { mineScoreBonusPerMine });
   const frozen = new Set(frozenCellIndices);
   let best = -Infinity;
   let bestIdx: number | null = null;
@@ -97,6 +101,8 @@ export type EvaluateTriggersInput = {
   maxTurn: number;
   cargoSeed: string;
   seismicRift?: SeismicRiftDef;
+  /** Bonus Tour Ponzi par mine (gel fiscal : cible la plus forte contribution). */
+  mineScoreBonusPerMine?: number;
 };
 
 export type EvaluateTriggersOutput = {
@@ -133,7 +139,7 @@ export function evaluateTriggers(input: EvaluateTriggersInput): EvaluateTriggers
     input.newTurn <= input.maxTurn &&
     input.newTurn % 4 === 0
   ) {
-    const pick = pickFiscalFreezeTarget(working, nextFrozen);
+    const pick = pickFiscalFreezeTarget(working, nextFrozen, input.mineScoreBonusPerMine ?? 0);
     if (pick != null && !nextFrozen.includes(pick)) {
       nextFrozen = [...nextFrozen, pick];
       newEffects.push({ kind: "fiscal_freeze", turn: input.newTurn, cellIndex: pick });
@@ -164,7 +170,8 @@ export function scoreGridForDeck(
   grid: Cell[],
   frozenCellIndices: readonly number[],
   deckMultiplier: number,
+  mineScoreBonusPerMine?: number,
 ): number {
-  const base = calculateSessionGridScore(grid, frozenCellIndices);
+  const base = calculateSessionGridScore(grid, frozenCellIndices, mineScoreBonusPerMine);
   return Math.round(base * deckMultiplier);
 }

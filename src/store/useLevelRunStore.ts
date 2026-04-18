@@ -20,6 +20,7 @@ import {
 } from "@/src/lib/level-run-engine";
 import { generatePlacementSequence, getDailyStats } from "@/src/lib/rng";
 import { persistLocalStorage } from "@/src/lib/zustand-persist-storage";
+import { getMineScoreBonusPerMine } from "@/src/lib/empire-tower";
 import { applyPrestigeToRawScore } from "@/src/lib/prestige";
 import { recordGameCompletion } from "@/src/lib/stats";
 import { calculateSessionGridScore } from "@/src/lib/session-scoring";
@@ -403,7 +404,13 @@ export const useLevelRunStore = create<LevelRunStore>()(
 
           const nextGrid = clearBuildingAt(state.grid, verdict.cellIndex);
           const mult = getDeckScoreMultiplier(state.deckChallengeLevel);
-          const rawScore = scoreGridForDeck(nextGrid, state.frozenCellIndices, mult);
+          const mineScoreBonusPerMine = getMineScoreBonusPerMine();
+          const rawScore = scoreGridForDeck(
+            nextGrid,
+            state.frozenCellIndices,
+            mult,
+            mineScoreBonusPerMine,
+          );
           const nextScore = scoreWithPrestige(rawScore);
           const nonce = state.demolishNonce + 1;
 
@@ -435,6 +442,7 @@ export const useLevelRunStore = create<LevelRunStore>()(
         const finished = nextTurn >= maxTurn;
 
         const levelDef = getLevelById(state.levelId);
+        const mineScoreBonusPerMine = getMineScoreBonusPerMine();
         const triggerOut = evaluateTriggers({
           levelId: state.levelId,
           gridBeforePlacement,
@@ -444,11 +452,17 @@ export const useLevelRunStore = create<LevelRunStore>()(
           maxTurn,
           cargoSeed: state.seed,
           seismicRift: levelDef?.seismicRift,
+          mineScoreBonusPerMine,
         });
 
         const mult = getDeckScoreMultiplier(state.deckChallengeLevel);
         const finalGrid = triggerOut.postAleasGrid;
-        const rawScore = scoreGridForDeck(finalGrid, triggerOut.nextFrozenCellIndices, mult);
+        const rawScore = scoreGridForDeck(
+          finalGrid,
+          triggerOut.nextFrozenCellIndices,
+          mult,
+          mineScoreBonusPerMine,
+        );
         const nextScore = scoreWithPrestige(rawScore);
         const spyRem =
           state.spyPreviewTurnsRemaining > 0 ? state.spyPreviewTurnsRemaining - 1 : 0;

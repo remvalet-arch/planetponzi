@@ -1,22 +1,30 @@
 import type { Cell } from "@/src/types/game";
 
+import { getMineScoreBonusPerMine } from "@/src/lib/empire-tower";
 import { detectIndustrialMega2x2, INDUSTRIAL_MEGA_TOTAL_SCORE } from "@/src/lib/megas";
 import { getCellScores } from "@/src/lib/scoring";
 
 const CELL_COUNT = 16;
 
+function resolveMineBonus(mineScoreBonusPerMine?: number): number {
+  return mineScoreBonusPerMine !== undefined ? mineScoreBonusPerMine : getMineScoreBonusPerMine();
+}
+
 /**
  * Score de session : méga 2×2 mines → total fixe ; sinon somme des cases avec gels fiscaux à 0.
+ * @param mineScoreBonusPerMine — bonus Tour par mine ; si omis, lecture Empire (client).
  */
 export function calculateSessionGridScore(
   grid: Cell[],
   frozenCellIndices: readonly number[] = [],
+  mineScoreBonusPerMine?: number,
 ): number {
   if (grid.length !== CELL_COUNT) return 0;
   if (detectIndustrialMega2x2(grid)) return INDUSTRIAL_MEGA_TOTAL_SCORE;
 
+  const mine = resolveMineBonus(mineScoreBonusPerMine);
   const frozen = new Set(frozenCellIndices);
-  const raw = getCellScores(grid);
+  const raw = getCellScores(grid, { mineScoreBonusPerMine: mine });
   let sum = 0;
   for (let i = 0; i < CELL_COUNT; i++) {
     if (!frozen.has(i)) sum += raw[i] ?? 0;
@@ -28,6 +36,7 @@ export function calculateSessionGridScore(
 export function getSessionCellScores(
   grid: Cell[],
   frozenCellIndices: readonly number[] = [],
+  mineScoreBonusPerMine?: number,
 ): number[] {
   if (grid.length !== CELL_COUNT) {
     throw new Error(`getSessionCellScores: expected ${CELL_COUNT} cells, got ${grid.length}.`);
@@ -37,7 +46,8 @@ export function getSessionCellScores(
     const megaSet = new Set<number>(mega.indices);
     return Array.from({ length: CELL_COUNT }, (_, i) => (megaSet.has(i) ? 10 : 0));
   }
+  const mine = resolveMineBonus(mineScoreBonusPerMine);
   const frozen = new Set(frozenCellIndices);
-  const raw = getCellScores(grid);
+  const raw = getCellScores(grid, { mineScoreBonusPerMine: mine });
   return raw.map((v, i) => (frozen.has(i) ? 0 : v));
 }

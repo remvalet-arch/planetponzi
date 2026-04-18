@@ -4,6 +4,11 @@ const COLS = 4;
 const ROWS = 4;
 const CELL_COUNT = ROWS * COLS;
 
+/** Options de score (ex. bonus passif Tour Ponzi sur les mines). */
+export type CellScoringOptions = {
+  mineScoreBonusPerMine?: number;
+};
+
 /**
  * Voisinage **orthogonal** sur une grille 4×4 indexée en 1D (ligne par ligne).
  * Les bords de ligne/colonne sont respectés : ex. l’index 3 n’est pas voisin de 4.
@@ -25,6 +30,7 @@ function scoreForCell(
   building: BuildingType,
   index: number,
   grid: Cell[],
+  mineScoreBonusPerMine: number,
 ): number {
   const self = grid[index];
   if (!self || self.isPlayable === false) return 0;
@@ -33,7 +39,7 @@ function scoreForCell(
 
   switch (building) {
     case "mine":
-      return 3;
+      return 3 + mineScoreBonusPerMine;
 
     case "serre": {
       let adjacentSerres = 0;
@@ -70,13 +76,14 @@ function scoreForCell(
  * Score attribué à chaque case (0 si vide). Même règles que le total : bonus/malus
  * orthogonaux pris en compte **pour cette case uniquement**.
  */
-export function getCellScores(grid: Cell[]): number[] {
+export function getCellScores(grid: Cell[], options?: CellScoringOptions): number[] {
   if (grid.length !== CELL_COUNT) {
     throw new Error(
       `getCellScores: expected ${CELL_COUNT} cells, got ${grid.length}.`,
     );
   }
 
+  const mineScoreBonusPerMine = options?.mineScoreBonusPerMine ?? 0;
   const scores = new Array<number>(CELL_COUNT);
   for (let i = 0; i < CELL_COUNT; i++) {
     const building = grid[i]?.building ?? null;
@@ -84,7 +91,8 @@ export function getCellScores(grid: Cell[]): number[] {
       scores[i] = 0;
       continue;
     }
-    scores[i] = building === null ? 0 : scoreForCell(building, i, grid);
+    scores[i] =
+      building === null ? 0 : scoreForCell(building, i, grid, mineScoreBonusPerMine);
   }
   return scores;
 }
@@ -93,6 +101,6 @@ export function getCellScores(grid: Cell[]): number[] {
  * Score total : somme des contributions de chaque case **non vide**.
  * La position sur le plateau est l’**indice du tableau** `0..15` (cohérent avec la grille 4×4).
  */
-export function calculateGridScore(grid: Cell[]): number {
-  return getCellScores(grid).reduce((sum, v) => sum + v, 0);
+export function calculateGridScore(grid: Cell[], options?: CellScoringOptions): number {
+  return getCellScores(grid, options).reduce((sum, v) => sum + v, 0);
 }

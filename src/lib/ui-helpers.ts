@@ -1,5 +1,6 @@
 import type { BuildingType, Cell, DeckChallengeLevel } from "@/src/types/game";
 import { formatMultiplierFr } from "@/src/lib/difficulty";
+import { getMineScoreBonusPerMine } from "@/src/lib/empire-tower";
 import { calculateStars } from "@/src/lib/levels";
 import { getSessionCellScores } from "@/src/lib/session-scoring";
 
@@ -83,7 +84,11 @@ export function generateShareContent(
   seed: string,
   meta?: ShareMeta,
 ): string {
-  const cellScores = getSessionCellScores(grid, meta?.frozenCellIndices ?? []);
+  const cellScores = getSessionCellScores(
+    grid,
+    meta?.frozenCellIndices ?? [],
+    getMineScoreBonusPerMine(),
+  );
   const rows: string[] = [];
   for (let r = 0; r < 4; r++) {
     let line = "";

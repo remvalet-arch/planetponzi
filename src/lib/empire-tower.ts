@@ -81,6 +81,55 @@ export const EMPIRE_FLOORS: EmpireFloorDef[] = [
     cost: 15000,
     effects: { livesMaxBonus: 1 },
   },
+  {
+    id: "skydeck-yield",
+    order: 5,
+    name: "Skydeck « Yield Infini »",
+    description:
+      "Terrasse vitrée où l'on respire le CO₂ des autres. Une vie de plus s'achète comme une option sur votre prochain burn-out.",
+    emoji: "🌇",
+    cost: 25000,
+    effects: { livesMaxBonus: 1 },
+  },
+  {
+    id: "cloison-structured",
+    order: 6,
+    name: "Cloisons structurées (tranche AAA-)",
+    description:
+      "Chaque mine rapporte plus, car la notation, c'est de la confiance... et la confiance se monnaie.",
+    emoji: "🏗️",
+    cost: 50000,
+    effects: { mineScoreBonusPerMine: 1 },
+  },
+  {
+    id: "wellness-captive",
+    order: 7,
+    name: "Étage Wellness Captif",
+    description:
+      "Fontaine à kombucha et +1 vie max : le bien-être n'est pas un droit, c'est un lock-in productif.",
+    emoji: "🧘",
+    cost: 100000,
+    effects: { livesMaxBonus: 1 },
+  },
+  {
+    id: "war-room-narratif",
+    order: 8,
+    name: "War Room du Narratif",
+    description: "Table ovale et vérité ajustable. Les mines deviennent une story : +2 pts / mine.",
+    emoji: "📡",
+    cost: 225000,
+    effects: { mineScoreBonusPerMine: 2 },
+  },
+  {
+    id: "orbite-board",
+    order: 9,
+    name: "Orbite du Board (LEO)",
+    description:
+      "Satellite corporate. Visibilité planétaire, moralité nulle. Package exécutif : +1 vie max et +1 pt / mine.",
+    emoji: "🛰️",
+    cost: 500000,
+    effects: { livesMaxBonus: 1, mineScoreBonusPerMine: 1 },
+  },
 ];
 
 export function getEmpireFloorById(id: string): EmpireFloorDef | undefined {
@@ -127,4 +176,9 @@ export function getEffectiveMaxLives(): number {
 
 export function getEffectiveLifeRechargeMs(): number {
   return computePassiveModifiers(readUnlockedNodesLazy()).lifeRechargeIntervalMs;
+}
+
+/** Bonus mine agrégé (Tour) — pour scoring ; 0 hors client ou sans déblocage. */
+export function getMineScoreBonusPerMine(): number {
+  return computePassiveModifiers(readUnlockedNodesLazy()).mineScoreBonusPerMine;
 }

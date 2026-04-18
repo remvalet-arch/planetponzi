@@ -9,6 +9,7 @@ import { PanelBottomOpen, Share2, Star, X } from "lucide-react";
 
 import { playVictoryCash } from "@/src/lib/game-sounds";
 import { vibrateVictoryStars } from "@/src/lib/haptics";
+import { computePassiveModifiers } from "@/src/lib/empire-tower";
 import {
   calculateStars,
   getLevelById,
@@ -20,6 +21,7 @@ import { estimateMaxScore } from "@/src/lib/solver";
 import { useAppStrings } from "@/src/lib/i18n/useAppStrings";
 import { copyShareToClipboard } from "@/src/lib/ui-helpers";
 import { useEconomyStore } from "@/src/store/useEconomyStore";
+import { useEmpireStore } from "@/src/store/useEmpireStore";
 import { useLevelRunStore } from "@/src/store/useLevelRunStore";
 import { useProgressStore } from "@/src/store/useProgressStore";
 
@@ -60,6 +62,9 @@ export function EndScreen({ onShareFeedback }: EndScreenProps) {
   const deckChallengeLevel = useLevelRunStore((s) => s.deckChallengeLevel);
   const enterLevel = useLevelRunStore((s) => s.enterLevel);
   const unlockedLevels = useProgressStore((s) => s.unlockedLevels);
+  const mineEmpireBonus = useEmpireStore((s) =>
+    computePassiveModifiers(s.unlockedNodes).mineScoreBonusPerMine,
+  );
 
   const [shareLabel, setShareLabel] = useState<"idle" | "copied" | "error">("idle");
   const [minimized, setMinimized] = useState(false);
@@ -154,8 +159,11 @@ export function EndScreen({ onShareFeedback }: EndScreenProps) {
   const maxScoreEstimate = useMemo(() => {
     if (!levelDef) return 0;
     const deck = levelDef.deckChallengeLevel ?? 0;
-    return estimateMaxScore(levelDef.seed, deck, getSolverLevelContext(levelDef));
-  }, [levelDef]);
+    return estimateMaxScore(levelDef.seed, deck, {
+      ...getSolverLevelContext(levelDef),
+      mineScoreBonusPerMine: mineEmpireBonus,
+    });
+  }, [levelDef, mineEmpireBonus]);
 
   if (status !== "finished" || levelId < 1) return null;
 

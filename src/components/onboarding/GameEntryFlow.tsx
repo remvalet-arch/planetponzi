@@ -7,9 +7,11 @@ import { Sparkles, Star } from "lucide-react";
 import { BottomSheetShell } from "@/src/components/ui/BottomSheetShell";
 import { markRulesFirstVisitDone } from "@/src/components/ui/RulesModal";
 import { useAppStrings } from "@/src/lib/i18n/useAppStrings";
-import { getLevelById } from "@/src/lib/levels";
+import { computePassiveModifiers } from "@/src/lib/empire-tower";
+import { getLevelById, getSolverLevelContext } from "@/src/lib/levels";
 import { estimateMaxScore } from "@/src/lib/solver";
 import { markTutorialCompleted } from "@/src/lib/onboarding-flags";
+import { useEmpireStore } from "@/src/store/useEmpireStore";
 import { useLevelRunStore } from "@/src/store/useLevelRunStore";
 
 const thumbPad =
@@ -29,14 +31,20 @@ export function GameEntryFlow({ open }: GameEntryFlowProps) {
   const lockedSeed = useLevelRunStore((s) => s.deckChallengeLockedSeed);
   const levelId = useLevelRunStore((s) => s.levelId);
   const beginPlacement = useLevelRunStore((s) => s.beginPlacement);
+  const mineEmpireBonus = useEmpireStore((s) =>
+    computePassiveModifiers(s.unlockedNodes).mineScoreBonusPerMine,
+  );
 
   const sheetOpen = open && lockedSeed !== seed;
   const def = levelId > 0 ? getLevelById(levelId) : undefined;
 
   const maxEstimated = useMemo(() => {
     if (!def) return null;
-    return estimateMaxScore(def.seed, def.deckChallengeLevel ?? 0);
-  }, [def]);
+    return estimateMaxScore(def.seed, def.deckChallengeLevel ?? 0, {
+      ...getSolverLevelContext(def),
+      mineScoreBonusPerMine: mineEmpireBonus,
+    });
+  }, [def, mineEmpireBonus]);
 
   const handlePlay = useCallback(() => {
     markRulesFirstVisitDone();
