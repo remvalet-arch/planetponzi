@@ -1,9 +1,12 @@
+"use client";
+
 import type { ReactNode } from "react";
 
 import {
   formatMultiplierFr,
   getDeckChallengeTitle,
 } from "@/src/lib/difficulty";
+import { useAppStrings } from "@/src/lib/i18n/useAppStrings";
 import { DECK_CHALLENGE_LEVELS, type DeckChallengeLevel } from "@/src/types/game";
 
 function SectionTitle({ children }: { children: ReactNode }) {
@@ -50,6 +53,8 @@ function FormulaRow({
 
 /** Contenu pédagogique des règles (réutilisé par la modale menu et le flux d’entrée). */
 export function RulesSummaryBody() {
+  const { t } = useAppStrings();
+
   return (
     <div className="space-y-5">
       <section className="space-y-2">
@@ -128,6 +133,13 @@ export function RulesSummaryBody() {
         </div>
         <p className="pt-1 text-center font-mono text-[9px] text-pp-text-dim">
           Serre : 1 M$ de base + bonus voisins · Eau : 0 si aucun voisin éligible
+        </p>
+      </section>
+
+      <section className="space-y-2 border-t border-pp-border pt-4">
+        <SectionTitle>{t.rules.fiscalBossTitle}</SectionTitle>
+        <p className="rounded-xl border border-pp-border bg-pp-elevated/50 px-3 py-3 text-center font-mono text-[11px] leading-relaxed text-pp-text-muted">
+          {t.rules.fiscalBossBody}
         </p>
       </section>
     </div>

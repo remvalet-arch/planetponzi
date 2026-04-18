@@ -394,15 +394,29 @@ export function LevelMap({ scrollParentRef }: LevelMapProps) {
             strokeLinejoin="round"
           />
           {progressD ? (
-            <polyline
-              fill="none"
-              points={progressD}
-              stroke={`url(#${gradId})`}
-              strokeWidth={0.9}
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              filter={`url(#${filterId})`}
-            />
+            <>
+              <polyline
+                fill="none"
+                points={progressD}
+                stroke={`url(#${gradId})`}
+                strokeWidth={0.9}
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                filter={`url(#${filterId})`}
+              />
+              <polyline
+                className="animate-data-flow"
+                fill="none"
+                points={progressD}
+                stroke={`url(#${gradId})`}
+                strokeWidth={1.5}
+                strokeDasharray="4 12"
+                strokeDashoffset={0}
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                opacity={0.92}
+              />
+            </>
           ) : null}
         </svg>
 
@@ -413,11 +427,13 @@ export function LevelMap({ scrollParentRef }: LevelMapProps) {
             style={{ top: `${(b.yCenterPx / heightPx) * 100}%` }}
           >
             <div className="rounded-2xl border border-cyan-500/50 bg-slate-900 px-4 py-4 text-center shadow-[0_0_15px_rgba(6,182,212,0.4)] backdrop-blur-md">
-              <p className="font-mono text-[11px] font-bold uppercase tracking-[0.22em] text-cyan-200">{b.title}</p>
+              <p className="pp-map-banner-kicker font-mono text-[11px] font-bold uppercase tracking-[0.22em] text-cyan-200">
+                {b.title}
+              </p>
               {b.planet.id > 0 ? (
-                <p className="mt-3 text-base font-bold leading-snug text-white sm:text-lg">{b.subtitle}</p>
+                <p className="pp-map-banner-title mt-3 text-base font-bold leading-snug text-white sm:text-lg">{b.subtitle}</p>
               ) : null}
-              <p className="mt-3 whitespace-normal break-words font-mono text-xs leading-relaxed text-slate-200 sm:text-sm">
+              <p className="pp-map-banner-body mt-3 whitespace-normal break-words font-mono text-xs leading-relaxed text-slate-200 sm:text-sm">
                 {b.blurb}
               </p>
             </div>
@@ -436,6 +452,8 @@ export function LevelMap({ scrollParentRef }: LevelMapProps) {
             const earned = (starsByLevel[String(level.id)] ?? 0) as 0 | 1 | 2 | 3;
 
             const nodeSize = "size-[clamp(2.85rem,12vw,3.35rem)]";
+            /** Orbe « verre » sans backdrop-blur coûteux (sauf nœud actif). */
+            const orbGlassBase = `${nodeSize} rounded-full border border-slate-500/30 bg-slate-900/60 shadow-[inset_0_4px_12px_rgba(255,255,255,0.05),0_4px_15px_rgba(0,0,0,0.5)]`;
 
             return (
               <div
@@ -451,7 +469,7 @@ export function LevelMap({ scrollParentRef }: LevelMapProps) {
                 <div className="relative flex flex-col items-center gap-1">
                   {isLocked ? (
                     <div
-                      className={`${nodeSize} relative flex cursor-not-allowed flex-col items-center justify-center rounded-full border-2 border-slate-700/90 bg-gradient-to-b from-slate-700 via-slate-800 to-slate-950 text-slate-300 shadow-[inset_0_2px_8px_rgb(0_0_0/0.5),0_4px_0_rgb(15_23_42)] ring-1 ring-black/40`}
+                      className={`${orbGlassBase} relative flex cursor-not-allowed flex-col items-center justify-center text-slate-300`}
                       title={`Niveau ${level.id} verrouillé`}
                     >
                       <Lock className="size-[1.1rem] shrink-0 opacity-80" strokeWidth={2.5} aria-hidden />
@@ -468,9 +486,9 @@ export function LevelMap({ scrollParentRef }: LevelMapProps) {
                       aria-label={`Niveau ${level.id} terminé, rejouer`}
                     >
                       <div
-                        className={`${nodeSize} flex items-center justify-center rounded-full border-2 border-emerald-400/70 bg-gradient-to-b from-amber-300 via-emerald-400 to-emerald-700 font-mono text-sm font-black text-emerald-950 shadow-[0_0_20px_rgb(52_211_153/0.55),inset_0_2px_6px_rgb(255_255_255/0.35)] ring-2 ring-emerald-300/40 transition-transform group-hover:scale-[1.04] group-active:scale-[0.96]`}
+                        className={`${orbGlassBase} flex items-center justify-center border-2 border-emerald-400/70 font-mono text-sm font-black text-emerald-200 shadow-[inset_0_4px_12px_rgba(255,255,255,0.06),0_4px_15px_rgba(0,0,0,0.5),0_0_18px_rgba(52,211,153,0.4)] transition-transform group-hover:scale-[1.04] group-active:scale-[0.96]`}
                       >
-                        <Check className="size-6 stroke-[3] text-emerald-950 drop-shadow-sm" aria-hidden />
+                        <Check className="size-6 stroke-[3] text-emerald-200 drop-shadow-[0_0_6px_rgba(167,243,208,0.7)]" aria-hidden />
                       </div>
                       <div className="flex h-4 items-center justify-center gap-0.5" aria-hidden>
                         {[0, 1, 2].map((i) => (
@@ -500,7 +518,7 @@ export function LevelMap({ scrollParentRef }: LevelMapProps) {
                         aria-label={`Niveau ${level.id} — à jouer`}
                       >
                         <div
-                          className={`${nodeSize} flex items-center justify-center rounded-full border-2 border-cyan-200/90 bg-gradient-to-b from-violet-200 via-fuchsia-300 to-cyan-300 font-mono text-base font-black text-violet-950 shadow-[0_0_28px_rgb(34_211_238/0.65),0_0_14px_rgb(167_139_250/0.9),inset_0_2px_8px_rgb(255_255_255/0.5)] ring-2 ring-cyan-200/50 transition-transform group-hover:scale-[1.05] group-active:scale-[0.95]`}
+                          className={`${nodeSize} flex items-center justify-center rounded-full border-2 border-amber-400 bg-gradient-to-b from-violet-300/85 via-fuchsia-300/80 to-cyan-300/85 font-mono text-base font-black text-violet-950 backdrop-blur-sm shadow-[inset_0_4px_12px_rgba(255,255,255,0.2),0_0_20px_rgba(251,191,36,0.6)] transition-transform group-hover:scale-[1.05] group-active:scale-[0.95]`}
                         >
                           {level.id}
                         </div>

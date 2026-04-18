@@ -28,7 +28,10 @@ export type ProgressStore = {
   lastCompletedLevelId: number | null;
   /** Prestige (faillite stratégique) : +10 % score final par palier. */
   prestigeLevel: number;
+  /** Tutoriel gel fiscal (modale à brancher plus tard). */
+  hasSeenFiscalFreezeTutorial: boolean;
   incrementPrestige: () => void;
+  markFiscalFreezeTutorialSeen: () => void;
   /**
    * Fin de partie : meilleur score / étoiles, débloque le niveau suivant si au moins 1★.
    * Idempotent si les valeurs ne sont pas meilleures que l’existant.
@@ -72,6 +75,7 @@ export const useProgressStore = create<ProgressStore>()(
       pseudo: null,
       lastCompletedLevelId: null,
       prestigeLevel: 0,
+      hasSeenFiscalFreezeTutorial: false,
 
       incrementPrestige: () => {
         set((s) => ({
@@ -80,6 +84,8 @@ export const useProgressStore = create<ProgressStore>()(
       },
 
       clearLastCompletedLevel: () => set({ lastCompletedLevelId: null }),
+
+      markFiscalFreezeTutorialSeen: () => set({ hasSeenFiscalFreezeTutorial: true }),
 
       setPseudo: (raw) => {
         const t = raw.trim().slice(0, 15);
@@ -97,6 +103,7 @@ export const useProgressStore = create<ProgressStore>()(
           playerId: s.playerId,
           pseudo: s.pseudo,
           prestigeLevel: s.prestigeLevel,
+          hasSeenFiscalFreezeTutorial: false,
         }));
       },
 
@@ -145,7 +152,7 @@ export const useProgressStore = create<ProgressStore>()(
     }),
     {
       name: "planet-ponzi-progress",
-      version: 9,
+      version: 10,
       storage: persistLocalStorage,
       partialize: (state) => ({
         unlockedLevels: state.unlockedLevels,
@@ -156,6 +163,7 @@ export const useProgressStore = create<ProgressStore>()(
         playerId: state.playerId,
         pseudo: state.pseudo,
         prestigeLevel: state.prestigeLevel,
+        hasSeenFiscalFreezeTutorial: state.hasSeenFiscalFreezeTutorial,
       }),
       migrate: (persisted, fromVersion) => {
         let base = (persisted ?? {}) as Record<string, unknown>;
@@ -228,6 +236,15 @@ export const useProgressStore = create<ProgressStore>()(
           const n =
             typeof pl === "number" && Number.isFinite(pl) ? Math.min(999, Math.max(0, Math.floor(pl))) : 0;
           base = { ...base, prestigeLevel: n };
+        }
+        if (fromVersion < 10) {
+          base = {
+            ...base,
+            hasSeenFiscalFreezeTutorial:
+              typeof base.hasSeenFiscalFreezeTutorial === "boolean"
+                ? base.hasSeenFiscalFreezeTutorial
+                : false,
+          };
         }
         return base;
       },

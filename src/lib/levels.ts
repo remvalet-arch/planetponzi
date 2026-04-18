@@ -180,11 +180,13 @@ export type LevelDefinition = {
 export const LEVEL_COUNT = 100;
 
 function buildSolverContext(
+  levelId: number,
   seed: string,
   obstacles: ObstacleSpec[] | undefined,
   seismic: { triggerAtTurn: number; targetCellIndex?: number } | undefined,
 ): SolverLevelContext {
   return {
+    levelId,
     obstacles,
     placementCount: getPlacementLengthFromObstacles(obstacles),
     seismicRift: seismic,
@@ -194,7 +196,7 @@ function buildSolverContext(
 
 /** Contexte solver pour l’UI (bannière optimal, etc.). */
 export function getSolverLevelContext(def: LevelDefinition): SolverLevelContext {
-  return buildSolverContext(def.seed, def.obstacles, def.seismicRift);
+  return buildSolverContext(def.id, def.seed, def.obstacles, def.seismicRift);
 }
 
 /** Seuils dérivés du score max estimé (solver glouton + marges 35 % / 60 % / 85 %). */
@@ -246,7 +248,7 @@ export function generateLevels(count: number): LevelDefinition[] {
     const seismicRift = id === 100 ? { triggerAtTurn: 8 } : undefined;
     /** Niveau 15 : mandat « verdissement » (démo conditions de victoire). */
     const winCondition = id === 15 ? { minForests: 4 } : undefined;
-    const solverCtx = buildSolverContext(seed, obstacles, seismicRift);
+    const solverCtx = buildSolverContext(id, seed, obstacles, seismicRift);
     out.push({
       id,
       planetId,

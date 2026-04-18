@@ -1,15 +1,13 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Link from "next/link";
 import { motion } from "framer-motion";
-import { BarChart3, BookOpen, Map, Menu, RotateCcw, X } from "lucide-react";
+import { Menu } from "lucide-react";
 
+import { AppNavDrawer, type AppNavLevelMenuExtras } from "@/src/components/layout/AppNavDrawer";
 import { EconomyHeader } from "@/src/components/layout/EconomyHeader";
 import { useAppStrings } from "@/src/lib/i18n/useAppStrings";
 import { useLevelRunStore } from "@/src/store/useLevelRunStore";
-
-const MotionLink = motion.create(Link);
 
 const tap = { scale: 0.92 };
 
@@ -20,6 +18,8 @@ type AppHeaderProps = {
   onRestartLevel?: () => void;
   /** Partie en cours : abandon + navigation (ex. vers /map). */
   onNavigateToMap?: () => void;
+  /** Entrées Carte + Recommencer dans le menu global (même tiroir que la carte). */
+  levelMenu?: AppNavLevelMenuExtras | null;
 };
 
 export function AppHeader({
@@ -28,11 +28,16 @@ export function AppHeader({
   onOpenStats,
   onRestartLevel,
   onNavigateToMap,
+  levelMenu,
 }: AppHeaderProps) {
   const { t } = useAppStrings();
   const score = useLevelRunStore((s) => s.score);
-  const status = useLevelRunStore((s) => s.status);
   const [menuOpen, setMenuOpen] = useState(false);
+
+  const resolvedLevelMenu: AppNavLevelMenuExtras | null =
+    onNavigateToMap != null
+      ? { onNavigateToMap, onRestartLevel }
+      : null;
 
   useEffect(() => {
     if (!menuOpen) return;
@@ -54,8 +59,8 @@ export function AppHeader({
             onClick={() => setMenuOpen(true)}
             className="flex size-12 shrink-0 items-center justify-center rounded-pp-md border border-pp-border-strong bg-pp-elevated text-pp-text transition-colors hover:border-pp-accent/40 hover:bg-pp-surface focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-pp-accent/60"
             aria-expanded={menuOpen}
-            aria-controls="nav-drawer"
-            aria-label="Ouvrir le menu"
+            aria-controls="app-nav-drawer"
+            aria-label={t.nav.menu}
           >
             <Menu className="size-6" strokeWidth={2} />
           </motion.button>
@@ -92,88 +97,13 @@ export function AppHeader({
         </div>
       </header>
 
-      {menuOpen ? (
-        <div className="fixed inset-0 z-[100] flex" id="nav-drawer">
-          <motion.button
-            type="button"
-            whileTap={tap}
-            className="relative z-[100] min-h-0 flex-1 bg-slate-900/30 backdrop-blur-[2px]"
-            aria-label="Fermer le menu"
-            onClick={() => setMenuOpen(false)}
-          />
-          <div className="relative z-[101] flex h-full w-[min(100%,22rem)] flex-col border-l border-pp-border-strong bg-pp-surface shadow-2xl">
-            <div className="flex min-h-0 items-center justify-between border-b border-pp-border px-3 pb-3 pt-[max(1rem,env(safe-area-inset-top))]">
-              <p className="font-mono text-xs uppercase tracking-widest text-pp-text-dim">Menu</p>
-              <motion.button
-                type="button"
-                whileTap={tap}
-                onClick={() => setMenuOpen(false)}
-                className="flex size-12 items-center justify-center rounded-pp-md border border-pp-border-strong bg-pp-elevated text-pp-text hover:bg-pp-surface"
-                aria-label="Fermer le menu"
-              >
-                <X className="size-6" />
-              </motion.button>
-            </div>
-            <nav
-              className="flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto p-3"
-              aria-label="Navigation principale"
-            >
-              <motion.button
-                type="button"
-                whileTap={tap}
-                className="flex min-h-14 w-full items-center gap-3 rounded-pp-lg border border-pp-border-strong bg-pp-elevated/90 px-4 py-3 text-left font-mono text-sm text-pp-text transition-colors hover:border-pp-accent/45 hover:bg-pp-surface"
-                onClick={() => {
-                  setMenuOpen(false);
-                  onOpenRules();
-                }}
-              >
-                <BookOpen className="size-5 shrink-0 text-pp-accent" strokeWidth={2} />
-                Règles
-              </motion.button>
-              <motion.button
-                type="button"
-                whileTap={tap}
-                className="flex min-h-14 w-full items-center gap-3 rounded-pp-lg border border-pp-border-strong bg-pp-elevated/90 px-4 py-3 text-left font-mono text-sm text-pp-text transition-colors hover:border-pp-violet/45 hover:bg-pp-surface"
-                onClick={() => {
-                  setMenuOpen(false);
-                  onOpenStats();
-                }}
-              >
-                <BarChart3 className="size-5 shrink-0 text-pp-violet" strokeWidth={2} />
-                {t.nav.bank}
-              </motion.button>
-              <MotionLink
-                href="/map"
-                whileTap={tap}
-                className="flex min-h-14 w-full items-center gap-3 rounded-pp-lg border border-pp-border-strong bg-pp-elevated/90 px-4 py-3 font-mono text-sm text-pp-text transition-colors hover:border-pp-gold/50 hover:bg-pp-surface"
-                onClick={(e) => {
-                  setMenuOpen(false);
-                  if (status === "playing" && onNavigateToMap) {
-                    e.preventDefault();
-                    onNavigateToMap();
-                  }
-                }}
-              >
-                <Map className="size-5 shrink-0 text-pp-gold-dark" strokeWidth={2} />
-                {t.nav.map}
-              </MotionLink>
-              <motion.button
-                type="button"
-                whileTap={tap}
-                className="flex min-h-14 w-full items-center gap-3 rounded-pp-lg border border-pp-border-strong bg-pp-elevated/90 px-4 py-3 text-left font-mono text-sm text-pp-text transition-colors hover:border-rose-400/45 hover:bg-pp-surface"
-                onClick={() => {
-                  useLevelRunStore.getState().restartCurrentLevel();
-                  setMenuOpen(false);
-                  onRestartLevel?.();
-                }}
-              >
-                <RotateCcw className="size-5 shrink-0 text-rose-500" strokeWidth={2} />
-                Recommencer le niveau
-              </motion.button>
-            </nav>
-          </div>
-        </div>
-      ) : null}
+      <AppNavDrawer
+        open={menuOpen}
+        onClose={() => setMenuOpen(false)}
+        onOpenRules={onOpenRules}
+        onOpenStats={onOpenStats}
+        levelMenu={levelMenu ?? resolvedLevelMenu}
+      />
     </>
   );
 }

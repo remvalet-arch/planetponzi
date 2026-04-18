@@ -3,6 +3,7 @@
 import Link from "next/link";
 
 import { BottomNav } from "@/src/components/layout/BottomNav";
+import { HubShellBar } from "@/src/components/layout/HubShellBar";
 import { useAppStrings } from "@/src/lib/i18n/useAppStrings";
 
 export function SupportShell() {
@@ -10,7 +11,8 @@ export function SupportShell() {
 
   return (
     <div className="flex min-h-0 flex-1 flex-col bg-pp-bg text-pp-text">
-      <div className="flex min-h-0 flex-1 flex-col items-center justify-center gap-8 overflow-y-auto overscroll-y-contain px-6 py-10 pb-[calc(5.5rem+env(safe-area-inset-bottom))] pt-[max(1rem,env(safe-area-inset-top))]">
+      <HubShellBar title={t.nav.support} />
+      <div className="flex min-h-0 flex-1 flex-col items-center justify-center gap-8 overflow-y-auto overscroll-y-contain px-6 py-8 pb-[calc(5.5rem+env(safe-area-inset-bottom))]">
         <div className="max-w-md text-center">
           <p className="pp-kicker">Merci</p>
           <h1 className="mt-3 text-2xl font-bold tracking-tight sm:text-3xl">Un mot du développeur</h1>

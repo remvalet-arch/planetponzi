@@ -1,12 +1,12 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import Link from "next/link";
 import { motion } from "framer-motion";
-import { ArrowLeft, Lock } from "lucide-react";
+import { Lock } from "lucide-react";
 
 import { BottomNav } from "@/src/components/layout/BottomNav";
 import { EconomyHeader } from "@/src/components/layout/EconomyHeader";
+import { HubShellBar } from "@/src/components/layout/HubShellBar";
 import { useAppStrings } from "@/src/lib/i18n/useAppStrings";
 import { EMPIRE_FLOORS, EMPIRE_HELIPORT_FLOOR_ID } from "@/src/lib/empire-tower";
 import { playEmpirePurchase } from "@/src/lib/game-sounds";
@@ -92,22 +92,12 @@ export default function EmpirePage() {
 
   return (
     <div className="flex min-h-0 flex-1 flex-col bg-gradient-to-b from-slate-950 via-indigo-950 to-slate-950 text-slate-100">
-      <header className="relative z-40 min-h-0 shrink-0 border-b border-cyan-500/20 bg-slate-950/90 px-3 pb-3 pt-[max(env(safe-area-inset-top),1rem)] backdrop-blur-md">
-        <div className="mx-auto flex max-w-lg items-center gap-2">
-          <Link
-            href="/map"
-            className="inline-flex size-11 min-h-[44px] min-w-[44px] shrink-0 items-center justify-center rounded-pp-md border border-white/10 bg-slate-900/80 text-cyan-200 transition-colors hover:border-cyan-400/40"
-            aria-label={t.nav.map}
-          >
-            <ArrowLeft className="size-5" strokeWidth={2} aria-hidden />
-          </Link>
-          <div className="min-w-0 flex-1 text-center">
-            <h1 className="font-mono text-base font-bold tracking-tight text-white">{t.empirePage.title}</h1>
-            <p className="mt-0.5 font-mono text-[10px] text-cyan-200/70">{t.empirePage.subtitle}</p>
-          </div>
-          <EconomyHeader className="max-w-[min(52vw,14rem)] sm:max-w-none" />
-        </div>
-      </header>
+      <HubShellBar
+        variant="dark"
+        title={t.empirePage.title}
+        subtitle={t.empirePage.subtitle}
+        rightSlot={<EconomyHeader className="max-w-[min(52vw,14rem)] sm:max-w-none" />}
+      />
 
       <div className="mx-auto flex min-h-0 w-full max-w-lg flex-1 flex-col overflow-y-auto overscroll-y-contain px-3 py-4 pb-[calc(5.5rem+env(safe-area-inset-bottom))]">
         <div className="flex w-full shrink-0 flex-col gap-6 pb-16">

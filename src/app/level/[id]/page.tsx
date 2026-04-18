@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 
 import { BoostersBar } from "@/src/components/game/BoostersBar";
 import { EndScreen } from "@/src/components/game/EndScreen";
+import { FiscalFreezeModal } from "@/src/components/game/FiscalFreezeModal";
 import { Grid } from "@/src/components/game/Grid";
 import { Manifest } from "@/src/components/game/Manifest";
 import { AppHeader } from "@/src/components/layout/AppHeader";
@@ -39,12 +40,16 @@ export default function LevelPage() {
   const turn = useLevelRunStore((s) => s.turn);
   const placementSequence = useLevelRunStore((s) => s.placementSequence);
   const lives = useEconomyStore((s) => s.lives);
+  const gridTemporaryEffects = useLevelRunStore((s) => s.gridTemporaryEffects);
+  const hasSeenFiscalFreezeTutorial = useProgressStore((s) => s.hasSeenFiscalFreezeTutorial);
+  const markFiscalFreezeTutorialSeen = useProgressStore((s) => s.markFiscalFreezeTutorialSeen);
 
   const [rulesOpen, setRulesOpen] = useState(false);
   const [statsOpen, setStatsOpen] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [persistReady, setPersistReady] = useState(false);
   const [noEnergyOpen, setNoEnergyOpen] = useState(false);
+  const [fiscalModalOpen, setFiscalModalOpen] = useState(false);
 
   useEffect(() => {
     const bump = () => {
@@ -88,6 +93,14 @@ export default function LevelPage() {
       unsubEco();
     };
   }, [id, levelValid, router, lives]);
+
+  useEffect(() => {
+    if (!persistReady) return;
+    const hasFiscalFreeze = gridTemporaryEffects.some((e) => e.kind === "fiscal_freeze");
+    if (!hasFiscalFreeze || hasSeenFiscalFreezeTutorial) return;
+    setFiscalModalOpen(true);
+    markFiscalFreezeTutorialSeen();
+  }, [persistReady, gridTemporaryEffects, hasSeenFiscalFreezeTutorial, markFiscalFreezeTutorialSeen]);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -194,6 +207,7 @@ export default function LevelPage() {
       />
       <RulesModal open={rulesOpen} onClose={closeRules} />
       <StatsModal open={statsOpen} onClose={() => setStatsOpen(false)} />
+      <FiscalFreezeModal open={fiscalModalOpen} onClose={() => setFiscalModalOpen(false)} />
       <Toast message={toastMessage} />
     </div>
   );

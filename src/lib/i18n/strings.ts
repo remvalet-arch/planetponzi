@@ -47,10 +47,12 @@ export const strings = {
       /** Lien secondaire vers `/map` (même nom d’écran que l’onglet). */
       backToMap: "Retour à la carte",
       menu: "Menu",
+      closeMenu: "Fermer le menu",
       settings: "Paramètres",
       languages: "Langues",
       resetCareer: "Réinitialiser ma carrière",
       resetConfirm: "Effacer toute la progression locale (niveaux, étoiles) ?",
+      restartLevel: "Recommencer le niveau",
     },
     ceoContract: {
       kicker: "Identité",
@@ -185,6 +187,12 @@ export const strings = {
     rules: {
       title: "Règles",
       kicker: "Grille & score",
+      fiscalBossTitle: "Contrôle fiscal (Boss)",
+      fiscalBossBody:
+        "Tous les 10 niveaux (Niveaux Boss), le Fisc s'invite ! Tous les 4 tours de jeu, le Fisc gèlera votre case la plus rentable. Une case gelée rapporte 0 M$ à la fin de la partie. Construisez intelligemment pour minimiser les pertes.",
+      fiscalFreezeTutorialBody:
+        "Le Fisc vient de geler votre case la plus rentable : elle comptera pour 0 M$ au bilan final. Sur ce mandat Boss, le gel se répète tous les 4 tours — anticipez pour limiter l’impact.",
+      fiscalFreezeTutorialCta: "J'ai compris",
     },
     tutorial: {
       skip: "Passer",
@@ -232,10 +240,12 @@ export const strings = {
       home: "Home",
       backToMap: "Back to the map",
       menu: "Menu",
+      closeMenu: "Close menu",
       settings: "Settings",
       languages: "Languages",
       resetCareer: "Reset my career",
       resetConfirm: "Erase all local progress (levels, stars)?",
+      restartLevel: "Restart level",
     },
     ceoContract: {
       kicker: "Identity",
@@ -370,6 +380,12 @@ export const strings = {
     rules: {
       title: "Rules",
       kicker: "Grid & score",
+      fiscalBossTitle: "Tax audit (Boss levels)",
+      fiscalBossBody:
+        "Every 10 levels (Boss levels), the taxman shows up! Every 4 turns, the taxman freezes your highest‑yielding cell. A frozen cell pays 0 M$ at the end of the run. Build smart to limit the damage.",
+      fiscalFreezeTutorialBody:
+        "The taxman just froze your highest‑yielding cell: it will count as 0 M$ in the final tally. On this Boss mandate, a freeze happens every 4 turns — plan ahead to limit the damage.",
+      fiscalFreezeTutorialCta: "Got it",
     },
     tutorial: {
       skip: "Skip",

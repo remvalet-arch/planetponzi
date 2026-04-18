@@ -1,9 +1,8 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { Trophy } from "lucide-react";
-
 import { BottomNav } from "@/src/components/layout/BottomNav";
+import { HubShellBar } from "@/src/components/layout/HubShellBar";
 import { useAppStrings } from "@/src/lib/i18n/useAppStrings";
 import type { LeaderboardRow } from "@/src/types/leaderboard";
 import { useProgressStore } from "@/src/store/useProgressStore";
@@ -81,14 +80,7 @@ export default function LeaderboardPage() {
 
   return (
     <div className="flex min-h-0 flex-1 flex-col bg-pp-bg text-pp-text">
-      <header className="relative z-40 min-h-0 shrink-0 border-b border-pp-border bg-pp-bg/95 px-4 pb-3 pt-[max(1rem,env(safe-area-inset-top))] backdrop-blur-md">
-        <div className="flex items-center justify-center gap-2">
-          <Trophy className="size-5 text-amber-300/90" strokeWidth={2.2} aria-hidden />
-          <h1 className="text-center font-mono text-lg font-bold tracking-tight text-pp-text">
-            {t.nav.leaderboard}
-          </h1>
-        </div>
-      </header>
+      <HubShellBar title={t.nav.leaderboard} />
       <div className="min-h-0 flex-1 overflow-y-auto overscroll-y-contain pb-[calc(5.5rem+env(safe-area-inset-bottom))]">
         {entries === null ? (
           <LeaderboardSkeleton />

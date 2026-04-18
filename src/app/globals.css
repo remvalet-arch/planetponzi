@@ -220,4 +220,50 @@ textarea,
   }
 }
 
+/* Carte Saga — flux de données sur le tracé SVG (léger, pas de filtre supplémentaire). */
+@keyframes data-flow {
+  to {
+    stroke-dashoffset: -100;
+  }
+}
+
+.animate-data-flow {
+  animation: data-flow 3s linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-data-flow {
+    animation: none;
+  }
+}
+
+/* Console holographique : scanlines sous le contenu du shell (z-30), au-dessus du fond body. */
+.scanlines {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 30;
+  opacity: 0.04;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    #fff 2px,
+    #fff 4px
+  );
+}
+
+/* Bannières secteurs — léger néon statique sur les titres. */
+.pp-map-banner-kicker {
+  filter: drop-shadow(0 0 6px rgba(34, 211, 238, 0.45));
+}
+
+.pp-map-banner-title {
+  filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.35));
+}
+
+.pp-map-banner-body {
+  filter: drop-shadow(0 0 4px rgba(148, 163, 184, 0.25));
+}
+
 /* z-index du tiroir menu : défini en Tailwind sur le conteneur (z-[100] / panneau z-[101]). */

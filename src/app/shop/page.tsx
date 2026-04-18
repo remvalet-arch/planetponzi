@@ -1,9 +1,8 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { ShoppingCart } from "lucide-react";
-
 import { BottomNav } from "@/src/components/layout/BottomNav";
+import { HubShellBar } from "@/src/components/layout/HubShellBar";
 import { useAppStrings } from "@/src/lib/i18n/useAppStrings";
 import { useEconomyStore } from "@/src/store/useEconomyStore";
 import { useProgressStore } from "@/src/store/useProgressStore";
@@ -65,18 +64,10 @@ export default function ShopPage() {
 
   return (
     <div className="flex min-h-0 flex-1 flex-col bg-pp-bg text-pp-text">
-      <header className="relative z-40 min-h-0 shrink-0 border-b border-pp-border bg-pp-bg/95 px-4 pb-3 pt-[max(1rem,env(safe-area-inset-top))] backdrop-blur-md">
-        <div className="flex items-center justify-center gap-2">
-          <ShoppingCart className="size-5 text-amber-300/90" strokeWidth={2.2} aria-hidden />
-          <h1 className="text-center font-mono text-lg font-bold tracking-tight text-pp-text">
-            {t.nav.shop}
-          </h1>
-        </div>
-        <p className="mt-2 whitespace-nowrap text-center font-mono text-sm text-pp-text-muted">
-          {t.shop.coinsLabel}{" "}
-          <span className="font-bold tabular-nums text-amber-200">💰 {coins}</span>
-        </p>
-      </header>
+      <HubShellBar
+        title={t.nav.shop}
+        subtitle={`${t.shop.coinsLabel} 💰 ${coins}`}
+      />
 
       <div className="min-h-0 flex-1 space-y-3 overflow-y-auto overscroll-y-contain px-4 py-4 pb-[calc(5.5rem+env(safe-area-inset-bottom))]">
         <article className="rounded-pp-lg border border-pp-border-strong bg-pp-elevated/90 p-4">

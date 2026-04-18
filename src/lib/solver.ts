@@ -1,9 +1,13 @@
 import { resolveSeismicTargetIndex } from "@/src/lib/aleas";
 import { getDeckScoreMultiplier } from "@/src/lib/difficulty";
 import { buildGridFromObstacles, getPlacementLengthFromObstacles } from "@/src/lib/grid-terrain";
-import { clearBuildingAt } from "@/src/lib/level-run-engine";
+import {
+  clearBuildingAt,
+  isFiscalBossLevel,
+  pickFiscalFreezeTarget,
+} from "@/src/lib/level-run-engine";
 import { generatePlacementSequence } from "@/src/lib/rng";
-import { calculateGridScore, type CellScoringOptions } from "@/src/lib/scoring";
+import { calculateSessionGridScore } from "@/src/lib/session-scoring";
 import type { BuildingType, Cell, DeckChallengeLevel, ObstacleSpec } from "@/src/types/game";
 
 const scoreCache = new Map<string, number>();
@@ -14,6 +18,8 @@ export type SeismicRiftSolverSpec = {
 };
 
 export type SolverLevelContext = {
+  /** Niveau courant (mandats boss ×10 → simulation gel fiscal). */
+  levelId: number;
   obstacles?: readonly ObstacleSpec[];
   /** Nombre de placements ; défaut = cases jouables dérivées des obstacles. */
   placementCount?: number;
@@ -25,15 +31,21 @@ export type SolverLevelContext = {
 };
 
 function cacheKey(cargoSeed: string, deckChallengeLevel: DeckChallengeLevel, ctx: SolverLevelContext): string {
-  return `${cargoSeed}\0${deckChallengeLevel}\0${JSON.stringify(ctx)}`;
+  const lid = ctx.levelId ?? 0;
+  return `${cargoSeed}\0${deckChallengeLevel}\0${lid}\0${JSON.stringify(ctx)}`;
 }
 
 function cloneGrid(grid: Cell[]): Cell[] {
   return grid.map((c) => ({ ...c }));
 }
 
-function totalRoiScore(grid: Cell[], mult: number, scoring: CellScoringOptions): number {
-  return Math.round(calculateGridScore(grid, scoring) * mult);
+function sessionRoiScore(
+  grid: Cell[],
+  mult: number,
+  frozenCellIndices: readonly number[],
+  mineScoreBonusPerMine: number,
+): number {
+  return Math.round(calculateSessionGridScore(grid, frozenCellIndices, mineScoreBonusPerMine) * mult);
 }
 
 function greedyPlaythrough(
@@ -47,9 +59,9 @@ function greedyPlaythrough(
   const placementCount = sequence.length;
   const cargoSeed = ctx.cargoSeed ?? "";
   const seismic = ctx.seismicRift;
-  const scoring: CellScoringOptions = {
-    mineScoreBonusPerMine: ctx.mineScoreBonusPerMine ?? 0,
-  };
+  const mineBonus = ctx.mineScoreBonusPerMine ?? 0;
+  const levelId = ctx.levelId ?? 0;
+  const frozen = new Set<number>();
 
   for (let turn = 0; turn < placementCount; turn++) {
     const building = sequence[turn]!;
@@ -59,12 +71,14 @@ function greedyPlaythrough(
     }
     if (!candidates.length) break;
 
+    const frozenArr = (): number[] => Array.from(frozen);
+
     let bestIdx = candidates[0]!;
     let best = Number.NEGATIVE_INFINITY;
     for (const idx of candidates) {
       const trial = cloneGrid(grid);
       trial[idx] = { ...trial[idx]!, building };
-      const s = totalRoiScore(trial, mult, scoring) + tieNoise(idx) * 0.001;
+      const s = sessionRoiScore(trial, mult, frozenArr(), mineBonus) + tieNoise(idx) * 0.001;
       if (s > best) {
         best = s;
         bestIdx = idx;
@@ -72,7 +86,20 @@ function greedyPlaythrough(
     }
     grid[bestIdx] = { ...grid[bestIdx]!, building };
 
-    if (seismic && cargoSeed && turn + 1 === seismic.triggerAtTurn) {
+    const newTurn = turn + 1;
+    if (
+      isFiscalBossLevel(levelId) &&
+      newTurn > 0 &&
+      newTurn <= placementCount &&
+      newTurn % 4 === 0
+    ) {
+      const pick = pickFiscalFreezeTarget(grid, frozenArr(), mineBonus);
+      if (pick != null && !frozen.has(pick)) {
+        frozen.add(pick);
+      }
+    }
+
+    if (seismic && cargoSeed && newTurn === seismic.triggerAtTurn) {
       const t = resolveSeismicTargetIndex(grid, cargoSeed, seismic.targetCellIndex);
       if (t != null) {
         const cleared = clearBuildingAt(grid, t);
@@ -80,7 +107,7 @@ function greedyPlaythrough(
       }
     }
   }
-  return totalRoiScore(grid, mult, scoring);
+  return sessionRoiScore(grid, mult, Array.from(frozen), mineBonus);
 }
 
 /**
@@ -89,8 +116,12 @@ function greedyPlaythrough(
 export function estimateMaxScore(
   cargoSeed: string,
   deckChallengeLevel: DeckChallengeLevel,
-  ctx: SolverLevelContext = {},
+  rawCtx: Partial<SolverLevelContext> = {},
 ): number {
+  const ctx: SolverLevelContext = {
+    ...rawCtx,
+    levelId: rawCtx.levelId ?? 0,
+  };
   const key = cacheKey(cargoSeed, deckChallengeLevel, ctx);
   const hit = scoreCache.get(key);
   if (hit !== undefined) return hit;

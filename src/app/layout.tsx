@@ -80,7 +80,8 @@ export default function RootLayout({
           className="relative flex h-[100dvh] min-h-0 w-full max-w-md flex-col overflow-hidden overscroll-y-none bg-pp-bg text-pp-text shadow-2xl ring-1 ring-black/15 [transform:translateZ(0)] sm:my-2 sm:max-h-[min(100dvh,56rem)] sm:rounded-3xl"
           id="pp-game-shell"
         >
-          <div className="flex min-h-0 min-w-0 flex-1 flex-col">{children}</div>
+          <div className="scanlines" aria-hidden />
+          <div className="relative z-[40] flex min-h-0 min-w-0 flex-1 flex-col">{children}</div>
         </main>
       </body>
     </html>
