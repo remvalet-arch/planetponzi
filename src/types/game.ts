@@ -22,6 +22,22 @@ export type GameStatus = "ready" | "playing" | "finished";
 /** Booster actif sur la grille (session, non persisté). */
 export type ActiveBooster = "demolition";
 
+/** Mandat spatial additionnel (orthogonal 4×4). */
+export type SpatialWinRule =
+  | { kind: "isolated"; building: BuildingType }
+  | { kind: "aligned"; building: BuildingType; minCount: number };
+
+/** Conditions de victoire sur la grille finale (comptages + règles spatiales). */
+export type WinCondition = {
+  minHabitacle?: number;
+  minEau?: number;
+  minSerre?: number;
+  minMine?: number;
+  /** Alias narratif = `minSerre` (forêts / serres). */
+  minForests?: number;
+  spatialRules?: SpatialWinRule[];
+};
+
 /** Une case de la grille 4×4 (index 0–15, ligne par ligne). */
 export type Cell = {
   index: number;

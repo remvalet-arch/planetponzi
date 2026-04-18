@@ -13,7 +13,9 @@ import { computePassiveModifiers } from "@/src/lib/empire-tower";
 import {
   calculateStars,
   getLevelById,
+  getMandateProgressRows,
   getSolverLevelContext,
+  getSpatialMandateFailures,
   LEVELS,
   starsFromScore,
 } from "@/src/lib/levels";
@@ -171,6 +173,29 @@ export function EndScreen({ onShareFeedback }: EndScreenProps) {
   const scoreOnlyStars = levelDef ? starsFromScore(score, levelDef.stars) : (0 as const);
   const mandateBreach =
     Boolean(levelDef?.winCondition) && scoreOnlyStars >= 1 && earnedStars === 0;
+  const mandateShortfallFragments =
+    mandateBreach && levelDef?.winCondition
+      ? getMandateProgressRows(grid, levelDef.winCondition)
+          .filter((r) => r.current < r.required)
+          .map((r) => {
+            const b = t.mandate.buildings;
+            const label = r.building === "serre" && r.displayAsForests ? b.forests : b[r.building];
+            return t.endScreen.mandateFailedFragment(label, r.current, r.required);
+          })
+      : [];
+  const spatialFailFragments =
+    mandateBreach && levelDef?.winCondition
+      ? getSpatialMandateFailures(grid, levelDef.winCondition).map((f) => {
+          const b = t.mandate.buildings;
+          if (f.kind === "isolated") return t.endScreen.mandateSpatialIsolatedFail(b[f.building]);
+          return t.endScreen.mandateSpatialAlignedFail(b[f.building], f.currentRun, f.required);
+        })
+      : [];
+  const mandateDetailFragments = [...mandateShortfallFragments, ...spatialFailFragments];
+  const mandateMissingDetail =
+    mandateDetailFragments.length > 0
+      ? t.endScreen.mandateFailedMissing(mandateDetailFragments.join(" · "))
+      : null;
   const isOptimalYield = maxScoreEstimate > 0 && score >= maxScoreEstimate;
   const coinsEarnedThisRun = earnedStars > 1 ? earnedStars * 10 : 0;
 
@@ -340,9 +365,20 @@ export function EndScreen({ onShareFeedback }: EndScreenProps) {
               <p className="font-mono text-sm font-bold tracking-tight text-rose-100">
                 {mandateBreach ? t.endScreen.mandateFailedTitle : t.endScreen.insufficientTitle}
               </p>
-              <p className="max-w-xs font-mono text-[10px] leading-relaxed text-rose-200/85">
-                {mandateBreach ? t.endScreen.mandateFailedBody : t.endScreen.insufficientBody}
-              </p>
+              {mandateBreach ? (
+                <>
+                  <p className="max-w-sm font-mono text-[11px] font-semibold leading-snug text-amber-100/95">
+                    {t.endScreen.mandateFailedLead}
+                  </p>
+                  <p className="max-w-sm font-mono text-[11px] leading-relaxed text-rose-100/95">
+                    {mandateMissingDetail ?? t.endScreen.mandateFailedBody}
+                  </p>
+                </>
+              ) : (
+                <p className="max-w-xs font-mono text-[10px] leading-relaxed text-rose-200/85">
+                  {t.endScreen.insufficientBody}
+                </p>
+              )}
             </div>
           ) : null}
 

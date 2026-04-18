@@ -22,12 +22,27 @@ export default function MapPage() {
     () => useProgressStore.persist.hasHydrated(),
   );
   const [storyDismissGen, setStoryDismissGen] = useState(0);
+  const [mapHint, setMapHint] = useState<string | null>(null);
 
   const unlockedLevels = useProgressStore((s) => s.unlockedLevels);
 
   useEffect(() => {
     return useProgressStore.persist.onFinishHydration(() => setProgressHydrated(true));
   }, []);
+
+  useEffect(() => {
+    if (!progressHydrated) return;
+    try {
+      const msg = sessionStorage.getItem("pp-map-hint");
+      if (msg) {
+        sessionStorage.removeItem("pp-map-hint");
+        setMapHint(msg);
+        window.setTimeout(() => setMapHint(null), 4200);
+      }
+    } catch {
+      /* ignore */
+    }
+  }, [progressHydrated]);
 
   const storyMilestone = useMemo(() => {
     void storyDismissGen;
@@ -83,6 +98,15 @@ export default function MapPage() {
           closeLabel={t.storyModal.closeCta}
           onClose={closeStory}
         />
+      ) : null}
+      {mapHint ? (
+        <div
+          className="pointer-events-none fixed bottom-[max(5.5rem,env(safe-area-inset-bottom)+4.5rem)] left-1/2 z-[95] w-[min(92vw,22rem)] -translate-x-1/2 rounded-pp-md border border-amber-500/45 bg-slate-950/95 px-4 py-3 text-center font-mono text-xs leading-snug text-amber-100 shadow-lg backdrop-blur-md"
+          role="status"
+          aria-live="polite"
+        >
+          {mapHint}
+        </div>
       ) : null}
     </div>
   );

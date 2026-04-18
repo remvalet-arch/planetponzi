@@ -16,6 +16,13 @@ import {
   type PlanetDefinition,
 } from "@/src/lib/levels";
 import { toRomanSector } from "@/src/lib/roman";
+import {
+  STAR_GATE_QUOTA,
+  canPlayLevel,
+  isStarGatedBoss,
+  preBossStarRange,
+  sumStarsInLevelRange,
+} from "@/src/lib/star-gate";
 import { useProgressStore } from "@/src/store/useProgressStore";
 
 const orderedLevels = [...LEVELS].sort((a, b) => a.id - b.id);
@@ -97,18 +104,38 @@ type MapLayout = {
   banners: BannerLayout[];
 };
 
+/**
+ * Carte « ascension » : parcours du niveau max au 1, y croissant vers le bas.
+ * - Niveau 100 en haut (y faible), niveau 1 en bas (y fort).
+ * - Bannière de secteur dans le gap au-dessus des blocs 10, 20, … 90 et bannière d’entrée au-dessus du bloc sommet (91–100).
+ */
 function buildMapLayout(
   levels: typeof orderedLevels,
   getBannerCopy: (planet: PlanetDefinition) => { title: string; subtitle: string; blurb: string },
 ): MapLayout {
-  const maxId = levels[levels.length - 1]?.id ?? 1;
+  const sorted = [...levels].sort((a, b) => a.id - b.id);
+  const minId = sorted[0]?.id ?? 1;
+  const maxId = sorted[sorted.length - 1]?.id ?? 100;
+
   let y = PAD_PX;
   const yCenterPxByLevelId: Record<number, number> = {};
   const banners: BannerLayout[] = [];
 
-  for (let id = maxId; id >= 1; id--) {
-    if (id < maxId && id % 10 === 0) {
-      const planetIdx = id / 10;
+  for (let id = maxId; id >= minId; id--) {
+    if (id === maxId) {
+      const planetIdx = Math.min(9, Math.floor((maxId - 1) / 10));
+      const planet = PLANETS[planetIdx];
+      if (planet) {
+        const copy = getBannerCopy(planet);
+        banners.push({
+          planet,
+          yCenterPx: y + BANNER_GAP_PX / 2,
+          ...copy,
+        });
+      }
+      y += BANNER_GAP_PX;
+    } else if (id % 10 === 0) {
+      const planetIdx = Math.min(9, Math.max(0, id / 10 - 1));
       const planet = PLANETS[planetIdx];
       if (planet) {
         const copy = getBannerCopy(planet);
@@ -126,7 +153,7 @@ function buildMapLayout(
 
   const heightPx = Math.max(y + PAD_PX, 800);
   const yPctByLevelId: Record<number, number> = {};
-  for (const l of levels) {
+  for (const l of sorted) {
     const py = yCenterPxByLevelId[l.id];
     yPctByLevelId[l.id] = py != null ? (py / heightPx) * 100 : 50;
   }
@@ -165,6 +192,7 @@ export function LevelMap({ scrollParentRef }: LevelMapProps) {
   const unlockedLevels = useProgressStore((s) => s.unlockedLevels);
   const starsByLevel = useProgressStore((s) => s.starsByLevel);
   const currentLevel = getMapCurrentLevel(unlockedLevels, starsByLevel);
+  const [starGateHint, setStarGateHint] = useState<string | null>(null);
 
   const layout = useMemo(() => {
     return buildMapLayout(orderedLevels, (planet) => {
@@ -209,6 +237,7 @@ export function LevelMap({ scrollParentRef }: LevelMapProps) {
     const max = Math.max(1, el.scrollHeight - el.clientHeight);
     const ratio = el.scrollTop / max;
     setScrollParallax(ratio);
+    /* Haut de scroll = niveaux élevés ; bas = niveaux bas → on interpole depuis 100 vers 1 */
     const levelFloat = 100 - ratio * 99;
     const pf = (levelFloat - 1) / 10;
     const p0 = Math.min(9, Math.max(0, Math.floor(pf)));
@@ -232,7 +261,8 @@ export function LevelMap({ scrollParentRef }: LevelMapProps) {
     (behavior: ScrollBehavior) => {
       const root = scrollParentRef.current;
       const node = root?.querySelector(`[data-pp-map-level="${currentLevel}"]`);
-      node?.scrollIntoView({ behavior, block: "center" });
+      /* Ancrer le niveau courant vers le bas de la fenêtre : base de l’ascension, regard vers le haut */
+      node?.scrollIntoView({ behavior, block: "end", inline: "nearest" });
       updateBgFromScroll();
     },
     [currentLevel, scrollParentRef, updateBgFromScroll],
@@ -266,9 +296,15 @@ export function LevelMap({ scrollParentRef }: LevelMapProps) {
     return unsub;
   }, [scrollCurrentLevelIntoView]);
 
+  useEffect(() => {
+    if (!starGateHint) return;
+    const id = window.setTimeout(() => setStarGateHint(null), 3400);
+    return () => window.clearTimeout(id);
+  }, [starGateHint]);
+
   return (
     <section
-      className="relative w-full min-w-0 shrink-0 px-2 pb-[calc(5.5rem+env(safe-area-inset-bottom))] pt-0"
+      className="relative w-full min-w-0 shrink-0 px-2 pb-[calc(5.5rem+env(safe-area-inset-bottom))] pt-[max(0.25rem,env(safe-area-inset-top))]"
       aria-label="Carte de progression des niveaux"
     >
       <div
@@ -349,9 +385,19 @@ export function LevelMap({ scrollParentRef }: LevelMapProps) {
           ))}
         </div>
 
-        {/* Un seul SVG : constellations + tracé continu (sous les bannières, au-dessus du fond). */}
+        {starGateHint ? (
+          <div
+            className="pointer-events-none fixed bottom-[max(6rem,env(safe-area-inset-bottom)+5rem)] left-1/2 z-[60] w-[min(92vw,22rem)] -translate-x-1/2 rounded-pp-md border border-amber-500/50 bg-slate-950/95 px-4 py-3 text-center font-mono text-xs leading-snug text-amber-100 shadow-lg backdrop-blur-md"
+            role="status"
+            aria-live="polite"
+          >
+            {starGateHint}
+          </div>
+        ) : null}
+
+        {/* Chemin SVG sous les bannières ; z-index < bannières < nœuds */}
         <svg
-          className="absolute inset-0 z-[5] h-full w-full pointer-events-none"
+          className="pointer-events-none absolute inset-0 z-[4] h-full w-full"
           viewBox="0 0 100 100"
           preserveAspectRatio="none"
           aria-hidden
@@ -423,7 +469,7 @@ export function LevelMap({ scrollParentRef }: LevelMapProps) {
         {banners.map((b) => (
           <header
             key={`banner-${b.planet.id}`}
-            className="absolute left-1/2 z-[12] w-[min(92%,22rem)] -translate-x-1/2 -translate-y-1/2 px-1"
+            className="absolute left-1/2 z-[14] w-[min(92%,22rem)] -translate-x-1/2 -translate-y-1/2 px-1"
             style={{ top: `${(b.yCenterPx / heightPx) * 100}%` }}
           >
             <div className="rounded-2xl border border-cyan-500/50 bg-slate-900 px-4 py-4 text-center shadow-[0_0_15px_rgba(6,182,212,0.4)] backdrop-blur-md">
@@ -440,16 +486,20 @@ export function LevelMap({ scrollParentRef }: LevelMapProps) {
           </header>
         ))}
 
-        {/* Nœuds en absolute : le parent doit avoir une hauteur (inset-0 sur la carte heightPx). */}
-        <div className="absolute inset-0 z-20 min-h-0 w-full">
+        {/* Nœuds : premier plan au-dessus du chemin et des bannières */}
+        <div className="absolute inset-0 z-[25] min-h-0 w-full">
           {orderedLevels.map((level) => {
             const xPct = xPercentForLevelId(level.id);
             const topPct = yPctByLevelId[level.id] ?? 50;
             const unlocked = unlockedLevels.includes(level.id);
-            const isLocked = !unlocked || level.id > currentLevel;
-            const isActive = unlocked && level.id === currentLevel;
-            const isDone = unlocked && level.id < currentLevel;
+            const forwardLocked = unlocked && level.id > currentLevel;
+            const starGated = unlocked && !forwardLocked && isStarGatedBoss(level.id, starsByLevel);
+            const playable = canPlayLevel(level.id, unlockedLevels, starsByLevel);
+            const isActive = playable && level.id === currentLevel;
+            const isDone = unlocked && !forwardLocked && !starGated && level.id < currentLevel;
             const earned = (starsByLevel[String(level.id)] ?? 0) as 0 | 1 | 2 | 3;
+            const gateRange = preBossStarRange(level.id);
+            const gateStars = starGated ? sumStarsInLevelRange(starsByLevel, gateRange.from, gateRange.to) : 0;
 
             const nodeSize = "size-[clamp(2.85rem,12vw,3.35rem)]";
             /** Orbe « verre » sans backdrop-blur coûteux (sauf nœud actif). */
@@ -459,7 +509,7 @@ export function LevelMap({ scrollParentRef }: LevelMapProps) {
               <div
                 key={level.id}
                 data-pp-map-level={level.id}
-                className="absolute z-20"
+                className="absolute z-[25]"
                 style={{
                   left: `${xPct}%`,
                   top: `${topPct}%`,
@@ -467,7 +517,7 @@ export function LevelMap({ scrollParentRef }: LevelMapProps) {
                 }}
               >
                 <div className="relative flex flex-col items-center gap-1">
-                  {isLocked ? (
+                  {!unlocked ? (
                     <div
                       className={`${orbGlassBase} relative flex cursor-not-allowed flex-col items-center justify-center text-slate-300`}
                       title={`Niveau ${level.id} verrouillé`}
@@ -478,6 +528,60 @@ export function LevelMap({ scrollParentRef }: LevelMapProps) {
                         {level.id}
                       </span>
                     </div>
+                  ) : forwardLocked ? (
+                    <div
+                      className={`${orbGlassBase} relative flex cursor-not-allowed flex-col items-center justify-center text-slate-400`}
+                      title={`Niveau ${level.id} — terminez les niveaux précédents`}
+                    >
+                      <Lock className="size-[1.1rem] shrink-0 opacity-80" strokeWidth={2.5} aria-hidden />
+                      <span className="sr-only">Niveau {level.id} verrouillé</span>
+                      <span className="absolute bottom-1 font-mono text-[10px] font-black tabular-nums leading-none text-slate-500">
+                        {level.id}
+                      </span>
+                    </div>
+                  ) : starGated ? (
+                    level.id === currentLevel ? (
+                      <motion.div
+                        animate={{ y: [0, -4, 0] }}
+                        transition={{ duration: 2.2, repeat: Number.POSITIVE_INFINITY, ease: "easeInOut" }}
+                      >
+                        <button
+                          type="button"
+                          onClick={() => setStarGateHint(t.map.starGateHint)}
+                          className={`${orbGlassBase} relative flex cursor-pointer flex-col items-center justify-center gap-0.5 border-amber-500/50 bg-slate-950/80 text-amber-100 ring-2 ring-amber-400/35 transition-transform hover:scale-[1.03] active:scale-[0.97]`}
+                          aria-label={t.map.starGateHint}
+                        >
+                          <span className="text-base leading-none" aria-hidden>
+                            🔒
+                          </span>
+                          <Lock className="size-[0.65rem] shrink-0 opacity-70" strokeWidth={2.5} aria-hidden />
+                          <span className="rounded-full border border-amber-500/40 bg-amber-950/80 px-1.5 py-0.5 font-mono text-[9px] font-bold tabular-nums text-amber-200">
+                            {t.map.starGateBadge(gateStars, STAR_GATE_QUOTA)}
+                          </span>
+                          <span className="absolute bottom-0.5 font-mono text-[10px] font-black tabular-nums leading-none text-amber-200/80">
+                            {level.id}
+                          </span>
+                        </button>
+                      </motion.div>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => setStarGateHint(t.map.starGateHint)}
+                        className={`${orbGlassBase} relative flex cursor-pointer flex-col items-center justify-center gap-0.5 border-amber-500/50 bg-slate-950/80 text-amber-100 ring-2 ring-amber-400/35 transition-transform hover:scale-[1.03] active:scale-[0.97]`}
+                        aria-label={t.map.starGateHint}
+                      >
+                        <span className="text-base leading-none" aria-hidden>
+                          🔒
+                        </span>
+                        <Lock className="size-[0.65rem] shrink-0 opacity-70" strokeWidth={2.5} aria-hidden />
+                        <span className="rounded-full border border-amber-500/40 bg-amber-950/80 px-1.5 py-0.5 font-mono text-[9px] font-bold tabular-nums text-amber-200">
+                          {t.map.starGateBadge(gateStars, STAR_GATE_QUOTA)}
+                        </span>
+                        <span className="absolute bottom-0.5 font-mono text-[10px] font-black tabular-nums leading-none text-amber-200/80">
+                          {level.id}
+                        </span>
+                      </button>
+                    )
                   ) : isDone ? (
                     <Link
                       href={`/level/${level.id}`}

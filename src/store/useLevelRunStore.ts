@@ -186,7 +186,7 @@ function mergePersistedState(persisted: unknown, current: LevelRunStore): LevelR
   const levelId = typeof p.levelId === "number" && Number.isFinite(p.levelId) ? p.levelId : current.levelId;
 
   if (def && placementSequence.length !== expectedLen) {
-    placementSequence = generatePlacementSequence(seed, expectedLen);
+    placementSequence = generatePlacementSequence(seed, expectedLen, def.winCondition);
   }
 
   let grid: Cell[];
@@ -303,7 +303,7 @@ export const useLevelRunStore = create<LevelRunStore>()(
         if (!def) return;
 
         const placementLen = getPlacementLengthFromObstacles(def.obstacles);
-        const placementSequence = generatePlacementSequence(def.seed, placementLen);
+        const placementSequence = generatePlacementSequence(def.seed, placementLen, def.winCondition);
         const dailyInventory = getDailyStats(placementSequence);
         const deckChallengeLevel = def.deckChallengeLevel ?? 0;
 
@@ -525,7 +525,7 @@ export const useLevelRunStore = create<LevelRunStore>()(
         const cargoSeed = def?.seed ?? seed;
         if (!cargoSeed) return;
         const placementLen = def ? getPlacementLengthFromObstacles(def.obstacles) : 16;
-        const placementSequence = generatePlacementSequence(cargoSeed, placementLen);
+        const placementSequence = generatePlacementSequence(cargoSeed, placementLen, def?.winCondition);
         const dailyInventory = getDailyStats(placementSequence);
         const deckChallengeLevel = def?.deckChallengeLevel ?? get().deckChallengeLevel;
         set({

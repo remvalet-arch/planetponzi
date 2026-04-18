@@ -2,12 +2,13 @@
 
 import { useCallback, useMemo } from "react";
 import { motion } from "framer-motion";
-import { Sparkles, Star } from "lucide-react";
+import { AlertTriangle, Sparkles, Star } from "lucide-react";
 
 import { BottomSheetShell } from "@/src/components/ui/BottomSheetShell";
 import { markRulesFirstVisitDone } from "@/src/components/ui/RulesModal";
 import { useAppStrings } from "@/src/lib/i18n/useAppStrings";
 import { computePassiveModifiers } from "@/src/lib/empire-tower";
+import { isFiscalBossLevel } from "@/src/lib/level-run-engine";
 import { getLevelById, getSolverLevelContext } from "@/src/lib/levels";
 import { estimateMaxScore } from "@/src/lib/solver";
 import { markTutorialCompleted } from "@/src/lib/onboarding-flags";
@@ -45,6 +46,42 @@ export function GameEntryFlow({ open }: GameEntryFlowProps) {
       mineScoreBonusPerMine: mineEmpireBonus,
     });
   }, [def, mineEmpireBonus]);
+
+  const specialDirectives = useMemo(() => {
+    if (!def) return [];
+    const lines: string[] = [];
+    const wc = def.winCondition;
+    const b = t.mandate.buildings;
+    if (wc) {
+      if (typeof wc.minHabitacle === "number") {
+        lines.push(t.entryFlow.directiveMandateMin({ count: wc.minHabitacle, label: b.habitacle }));
+      }
+      if (typeof wc.minEau === "number") {
+        lines.push(t.entryFlow.directiveMandateMin({ count: wc.minEau, label: b.eau }));
+      }
+      if (typeof wc.minMine === "number") {
+        lines.push(t.entryFlow.directiveMandateMin({ count: wc.minMine, label: b.mine }));
+      }
+      const serreNeed = wc.minSerre ?? wc.minForests;
+      if (typeof serreNeed === "number") {
+        const label =
+          typeof wc.minForests === "number" && typeof wc.minSerre !== "number" ? b.forests : b.serre;
+        lines.push(t.entryFlow.directiveMandateMin({ count: serreNeed, label }));
+      }
+      for (const r of wc.spatialRules ?? []) {
+        const label = b[r.building];
+        if (r.kind === "isolated") lines.push(t.mandate.spatialIsolatedBrief(label));
+        else lines.push(t.mandate.spatialAlignedBrief(label, r.minCount));
+      }
+    }
+    if (def.seismicRift) {
+      lines.push(t.entryFlow.directiveSeismic(def.seismicRift.triggerAtTurn));
+    }
+    if (isFiscalBossLevel(def.id)) {
+      lines.push(t.entryFlow.directiveFiscalBoss);
+    }
+    return lines;
+  }, [def, t]);
 
   const handlePlay = useCallback(() => {
     markRulesFirstVisitDone();
@@ -105,6 +142,34 @@ export function GameEntryFlow({ open }: GameEntryFlowProps) {
             <p className="mt-1 text-center font-mono text-xl font-black tabular-nums tracking-tight text-amber-100">
               {maxEstimated} <span className="text-sm font-bold text-amber-200/80">{t.entryFlow.ptsSuffix}</span>
             </p>
+          </motion.div>
+        ) : null}
+
+        {specialDirectives.length > 0 ? (
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.38, ease: [0.22, 1, 0.36, 1], delay: 0.05 }}
+            className="mt-4 rounded-xl border-2 border-rose-500/45 bg-gradient-to-br from-rose-950/70 via-slate-950/90 to-amber-950/40 px-3 py-3 shadow-[0_0_24px_rgb(244_63_94/0.2)]"
+            role="region"
+            aria-label={t.entryFlow.specialDirectivesTitle}
+          >
+            <div className="flex items-center gap-2 border-b border-rose-500/25 pb-2">
+              <AlertTriangle className="size-4 shrink-0 text-amber-300" strokeWidth={2.2} aria-hidden />
+              <p className="font-mono text-[10px] font-black uppercase tracking-[0.2em] text-amber-100">
+                {t.entryFlow.specialDirectivesTitle}
+              </p>
+            </div>
+            <ul className="mt-2.5 list-none space-y-2 font-mono text-[11px] leading-snug text-rose-50/95 sm:text-xs">
+              {specialDirectives.map((line, idx) => (
+                <li key={idx} className="flex gap-2">
+                  <span className="mt-0.5 shrink-0 text-amber-300/90" aria-hidden>
+                    ▸
+                  </span>
+                  <span>{line}</span>
+                </li>
+              ))}
+            </ul>
           </motion.div>
         ) : null}
 

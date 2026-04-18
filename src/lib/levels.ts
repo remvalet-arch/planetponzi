@@ -1,6 +1,16 @@
+import { hasMinAligned, isIsolatedForBuilding, maxAlignedRunLength } from "@/src/lib/grid-topology";
 import { getPlacementLengthFromObstacles } from "@/src/lib/grid-terrain";
 import { estimateMaxScore, type SolverLevelContext } from "@/src/lib/solver";
-import type { BuildingType, Cell, DeckChallengeLevel, ObstacleSpec } from "@/src/types/game";
+import type {
+  BuildingType,
+  Cell,
+  DeckChallengeLevel,
+  ObstacleSpec,
+  SpatialWinRule,
+  WinCondition,
+} from "@/src/types/game";
+
+export type { SpatialWinRule, WinCondition };
 
 /** Seuils de score final pour 1 / 2 / 3 étoiles (inclus). */
 export type LevelStarThresholds = {
@@ -128,16 +138,6 @@ export function getPlanetForLevel(levelId: number): PlanetDefinition {
   return getPlanetById(planetIdForLevel(levelId));
 }
 
-/** Conditions de victoire additionnelles (grille finale). */
-export type WinCondition = {
-  minHabitacle?: number;
-  minEau?: number;
-  minSerre?: number;
-  minMine?: number;
-  /** Alias narratif = `minSerre` (forêts / serres). */
-  minForests?: number;
-};
-
 export function countBuildingOnGrid(grid: Cell[], type: BuildingType): number {
   return grid.reduce((acc, c) => acc + (c.isPlayable && c.building === type ? 1 : 0), 0);
 }
@@ -151,7 +151,120 @@ export function satisfiesWinCondition(grid: Cell[], wc: WinCondition | undefined
   if (typeof wc.minMine === "number" && countBuildingOnGrid(grid, "mine") < wc.minMine) return false;
   const needSerre = wc.minSerre ?? wc.minForests;
   if (typeof needSerre === "number" && countBuildingOnGrid(grid, "serre") < needSerre) return false;
+  for (const rule of wc.spatialRules ?? []) {
+    if (rule.kind === "isolated" && !isIsolatedForBuilding(grid, rule.building)) return false;
+    if (rule.kind === "aligned" && !hasMinAligned(grid, rule.building, rule.minCount)) return false;
+  }
   return true;
+}
+
+export type SpatialMandateFailure =
+  | { kind: "isolated"; building: BuildingType }
+  | { kind: "aligned"; building: BuildingType; currentRun: number; required: number };
+
+export function getSpatialMandateFailures(grid: Cell[], wc: WinCondition | undefined): SpatialMandateFailure[] {
+  if (!wc?.spatialRules?.length) return [];
+  const out: SpatialMandateFailure[] = [];
+  for (const rule of wc.spatialRules) {
+    if (rule.kind === "isolated" && !isIsolatedForBuilding(grid, rule.building)) {
+      out.push({ kind: "isolated", building: rule.building });
+    }
+    if (rule.kind === "aligned" && !hasMinAligned(grid, rule.building, rule.minCount)) {
+      out.push({
+        kind: "aligned",
+        building: rule.building,
+        currentRun: maxAlignedRunLength(grid, rule.building),
+        required: rule.minCount,
+      });
+    }
+  }
+  return out;
+}
+
+export type SpatialMandateHudRow =
+  | { kind: "isolated"; building: BuildingType; displayAsForests: boolean; ok: boolean }
+  | {
+      kind: "aligned";
+      building: BuildingType;
+      displayAsForests: boolean;
+      currentRun: number;
+      required: number;
+      ok: boolean;
+    };
+
+export function getSpatialMandateHudRows(grid: Cell[], wc: WinCondition | undefined): SpatialMandateHudRow[] {
+  if (!wc?.spatialRules?.length) return [];
+  const rows: SpatialMandateHudRow[] = [];
+  for (const rule of wc.spatialRules) {
+    if (rule.kind === "isolated") {
+      rows.push({
+        kind: "isolated",
+        building: rule.building,
+        displayAsForests: false,
+        ok: isIsolatedForBuilding(grid, rule.building),
+      });
+    } else {
+      const cur = maxAlignedRunLength(grid, rule.building);
+      rows.push({
+        kind: "aligned",
+        building: rule.building,
+        displayAsForests: false,
+        currentRun: cur,
+        required: rule.minCount,
+        ok: cur >= rule.minCount,
+      });
+    }
+  }
+  return rows;
+}
+
+/** Lignes mandat « min bâtiments » pour UI (briefing, traqueur, écran de fin). */
+export type MandateProgressRow = {
+  building: BuildingType;
+  /** Affichage narratif forêt (mandat `minForests` sans `minSerre`). */
+  displayAsForests: boolean;
+  current: number;
+  required: number;
+};
+
+export function getMandateProgressRows(grid: Cell[], wc: WinCondition | undefined): MandateProgressRow[] {
+  if (!wc) return [];
+  const rows: MandateProgressRow[] = [];
+  if (typeof wc.minHabitacle === "number") {
+    rows.push({
+      building: "habitacle",
+      displayAsForests: false,
+      current: countBuildingOnGrid(grid, "habitacle"),
+      required: wc.minHabitacle,
+    });
+  }
+  if (typeof wc.minEau === "number") {
+    rows.push({
+      building: "eau",
+      displayAsForests: false,
+      current: countBuildingOnGrid(grid, "eau"),
+      required: wc.minEau,
+    });
+  }
+  if (typeof wc.minMine === "number") {
+    rows.push({
+      building: "mine",
+      displayAsForests: false,
+      current: countBuildingOnGrid(grid, "mine"),
+      required: wc.minMine,
+    });
+  }
+  const needSerre = wc.minSerre ?? wc.minForests;
+  if (typeof needSerre === "number") {
+    rows.push({
+      building: "serre",
+      displayAsForests:
+        typeof wc.minForests === "number" && typeof wc.minSerre !== "number",
+      current: countBuildingOnGrid(grid, "serre"),
+      required: needSerre,
+    });
+  }
+  return rows;
 }
 
 export type LevelDefinition = {
@@ -184,6 +297,7 @@ function buildSolverContext(
   seed: string,
   obstacles: ObstacleSpec[] | undefined,
   seismic: { triggerAtTurn: number; targetCellIndex?: number } | undefined,
+  winCondition: WinCondition | undefined,
 ): SolverLevelContext {
   return {
     levelId,
@@ -191,12 +305,13 @@ function buildSolverContext(
     placementCount: getPlacementLengthFromObstacles(obstacles),
     seismicRift: seismic,
     cargoSeed: seed,
+    winCondition,
   };
 }
 
 /** Contexte solver pour l’UI (bannière optimal, etc.). */
 export function getSolverLevelContext(def: LevelDefinition): SolverLevelContext {
-  return buildSolverContext(def.id, def.seed, def.obstacles, def.seismicRift);
+  return buildSolverContext(def.id, def.seed, def.obstacles, def.seismicRift, def.winCondition);
 }
 
 /** Seuils dérivés du score max estimé (solver glouton + marges 35 % / 60 % / 85 %). */
@@ -246,9 +361,14 @@ export function generateLevels(count: number): LevelDefinition[] {
           ]
         : undefined;
     const seismicRift = id === 100 ? { triggerAtTurn: 8 } : undefined;
-    /** Niveau 15 : mandat « verdissement » (démo conditions de victoire). */
-    const winCondition = id === 15 ? { minForests: 4 } : undefined;
-    const solverCtx = buildSolverContext(id, seed, obstacles, seismicRift);
+    /** Niveau 15 : mandat comptage. 16–17 : démos mandats spatiaux (alignement / isolation). */
+    let winCondition: WinCondition | undefined;
+    if (id === 15) winCondition = { minForests: 4 };
+    else if (id === 16)
+      winCondition = { spatialRules: [{ kind: "aligned", building: "serre", minCount: 3 }] };
+    else if (id === 17) winCondition = { spatialRules: [{ kind: "isolated", building: "mine" }] };
+
+    const solverCtx = buildSolverContext(id, seed, obstacles, seismicRift, winCondition);
     out.push({
       id,
       planetId,

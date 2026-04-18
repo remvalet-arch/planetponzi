@@ -2,6 +2,7 @@ import type {
   BuildingType,
   DailyInventory,
   DeckChallengeLevel,
+  WinCondition,
 } from "@/src/types/game";
 
 const BUILDING_TYPES: readonly BuildingType[] = [
@@ -71,11 +72,58 @@ export function getLocalDateSeed(reference: Date = new Date()): string {
   return `${y}-${m}-${d}`;
 }
 
+function minBuildingQuotasFromWinCondition(wc: WinCondition | undefined): Record<BuildingType, number> {
+  const q: Record<BuildingType, number> = { habitacle: 0, eau: 0, serre: 0, mine: 0 };
+  if (!wc) return q;
+  if (typeof wc.minHabitacle === "number") q.habitacle = Math.max(q.habitacle, wc.minHabitacle);
+  if (typeof wc.minEau === "number") q.eau = Math.max(q.eau, wc.minEau);
+  if (typeof wc.minMine === "number") q.mine = Math.max(q.mine, wc.minMine);
+  const serreNeed = wc.minSerre ?? wc.minForests;
+  if (typeof serreNeed === "number") q.serre = Math.max(q.serre, serreNeed);
+  for (const r of wc.spatialRules ?? []) {
+    if (r.kind === "aligned") {
+      q[r.building] = Math.max(q[r.building], r.minCount);
+    }
+  }
+  return q;
+}
+
+function enforceMinBuildingQuotas(
+  sequence: BuildingType[],
+  quotas: Record<BuildingType, number>,
+  random: () => number,
+): void {
+  const tally: Record<BuildingType, number> = {
+    habitacle: 0,
+    eau: 0,
+    serre: 0,
+    mine: 0,
+  };
+  for (const b of sequence) tally[b]++;
+
+  for (const bt of BUILDING_TYPES) {
+    const need = quotas[bt];
+    if (need <= 0) continue;
+    while (tally[bt] < need) {
+      const j = Math.floor(random() * sequence.length);
+      const old = sequence[j]!;
+      tally[old]--;
+      sequence[j] = bt;
+      tally[bt]++;
+    }
+  }
+}
+
 /**
  * Génère la séquence de bâtiments à placer, déterministe pour une `cargoSeed` donnée.
  * @param length Nombre de tours (= cases constructibles), défaut 16.
+ * @param winCondition Si défini, garantit les effectifs minimaux requis par le mandat (comptes + alignement).
  */
-export function generatePlacementSequence(cargoSeed: string, length = 16): BuildingType[] {
+export function generatePlacementSequence(
+  cargoSeed: string,
+  length = 16,
+  winCondition?: WinCondition,
+): BuildingType[] {
   assertNonEmptyCargoSeed(cargoSeed);
   const n = Math.max(1, Math.min(16, Math.floor(length)));
   const rand = mulberry32(fnv1a32(`planet-ponzi|deck|${cargoSeed}`));
@@ -84,6 +132,9 @@ export function generatePlacementSequence(cargoSeed: string, length = 16): Build
     const pick = Math.floor(rand() * BUILDING_TYPES.length);
     sequence.push(BUILDING_TYPES[pick]!);
   }
+  const quotas = minBuildingQuotasFromWinCondition(winCondition);
+  const fixRand = mulberry32(fnv1a32(`planet-ponzi|deck-quota|${cargoSeed}|${n}`));
+  enforceMinBuildingQuotas(sequence, quotas, fixRand);
   return sequence;
 }
 

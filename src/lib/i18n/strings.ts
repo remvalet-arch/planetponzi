@@ -34,6 +34,9 @@ export const strings = {
     map: {
       sectorFirst: "Secteur {{roman}}",
       sectorEnter: "Vous entrez dans le Secteur {{roman}}",
+      starGateHint:
+        "Accumulez plus d'étoiles dans ce secteur pour affronter le Boss !",
+      starGateBadge: (n: number, cap: number) => `⭐ ${n} / ${cap}`,
     },
     nav: {
       map: "Carte",
@@ -79,6 +82,30 @@ export const strings = {
       starCard1: "Seuil 1★",
       starCard2: "Seuil 2★",
       starCard3: "Seuil 3★",
+      specialDirectivesTitle: "⚠️ DIRECTIVES SPÉCIALES",
+      directiveMandateMin: (p: { count: number; label: string }) =>
+        `Mandat : construisez au moins ${p.count} ${p.label} (en fin de partie).`,
+      directiveSeismic: (turn: number) =>
+        `Sismique : une case occupée sera détruite à la fin du tour ${turn}.`,
+      directiveFiscalBoss:
+        "Boss — Contrôle fiscal : tous les 4 tours, le Fisc gèle votre case la plus rentable (0 pt au bilan pour cette case).",
+    },
+    mandate: {
+      buildings: {
+        habitacle: "Habitacles",
+        eau: "Eau",
+        serre: "Serres",
+        mine: "Mines",
+        forests: "Forêts (serres)",
+      },
+      trackerLine: (label: string, current: number, required: number) => `${label} : ${current}/${required}`,
+      spatialIsolatedBrief: (label: string) =>
+        `Mandat spatial — ${label} isolés : aucune paire du même type ne doit être orthogonalement adjacente.`,
+      spatialAlignedBrief: (label: string, n: number) =>
+        `Mandat spatial — alignement : au moins ${n} ${label} consécutifs sur une même ligne ou colonne.`,
+      trackerIsolatedOk: (label: string) => `${label} isolés ✓`,
+      trackerIsolatedBad: (label: string) => `${label} isolés : KO`,
+      trackerAligned: (label: string, cur: number, req: number) => `${label} alignés : ${cur}/${req}`,
     },
     empirePage: {
       title: "Tour Ponzi",
@@ -170,9 +197,18 @@ export const strings = {
     endScreen: {
       insufficientTitle: "Rendement Insuffisant",
       insufficientBody: "Une vie a été déduite.",
-      mandateFailedTitle: "Mandat non respecté",
+      mandateFailedTitle: "❌ MANDAT NON RESPECTÉ",
+      mandateFailedLead: "Ce n’est pas un problème de points : le mandat sur la grille n’a pas été tenu.",
       mandateFailedBody:
         "Le Board exigeait des conditions supplémentaires sur la grille (ex. forêts). Score honorable, mais zéro étoile : le narratif prime sur le M$.",
+      mandateFailedMissing: (fragments: string) =>
+        `Objectifs non atteints : ${fragments}. Rejouez en priorisant ces placements.`,
+      mandateFailedFragment: (label: string, current: number, required: number) =>
+        `${label} (${current}/${required} requis)`,
+      mandateSpatialIsolatedFail: (label: string) =>
+        `${label} : mandat d’isolation non respecté (deux mêmes types ne doivent pas se toucher).`,
+      mandateSpatialAlignedFail: (label: string, cur: number, req: number) =>
+        `${label} alignés : ${cur}/${req} requis sur une ligne ou colonne.`,
       optimalBanner: "RENDEMENT OPTIMAL ATTEINT !",
       coinsEarned: (n: number) => `+${n} 💰`,
       nextStopLevel: (n: number) => `Prochain arrêt : niveau ${n}`,
@@ -229,6 +265,8 @@ export const strings = {
     map: {
       sectorFirst: "Sector {{roman}}",
       sectorEnter: "You are entering Sector {{roman}}",
+      starGateHint: "Earn more stars in this sector to challenge the Boss!",
+      starGateBadge: (n: number, cap: number) => `⭐ ${n} / ${cap}`,
     },
     nav: {
       map: "Map",
@@ -272,6 +310,30 @@ export const strings = {
       starCard1: "1★ target",
       starCard2: "2★ target",
       starCard3: "3★ target",
+      specialDirectivesTitle: "⚠️ SPECIAL DIRECTIVES",
+      directiveMandateMin: (p: { count: number; label: string }) =>
+        `Mandate: place at least ${p.count} ${p.label} on the final grid.`,
+      directiveSeismic: (turn: number) =>
+        `Seismic risk: one occupied cell will be destroyed after turn ${turn}.`,
+      directiveFiscalBoss:
+        "Boss — tax audit: every 4 turns, the taxman freezes your highest‑yielding cell (0 M$ for that cell at tally).",
+    },
+    mandate: {
+      buildings: {
+        habitacle: "Habitats",
+        eau: "Water",
+        serre: "Greenhouses",
+        mine: "Mines",
+        forests: "Forests (greenhouses)",
+      },
+      trackerLine: (label: string, current: number, required: number) => `${label}: ${current}/${required}`,
+      spatialIsolatedBrief: (label: string) =>
+        `Spatial mandate — isolated ${label}: no orthogonal adjacency between two tiles of that type.`,
+      spatialAlignedBrief: (label: string, n: number) =>
+        `Spatial mandate — alignment: at least ${n} consecutive ${label} on one row or column.`,
+      trackerIsolatedOk: (label: string) => `${label} isolated ✓`,
+      trackerIsolatedBad: (label: string) => `${label} isolated: fail`,
+      trackerAligned: (label: string, cur: number, req: number) => `${label} aligned: ${cur}/${req}`,
     },
     empirePage: {
       title: "Ponzi Tower",
@@ -363,9 +425,18 @@ export const strings = {
     endScreen: {
       insufficientTitle: "Insufficient yield",
       insufficientBody: "A life was lost.",
-      mandateFailedTitle: "Mandate not met",
+      mandateFailedTitle: "❌ MANDATE NOT MET",
+      mandateFailedLead: "This is not a scoring issue—the grid mandate was not satisfied.",
       mandateFailedBody:
         "The Board required extra grid conditions (e.g. forests). Respectable score, but zero stars—narrative beats M$.",
+      mandateFailedMissing: (fragments: string) =>
+        `Targets missed: ${fragments}. Replay and prioritize these buildings.`,
+      mandateFailedFragment: (label: string, current: number, required: number) =>
+        `${label} (${current}/${required} required)`,
+      mandateSpatialIsolatedFail: (label: string) =>
+        `${label}: isolation mandate failed (same types cannot touch orthogonally).`,
+      mandateSpatialAlignedFail: (label: string, cur: number, req: number) =>
+        `${label} aligned: ${cur}/${req} required on one row or column.`,
       optimalBanner: "OPTIMAL YIELD ACHIEVED!",
       coinsEarned: (n: number) => `+${n} 💰`,
       nextStopLevel: (n: number) => `Next stop: level ${n}`,

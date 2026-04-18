@@ -1,5 +1,10 @@
 import { resolveSeismicTargetIndex } from "@/src/lib/aleas";
 import { getDeckScoreMultiplier } from "@/src/lib/difficulty";
+import {
+  isIsolatedForBuilding,
+  maxAlignedRunLength,
+  placementTouchesSameBuilding,
+} from "@/src/lib/grid-topology";
 import { buildGridFromObstacles, getPlacementLengthFromObstacles } from "@/src/lib/grid-terrain";
 import {
   clearBuildingAt,
@@ -8,7 +13,13 @@ import {
 } from "@/src/lib/level-run-engine";
 import { generatePlacementSequence } from "@/src/lib/rng";
 import { calculateSessionGridScore } from "@/src/lib/session-scoring";
-import type { BuildingType, Cell, DeckChallengeLevel, ObstacleSpec } from "@/src/types/game";
+import type {
+  BuildingType,
+  Cell,
+  DeckChallengeLevel,
+  ObstacleSpec,
+  WinCondition,
+} from "@/src/types/game";
 
 const scoreCache = new Map<string, number>();
 
@@ -28,6 +39,8 @@ export type SolverLevelContext = {
   cargoSeed?: string;
   /** Bonus Tour Ponzi : +N par mine (hors méga 2×2 — aligné sur `session-scoring`). */
   mineScoreBonusPerMine?: number;
+  /** Mandat grille (isolation / alignement) — pris en compte par le glouton et les seuils. */
+  winCondition?: WinCondition;
 };
 
 function cacheKey(cargoSeed: string, deckChallengeLevel: DeckChallengeLevel, ctx: SolverLevelContext): string {
@@ -48,13 +61,58 @@ function sessionRoiScore(
   return Math.round(calculateSessionGridScore(grid, frozenCellIndices, mineScoreBonusPerMine) * mult);
 }
 
+function hasIsolatedRuleFor(wc: WinCondition | undefined, building: BuildingType): boolean {
+  return (wc?.spatialRules ?? []).some((r) => r.kind === "isolated" && r.building === building);
+}
+
+function filterCandidatesIsolated(
+  candidates: number[],
+  grid: Cell[],
+  building: BuildingType,
+  wc: WinCondition | undefined,
+): number[] {
+  if (!hasIsolatedRuleFor(wc, building)) return candidates;
+  const filtered = candidates.filter((idx) => !placementTouchesSameBuilding(grid, idx, building));
+  return filtered.length ? filtered : candidates;
+}
+
+/** Heuristique : favoriser les coups qui allongent l’alignement du type concerné. */
+function alignedPlacementHeuristic(
+  trial: Cell[],
+  placedBuilding: BuildingType,
+  wc: WinCondition | undefined,
+): number {
+  let bonus = 0;
+  for (const r of wc?.spatialRules ?? []) {
+    if (r.kind !== "aligned" || r.building !== placedBuilding) continue;
+    const len = maxAlignedRunLength(trial, placedBuilding);
+    if (len >= r.minCount) bonus += 9_000;
+    else bonus += len * 160;
+  }
+  return bonus;
+}
+
+function alignedSpatialSatisfied(grid: Cell[], wc: WinCondition | undefined): boolean {
+  for (const r of wc?.spatialRules ?? []) {
+    if (r.kind === "aligned" && maxAlignedRunLength(grid, r.building) < r.minCount) return false;
+  }
+  return true;
+}
+
+function isolatedSpatialSatisfied(grid: Cell[], wc: WinCondition | undefined): boolean {
+  for (const r of wc?.spatialRules ?? []) {
+    if (r.kind === "isolated" && !isIsolatedForBuilding(grid, r.building)) return false;
+  }
+  return true;
+}
+
 function greedyPlaythrough(
   sequence: BuildingType[],
   mult: number,
   tieNoise: (i: number) => number,
   initialGrid: Cell[],
   ctx: SolverLevelContext,
-): number {
+): { score: number; grid: Cell[] } {
   const grid = cloneGrid(initialGrid);
   const placementCount = sequence.length;
   const cargoSeed = ctx.cargoSeed ?? "";
@@ -62,6 +120,7 @@ function greedyPlaythrough(
   const mineBonus = ctx.mineScoreBonusPerMine ?? 0;
   const levelId = ctx.levelId ?? 0;
   const frozen = new Set<number>();
+  const wc = ctx.winCondition;
 
   for (let turn = 0; turn < placementCount; turn++) {
     const building = sequence[turn]!;
@@ -72,13 +131,16 @@ function greedyPlaythrough(
     if (!candidates.length) break;
 
     const frozenArr = (): number[] => Array.from(frozen);
+    const playCandidates = filterCandidatesIsolated(candidates, grid, building, wc);
 
-    let bestIdx = candidates[0]!;
+    let bestIdx = playCandidates[0]!;
     let best = Number.NEGATIVE_INFINITY;
-    for (const idx of candidates) {
+    for (const idx of playCandidates) {
       const trial = cloneGrid(grid);
       trial[idx] = { ...trial[idx]!, building };
-      const s = sessionRoiScore(trial, mult, frozenArr(), mineBonus) + tieNoise(idx) * 0.001;
+      const base = sessionRoiScore(trial, mult, frozenArr(), mineBonus);
+      const h = alignedPlacementHeuristic(trial, building, wc);
+      const s = base + h + tieNoise(idx) * 0.001;
       if (s > best) {
         best = s;
         bestIdx = idx;
@@ -107,7 +169,15 @@ function greedyPlaythrough(
       }
     }
   }
-  return sessionRoiScore(grid, mult, Array.from(frozen), mineBonus);
+
+  let score = sessionRoiScore(grid, mult, Array.from(frozen), mineBonus);
+  if (!alignedSpatialSatisfied(grid, wc)) {
+    score = Math.floor(score * 0.8);
+  }
+  if (!isolatedSpatialSatisfied(grid, wc)) {
+    score = Math.floor(score * 0.82);
+  }
+  return { score, grid };
 }
 
 /**
@@ -127,7 +197,7 @@ export function estimateMaxScore(
   if (hit !== undefined) return hit;
 
   const placementCount = ctx.placementCount ?? getPlacementLengthFromObstacles(ctx.obstacles);
-  const sequence = generatePlacementSequence(cargoSeed, placementCount);
+  const sequence = generatePlacementSequence(cargoSeed, placementCount, ctx.winCondition);
   const initialGrid = buildGridFromObstacles(ctx.obstacles);
 
   const mult = getDeckScoreMultiplier(deckChallengeLevel);
@@ -141,7 +211,7 @@ export function estimateMaxScore(
 
   for (let iter = 0; iter < 100; iter++) {
     const noise = (idx: number) => ((iter * 31 + idx * 17) % 997) / 997;
-    const score = greedyPlaythrough(sequence, mult, noise, initialGrid, solverCtx);
+    const { score } = greedyPlaythrough(sequence, mult, noise, initialGrid, solverCtx);
     if (score > best) best = score;
   }
 

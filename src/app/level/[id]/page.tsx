@@ -7,6 +7,7 @@ import { BoostersBar } from "@/src/components/game/BoostersBar";
 import { EndScreen } from "@/src/components/game/EndScreen";
 import { FiscalFreezeModal } from "@/src/components/game/FiscalFreezeModal";
 import { Grid } from "@/src/components/game/Grid";
+import { MandateTracker } from "@/src/components/game/MandateTracker";
 import { Manifest } from "@/src/components/game/Manifest";
 import { AppHeader } from "@/src/components/layout/AppHeader";
 import { NoEnergyModal } from "@/src/components/game/NoEnergyModal";
@@ -15,7 +16,9 @@ import { RulesModal, hasSeenRulesFirstVisit, markRulesFirstVisitDone } from "@/s
 import { StatsModal } from "@/src/components/ui/StatsModal";
 import { Toast } from "@/src/components/ui/Toast";
 import { getLevelById } from "@/src/lib/levels";
+import { useAppStrings } from "@/src/lib/i18n/useAppStrings";
 import { hasCompletedTutorial, markTutorialCompleted } from "@/src/lib/onboarding-flags";
+import { canPlayLevel } from "@/src/lib/star-gate";
 import { getBuildingTheme } from "@/src/lib/ui-helpers";
 import { useEconomyStore } from "@/src/store/useEconomyStore";
 import { useLevelRunStore } from "@/src/store/useLevelRunStore";
@@ -28,6 +31,7 @@ function formatRoi(score: number): string {
 
 export default function LevelPage() {
   const router = useRouter();
+  const { t } = useAppStrings();
   const params = useParams<{ id: string }>();
   const id = Number(params.id);
   const levelValid = Number.isFinite(id) && Boolean(getLevelById(id));
@@ -64,7 +68,17 @@ export default function LevelPage() {
       setPersistReady(true);
       if (!levelValid) return;
       const unlocked = useProgressStore.getState().unlockedLevels;
+      const starsByLevel = useProgressStore.getState().starsByLevel;
       if (!unlocked.includes(id)) {
+        router.replace("/map");
+        return;
+      }
+      if (!canPlayLevel(id, unlocked, starsByLevel)) {
+        try {
+          sessionStorage.setItem("pp-map-hint", t.map.starGateHint);
+        } catch {
+          /* ignore */
+        }
         router.replace("/map");
         return;
       }
@@ -92,7 +106,7 @@ export default function LevelPage() {
       unsubProg();
       unsubEco();
     };
-  }, [id, levelValid, router, lives]);
+  }, [id, levelValid, router, lives, t.map.starGateHint]);
 
   useEffect(() => {
     if (!persistReady) return;
@@ -152,6 +166,8 @@ export default function LevelPage() {
           router.push("/map");
         }}
       />
+
+      {persistReady && deckUnlocked && !noEnergyOpen ? <MandateTracker /> : null}
 
       {persistReady && deckUnlocked && !noEnergyOpen ? (
         <main className="relative flex min-h-0 flex-1 flex-col overflow-hidden">
