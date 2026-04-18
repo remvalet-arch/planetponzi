@@ -268,12 +268,13 @@ export function LevelMap({ scrollParentRef }: LevelMapProps) {
 
   return (
     <section
-      className="relative w-full min-w-0 px-2 pb-[calc(5.5rem+env(safe-area-inset-bottom))] pt-0"
+      className="relative w-full min-w-0 shrink-0 px-2 pb-[calc(5.5rem+env(safe-area-inset-bottom))] pt-0"
       aria-label="Carte de progression des niveaux"
     >
       <div
-        className="relative overflow-hidden rounded-2xl border border-violet-500/25 shadow-[0_0_40px_rgba(124,58,237,0.15)] transition-[background] duration-300 ease-out"
+        className="relative w-full shrink-0 overflow-hidden rounded-2xl border border-violet-500/25 shadow-[0_0_40px_rgba(124,58,237,0.15)] transition-[background] duration-300 ease-out"
         style={{
+          height: heightPx,
           minHeight: heightPx,
           background: scrollBg,
           boxShadow: "inset 0 0 80px rgb(0 0 0 / 0.35)",
@@ -350,7 +351,7 @@ export function LevelMap({ scrollParentRef }: LevelMapProps) {
 
         {/* Un seul SVG : constellations + tracé continu (sous les bannières, au-dessus du fond). */}
         <svg
-          className="pointer-events-none absolute inset-0 z-[5] h-full w-full"
+          className="absolute inset-0 z-[5] h-full w-full pointer-events-none"
           viewBox="0 0 100 100"
           preserveAspectRatio="none"
           aria-hidden
@@ -423,7 +424,8 @@ export function LevelMap({ scrollParentRef }: LevelMapProps) {
           </header>
         ))}
 
-        <div className="relative z-20 min-h-0 w-full">
+        {/* Nœuds en absolute : le parent doit avoir une hauteur (inset-0 sur la carte heightPx). */}
+        <div className="absolute inset-0 z-20 min-h-0 w-full">
           {orderedLevels.map((level) => {
             const xPct = xPercentForLevelId(level.id);
             const topPct = yPctByLevelId[level.id] ?? 50;

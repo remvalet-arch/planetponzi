@@ -42,6 +42,10 @@ export const strings = {
       leaderboard: "Classement",
       bank: "Banque",
       support: "Soutenir",
+      /** Lien texte vers `/` (splash), distinct de la carte niveaux. */
+      home: "Accueil",
+      /** Lien secondaire vers `/map` (même nom d’écran que l’onglet). */
+      backToMap: "Retour à la carte",
       menu: "Menu",
       settings: "Paramètres",
       languages: "Langues",
@@ -169,12 +173,13 @@ export const strings = {
         "Le Board exigeait des conditions supplémentaires sur la grille (ex. forêts). Score honorable, mais zéro étoile : le narratif prime sur le M$.",
       optimalBanner: "RENDEMENT OPTIMAL ATTEINT !",
       coinsEarned: (n: number) => `+${n} 💰`,
+      nextStopLevel: (n: number) => `Prochain arrêt : niveau ${n}`,
+      escapeOrBackdropHint: "Échap ou fond : réduire",
     },
     energy: {
       kicker: "Énergie",
       title: "Plus d’énergie !",
       body: "Revenez plus tard (recharge automatique) ou visitez la boutique.",
-      shopCta: "Ouvrir la boutique",
       dismiss: "Fermer",
     },
     rules: {
@@ -224,6 +229,8 @@ export const strings = {
       leaderboard: "Leaderboard",
       bank: "Bank",
       support: "Support",
+      home: "Home",
+      backToMap: "Back to the map",
       menu: "Menu",
       settings: "Settings",
       languages: "Languages",
@@ -351,12 +358,13 @@ export const strings = {
         "The Board required extra grid conditions (e.g. forests). Respectable score, but zero stars—narrative beats M$.",
       optimalBanner: "OPTIMAL YIELD ACHIEVED!",
       coinsEarned: (n: number) => `+${n} 💰`,
+      nextStopLevel: (n: number) => `Next stop: level ${n}`,
+      escapeOrBackdropHint: "Esc or backdrop: shrink",
     },
     energy: {
       kicker: "Energy",
       title: "Out of energy!",
       body: "Come back later (auto recharge) or visit the shop.",
-      shopCta: "Open the shop",
       dismiss: "Close",
     },
     rules: {

@@ -345,11 +345,11 @@ export function EndScreen({ onShareFeedback }: EndScreenProps) {
 
           {nextUnlocked ? (
             <p className="mt-3 text-center font-mono text-[10px] text-pp-text-dim">
-              Prochain arrêt : niveau {nextId}
+              {t.endScreen.nextStopLevel(nextId)}
             </p>
           ) : (
             <p className="mt-3 text-center font-mono text-[10px] text-pp-text-dim">
-              Retour à la carte des niveaux
+              {t.nav.backToMap}
             </p>
           )}
 
@@ -361,10 +361,10 @@ export function EndScreen({ onShareFeedback }: EndScreenProps) {
                 skipAutoMapRef.current = true;
               }}
             >
-              Carte
+              {t.nav.map}
             </Link>
             {" · "}
-            Échap ou fond : réduire
+            {t.endScreen.escapeOrBackdropHint}
           </p>
 
           {earnedStars > 0 && showVictoryExitBar ? (

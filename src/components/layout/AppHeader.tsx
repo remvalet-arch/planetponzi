@@ -6,6 +6,7 @@ import { motion } from "framer-motion";
 import { BarChart3, BookOpen, Map, Menu, RotateCcw, X } from "lucide-react";
 
 import { EconomyHeader } from "@/src/components/layout/EconomyHeader";
+import { useAppStrings } from "@/src/lib/i18n/useAppStrings";
 import { useLevelRunStore } from "@/src/store/useLevelRunStore";
 
 const MotionLink = motion.create(Link);
@@ -28,6 +29,7 @@ export function AppHeader({
   onRestartLevel,
   onNavigateToMap,
 }: AppHeaderProps) {
+  const { t } = useAppStrings();
   const score = useLevelRunStore((s) => s.score);
   const status = useLevelRunStore((s) => s.status);
   const [menuOpen, setMenuOpen] = useState(false);
@@ -138,7 +140,7 @@ export function AppHeader({
                 }}
               >
                 <BarChart3 className="size-5 shrink-0 text-pp-violet" strokeWidth={2} />
-                Statistiques
+                {t.nav.bank}
               </motion.button>
               <MotionLink
                 href="/map"
@@ -153,7 +155,7 @@ export function AppHeader({
                 }}
               >
                 <Map className="size-5 shrink-0 text-pp-gold-dark" strokeWidth={2} />
-                Carte des niveaux
+                {t.nav.map}
               </MotionLink>
               <motion.button
                 type="button"

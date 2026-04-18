@@ -77,7 +77,7 @@ export function MapNavDrawer({ open, onClose }: MapNavDrawerProps) {
                 onClick={onClose}
                 className="flex min-h-12 items-center rounded-pp-lg border border-pp-border-strong bg-pp-elevated/90 px-4 py-3 font-mono text-sm text-pp-text hover:border-pp-accent/40"
               >
-                Accueil
+                {t.nav.home}
               </Link>
               <Link
                 href="/empire"

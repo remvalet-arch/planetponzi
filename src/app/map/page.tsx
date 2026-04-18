@@ -67,7 +67,7 @@ export default function MapPage() {
       <MapHeader />
       <div
         ref={scrollRef}
-        className="min-h-0 flex-1 overflow-y-auto overscroll-y-contain scroll-pt-[calc(env(safe-area-inset-top)+6.25rem)] pt-[max(2rem,calc(env(safe-area-inset-top)+5rem))] pb-10"
+        className="relative flex min-h-0 flex-1 flex-col overflow-y-auto overscroll-y-none scroll-pt-[calc(env(safe-area-inset-top)+6.25rem)] pt-[max(2rem,calc(env(safe-area-inset-top)+5rem))] pb-10"
         data-pp-map-scroll
       >
         <LevelMap scrollParentRef={scrollRef} />

@@ -5,6 +5,7 @@ import { X } from "lucide-react";
 
 import { StatsScreen } from "@/src/components/stats/StatsScreen";
 import { BottomSheetShell } from "@/src/components/ui/BottomSheetShell";
+import { useAppStrings } from "@/src/lib/i18n/useAppStrings";
 import { getPlayerStats } from "@/src/lib/stats";
 
 type StatsModalProps = {
@@ -13,6 +14,7 @@ type StatsModalProps = {
 };
 
 export function StatsModal({ open, onClose }: StatsModalProps) {
+  const { t } = useAppStrings();
   const stats = open ? getPlayerStats() : null;
 
   useEffect(() => {
@@ -41,14 +43,14 @@ export function StatsModal({ open, onClose }: StatsModalProps) {
             id="stats-modal-title"
             className="mt-1 font-mono text-base font-bold tracking-tight text-pp-text"
           >
-            Statistiques
+            {t.nav.bank}
           </h2>
         </div>
         <button
           type="button"
           onClick={onClose}
           className="pp-btn-icon focus-visible:outline-pp-accent/60"
-          aria-label="Fermer les statistiques"
+          aria-label={`${t.energy.dismiss} — ${t.nav.bank}`}
         >
           <X className="size-5" strokeWidth={2} />
         </button>

@@ -20,7 +20,7 @@ export function NoEnergyModal({ open, onClose }: NoEnergyModalProps) {
         onClick={onClose}
         className="flex min-h-12 items-center justify-center rounded-pp-lg border border-amber-400/40 bg-gradient-to-r from-amber-600/90 via-amber-500/85 to-yellow-500/90 px-4 font-mono text-sm font-bold uppercase tracking-widest text-slate-950 shadow-[0_0_24px_rgb(251_191_36/0.25)] transition-[filter] hover:brightness-110"
       >
-        {t.energy.shopCta}
+        {t.nav.shop}
       </Link>
       <button type="button" onClick={onClose} className="pp-btn-ghost">
         {t.energy.dismiss}

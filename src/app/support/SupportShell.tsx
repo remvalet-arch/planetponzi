@@ -3,8 +3,11 @@
 import Link from "next/link";
 
 import { BottomNav } from "@/src/components/layout/BottomNav";
+import { useAppStrings } from "@/src/lib/i18n/useAppStrings";
 
 export function SupportShell() {
+  const { t } = useAppStrings();
+
   return (
     <div className="flex min-h-0 flex-1 flex-col bg-pp-bg text-pp-text">
       <div className="flex min-h-0 flex-1 flex-col items-center justify-center gap-8 overflow-y-auto overscroll-y-contain px-6 py-10 pb-[calc(5.5rem+env(safe-area-inset-bottom))] pt-[max(1rem,env(safe-area-inset-top))]">
@@ -35,7 +38,7 @@ export function SupportShell() {
           href="/map"
           className="font-mono text-sm text-pp-accent underline-offset-4 hover:underline"
         >
-          Retour à la carte
+          {t.nav.backToMap}
         </Link>
       </div>
       <BottomNav />
