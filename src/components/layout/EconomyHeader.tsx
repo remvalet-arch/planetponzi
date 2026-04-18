@@ -1,12 +1,13 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import {
-  LIFE_RECHARGE_MS,
-  MAX_LIVES,
-  useEconomyStore,
-} from "@/src/store/useEconomyStore";
+  computePassiveModifiers,
+  EMPIRE_BASE_MAX_LIVES,
+} from "@/src/lib/empire-tower";
+import { useEconomyStore } from "@/src/store/useEconomyStore";
+import { useEmpireStore } from "@/src/store/useEmpireStore";
 
 function formatCountdown(ms: number): string {
   const s = Math.max(0, Math.ceil(ms / 1000));
@@ -23,26 +24,40 @@ export function EconomyHeader({ className = "" }: { className?: string }) {
   const lives = useEconomyStore((s) => s.lives);
   const lastLifeRechargeTime = useEconomyStore((s) => s.lastLifeRechargeTime);
   const checkLifeRecharge = useEconomyStore((s) => s.checkLifeRecharge);
+  const empireUnlocked = useEmpireStore((s) => s.unlockedNodes);
 
   const [tick, setTick] = useState(0);
+  const [nowMs, setNowMs] = useState<number | undefined>(undefined);
+
+  const { maxLives, rechargeMs } = useMemo(() => {
+    const m = computePassiveModifiers(empireUnlocked);
+    return {
+      maxLives: EMPIRE_BASE_MAX_LIVES + m.livesMaxBonus,
+      rechargeMs: m.lifeRechargeIntervalMs,
+    };
+  }, [empireUnlocked]);
 
   useEffect(() => {
-    const id = window.setInterval(() => {
+    const pulse = () => {
+      setNowMs(Date.now());
       checkLifeRecharge();
       setTick((n) => n + 1);
-    }, 1000);
+    };
+    queueMicrotask(pulse);
+    const id = window.setInterval(pulse, 1000);
     return () => window.clearInterval(id);
   }, [checkLifeRecharge]);
 
   const showTimer =
-    lives < MAX_LIVES && lastLifeRechargeTime != null && Number.isFinite(lastLifeRechargeTime);
+    lives < maxLives && lastLifeRechargeTime != null && Number.isFinite(lastLifeRechargeTime);
 
-  const remainingMs = showTimer
-    ? Math.max(0, lastLifeRechargeTime + LIFE_RECHARGE_MS - Date.now())
-    : 0;
+  const remainingMs =
+    showTimer && typeof nowMs === "number"
+      ? Math.max(0, lastLifeRechargeTime + rechargeMs - nowMs)
+      : 0;
 
   const pill =
-    "inline-flex max-w-[min(46vw,11rem)] items-center gap-1 rounded-full border border-white/10 bg-slate-950/70 px-2 py-1 font-mono text-[10px] font-semibold tabular-nums text-white shadow-md backdrop-blur-sm sm:max-w-none sm:gap-1.5 sm:px-2.5 sm:text-[11px]";
+    "inline-flex max-w-[min(46vw,11rem)] items-center gap-1 whitespace-nowrap rounded-full border border-white/10 bg-slate-950/70 px-2 py-1 font-mono text-[10px] font-semibold tabular-nums text-white shadow-md backdrop-blur-sm sm:max-w-none sm:gap-1.5 sm:px-2.5 sm:text-[11px]";
 
   return (
     <div className={`flex shrink-0 flex-wrap items-center justify-end gap-1 sm:gap-1.5 ${className}`.trim()}>
@@ -50,14 +65,14 @@ export function EconomyHeader({ className = "" }: { className?: string }) {
         <span className="shrink-0 text-sm leading-none sm:text-base" aria-hidden>
           💰
         </span>
-        <span className="min-w-0 truncate text-amber-200">{coins}</span>
+        <span className="min-w-0 truncate whitespace-nowrap text-amber-200 tabular-nums">{coins}</span>
       </span>
       <span className={pill} title="Vies">
         <span className="shrink-0 text-sm leading-none sm:text-base" aria-hidden>
           ❤️
         </span>
         <span className="whitespace-nowrap text-rose-100">
-          {lives}/{MAX_LIVES}
+          {lives}/{maxLives}
         </span>
         {showTimer ? (
           <span

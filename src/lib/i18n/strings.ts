@@ -36,7 +36,8 @@ export const strings = {
       sectorEnter: "Vous entrez dans le Secteur {{roman}}",
     },
     nav: {
-      empire: "Empire",
+      map: "Carte",
+      empire: "Tour",
       shop: "Boutique",
       leaderboard: "Classement",
       bank: "Banque",
@@ -73,10 +74,32 @@ export const strings = {
       starCard2: "Seuil 2★",
       starCard3: "Seuil 3★",
     },
+    empirePage: {
+      title: "Tour Ponzi",
+      subtitle: "Investissez vos Ponzi Coins pour grimper la hiérarchie.",
+      purchased: "Acquis",
+      locked: "Verrouillé",
+      buyFor: "Acheter",
+      needLower: "Achetez l’étage inférieur d’abord.",
+      insufficient: "Solde insuffisant.",
+      purchaseSuccess: "Étage acquis !",
+      prestigeKicker: "Prestige",
+      prestigeScoreBonus: "+10 % de score final par palier de prestige (toutes parties).",
+      prestigeCurrent: (n: number) => `Palier actuel : ${n}`,
+      bankruptcyCta: "Déposer le bilan",
+      bankruptcyLocked: "Atteignez l’Héliport privé pour liquider la tour.",
+      bankruptcyModalTitle: "Faillite stratégique ?",
+      bankruptcyModalBody:
+        "La tour repart à zéro, vos Ponzi Coins sont saisis, mais votre palier prestige augmente — et avec lui, votre bonus de score sur chaque mandat.",
+      bankruptcyConfirm: "Liquider",
+      bankruptcyCancel: "Annuler",
+      bankruptcyDone: "Bilan déposé. Le Board applaudit votre résilience.",
+    },
     leaderboard: {
       empty: "Aucune donnée pour l’instant. Terminez des niveaux pour apparaître ici.",
       you: "Vous",
       loadError: "Classement indisponible.",
+      prestigeShort: (n: number) => `P${n}`,
     },
     shop: {
       coinsLabel: "Vos Ponzi Coins :",
@@ -92,9 +115,58 @@ export const strings = {
       spyTitle: "L’Espion industriel",
       spyDesc: "+1 utilisation espion (aperçu 4 prochains).",
     },
+    blackMarket: {
+      title: "Marché noir",
+      subtitle: "200 💰 : la prochaine tuile du mandat devient celle que vous choisissez.",
+      openAria: "Ouvrir le marché noir",
+      close: "Fermer",
+      buy: "Injecter cette tuile",
+      insufficient: "Solde insuffisant.",
+      success: "Tuile injectée dans le mandat.",
+    },
+    storyModal: {
+      memoHeader: (n: number) => `Mémo #${n}`,
+      closeCta: "Compris — retour à la carte",
+    },
+    ceoStory: {
+      memos: {
+        "1": {
+          kicker: "Acte I — La Ceinture des Startups",
+          quote:
+            "Si vous lisez ceci, vous avez survécu au onboarding. Félicitations : vous êtes officiellement toxique pour le climat moral de l’open space.",
+        },
+        "21": {
+          kicker: "Acte II — Nébuleuse de l’Endettement",
+          quote:
+            "Les taux montent, les promesses aussi. Un bon CEO ne paie jamais en cash — il paie en narratif. Continuez à empiler les actifs, pas les excuses.",
+        },
+        "41": {
+          kicker: "Acte III — Gisement de Bulles",
+          quote:
+            "Les mines ne sont pas des mines : ce sont des options sur l’espoir des autres. Creusez plus profond : quelqu’un d’autre remblayera.",
+        },
+        "61": {
+          kicker: "Acte IV — Anneau des Actifs structurés",
+          quote:
+            "Titriser, c’est emballer la poussière en barres dorées. Vous n’êtes pas un fraudeur : vous êtes un « arrangeur de complexité ».",
+        },
+        "81": {
+          kicker: "Acte V — Limite du Marché gris",
+          quote:
+            "La liquidité est une religion et vous êtes au pulpitre. Si la morale appelle, renvoyez-la en boîte vocale : vous êtes en roadshow.",
+        },
+      },
+      fallback: {
+        kicker: "Transmission CEO",
+        quote: "Le marché dort. Ne le réveillez pas sans slide deck.",
+      },
+    },
     endScreen: {
       insufficientTitle: "Rendement Insuffisant",
       insufficientBody: "Une vie a été déduite.",
+      mandateFailedTitle: "Mandat non respecté",
+      mandateFailedBody:
+        "Le Board exigeait des conditions supplémentaires sur la grille (ex. forêts). Score honorable, mais zéro étoile : le narratif prime sur le M$.",
       optimalBanner: "RENDEMENT OPTIMAL ATTEINT !",
       coinsEarned: (n: number) => `+${n} 💰`,
     },
@@ -146,7 +218,8 @@ export const strings = {
       sectorEnter: "You are entering Sector {{roman}}",
     },
     nav: {
-      empire: "Empire",
+      map: "Map",
+      empire: "Tower",
       shop: "Shop",
       leaderboard: "Leaderboard",
       bank: "Bank",
@@ -183,10 +256,32 @@ export const strings = {
       starCard2: "2★ target",
       starCard3: "3★ target",
     },
+    empirePage: {
+      title: "Ponzi Tower",
+      subtitle: "Spend Ponzi Coins to climb the corporate ladder.",
+      purchased: "Owned",
+      locked: "Locked",
+      buyFor: "Buy",
+      needLower: "Unlock the floor below first.",
+      insufficient: "Not enough coins.",
+      purchaseSuccess: "Floor acquired!",
+      prestigeKicker: "Prestige",
+      prestigeScoreBonus: "+10% final score per prestige tier (every run).",
+      prestigeCurrent: (n: number) => `Current tier: ${n}`,
+      bankruptcyCta: "File for bankruptcy",
+      bankruptcyLocked: "Reach the Private Helipad to liquidate the tower.",
+      bankruptcyModalTitle: "Strategic bankruptcy?",
+      bankruptcyModalBody:
+        "The tower resets, your Ponzi Coins are seized, but your prestige tier rises — boosting your score on every mandate.",
+      bankruptcyConfirm: "Liquidate",
+      bankruptcyCancel: "Cancel",
+      bankruptcyDone: "Bankruptcy filed. The board loves your resilience.",
+    },
     leaderboard: {
       empty: "No entries yet. Finish levels to show up here.",
       you: "You",
       loadError: "Leaderboard unavailable.",
+      prestigeShort: (n: number) => `P${n}`,
     },
     shop: {
       coinsLabel: "Your Ponzi Coins:",
@@ -202,9 +297,58 @@ export const strings = {
       spyTitle: "Industrial spy",
       spyDesc: "+1 spy use (peek next 4 buildings).",
     },
+    blackMarket: {
+      title: "Black market",
+      subtitle: "200 💰: your next mandate tile becomes the one you pick.",
+      openAria: "Open black market",
+      close: "Close",
+      buy: "Inject this tile",
+      insufficient: "Not enough coins.",
+      success: "Tile injected into the mandate.",
+    },
+    storyModal: {
+      memoHeader: (n: number) => `Memo #${n}`,
+      closeCta: "Got it — back to the map",
+    },
+    ceoStory: {
+      memos: {
+        "1": {
+          kicker: "Act I — Startup Belt",
+          quote:
+            "If you’re reading this, you survived onboarding. Congrats: you’re now officially hazardous to the open-plan vibe.",
+        },
+        "21": {
+          kicker: "Act II — Debt Nebula",
+          quote:
+            "Rates rise, promises rise faster. A good CEO never pays in cash—only in narrative. Keep stacking assets, not apologies.",
+        },
+        "41": {
+          kicker: "Act III — Speculation Vein",
+          quote:
+            "Mines aren’t mines—they’re call options on other people’s hope. Dig deeper: someone else will fill the hole.",
+        },
+        "61": {
+          kicker: "Act IV — Structured Assets Ring",
+          quote:
+            "Securitization is packing dust into gold bars. You’re not a fraudster—you’re a “complexity arranger.”",
+        },
+        "81": {
+          kicker: "Act V — Grey Market Frontier",
+          quote:
+            "Liquidity is a religion and you’re at the pulpit. If ethics calls, send it to voicemail—you’re on a roadshow.",
+        },
+      },
+      fallback: {
+        kicker: "CEO transmission",
+        quote: "The market is asleep. Don’t wake it without a deck.",
+      },
+    },
     endScreen: {
       insufficientTitle: "Insufficient yield",
       insufficientBody: "A life was lost.",
+      mandateFailedTitle: "Mandate not met",
+      mandateFailedBody:
+        "The Board required extra grid conditions (e.g. forests). Respectable score, but zero stars—narrative beats M$.",
       optimalBanner: "OPTIMAL YIELD ACHIEVED!",
       coinsEarned: (n: number) => `+${n} 💰`,
     },

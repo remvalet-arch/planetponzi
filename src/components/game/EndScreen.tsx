@@ -7,8 +7,15 @@ import confetti from "canvas-confetti";
 import { motion } from "framer-motion";
 import { PanelBottomOpen, Share2, Star, X } from "lucide-react";
 
+import { playVictoryCash } from "@/src/lib/game-sounds";
 import { vibrateVictoryStars } from "@/src/lib/haptics";
-import { calculateStars, getLevelById, LEVELS } from "@/src/lib/levels";
+import {
+  calculateStars,
+  getLevelById,
+  getSolverLevelContext,
+  LEVELS,
+  starsFromScore,
+} from "@/src/lib/levels";
 import { estimateMaxScore } from "@/src/lib/solver";
 import { useAppStrings } from "@/src/lib/i18n/useAppStrings";
 import { copyShareToClipboard } from "@/src/lib/ui-helpers";
@@ -48,6 +55,7 @@ export function EndScreen({ onShareFeedback }: EndScreenProps) {
   const score = useLevelRunStore((s) => s.score);
   const seed = useLevelRunStore((s) => s.seed);
   const levelId = useLevelRunStore((s) => s.levelId);
+  const frozenCellIndices = useLevelRunStore((s) => s.frozenCellIndices);
   const status = useLevelRunStore((s) => s.status);
   const deckChallengeLevel = useLevelRunStore((s) => s.deckChallengeLevel);
   const enterLevel = useLevelRunStore((s) => s.enterLevel);
@@ -59,10 +67,12 @@ export function EndScreen({ onShareFeedback }: EndScreenProps) {
   const victoryVibrateRef = useRef(false);
   const skipAutoMapRef = useRef(false);
   const confettiPlayedRef = useRef<string | null>(null);
+  const victorySoundPlayedRef = useRef<string | null>(null);
 
   useEffect(() => {
     if (status !== "finished") {
       confettiPlayedRef.current = null;
+      victorySoundPlayedRef.current = null;
       skipAutoMapRef.current = false;
       victoryVibrateRef.current = false;
       setShowVictoryExitBar(false);
@@ -72,7 +82,7 @@ export function EndScreen({ onShareFeedback }: EndScreenProps) {
 
   useEffect(() => {
     if (status !== "finished" || levelId < 1 || minimized) return;
-    if (calculateStars(score, levelId) !== 3) return;
+    if (calculateStars(score, levelId, grid) !== 3) return;
     const runKey = `${seed}|${levelId}|${score}`;
     if (confettiPlayedRef.current === runKey) return;
     confettiPlayedRef.current = runKey;
@@ -97,7 +107,17 @@ export function EndScreen({ onShareFeedback }: EndScreenProps) {
     };
     const id = window.requestAnimationFrame(burst);
     return () => window.cancelAnimationFrame(id);
-  }, [status, levelId, score, seed, minimized]);
+  }, [status, levelId, score, seed, minimized, grid]);
+
+  useEffect(() => {
+    if (status !== "finished" || levelId < 1) return;
+    const earned = calculateStars(score, levelId, grid);
+    if (earned < 1) return;
+    const key = `${seed}|${levelId}|${score}|mandate`;
+    if (victorySoundPlayedRef.current === key) return;
+    victorySoundPlayedRef.current = key;
+    playVictoryCash();
+  }, [status, levelId, score, seed, grid]);
 
   useEffect(() => {
     if (status !== "finished" || minimized) return;
@@ -121,25 +141,28 @@ export function EndScreen({ onShareFeedback }: EndScreenProps) {
       setShowVictoryExitBar(false);
       return;
     }
-    const stars = calculateStars(score, levelId);
+    const stars = calculateStars(score, levelId, grid);
     if (stars <= 0) {
       setShowVictoryExitBar(false);
       return;
     }
     const id = window.setTimeout(() => setShowVictoryExitBar(true), 1300);
     return () => window.clearTimeout(id);
-  }, [status, minimized, score, levelId]);
+  }, [status, minimized, score, levelId, grid]);
 
   const levelDef = useMemo(() => (levelId >= 1 ? getLevelById(levelId) : undefined), [levelId]);
   const maxScoreEstimate = useMemo(() => {
     if (!levelDef) return 0;
     const deck = levelDef.deckChallengeLevel ?? 0;
-    return estimateMaxScore(levelDef.seed, deck);
+    return estimateMaxScore(levelDef.seed, deck, getSolverLevelContext(levelDef));
   }, [levelDef]);
 
   if (status !== "finished" || levelId < 1) return null;
 
-  const earnedStars = calculateStars(score, levelId);
+  const earnedStars = calculateStars(score, levelId, grid);
+  const scoreOnlyStars = levelDef ? starsFromScore(score, levelDef.stars) : (0 as const);
+  const mandateBreach =
+    Boolean(levelDef?.winCondition) && scoreOnlyStars >= 1 && earnedStars === 0;
   const isOptimalYield = maxScoreEstimate > 0 && score >= maxScoreEstimate;
   const coinsEarnedThisRun = earnedStars > 1 ? earnedStars * 10 : 0;
 
@@ -151,6 +174,7 @@ export function EndScreen({ onShareFeedback }: EndScreenProps) {
     const ok = await copyShareToClipboard(grid, score, seed, {
       deckChallengeLevel,
       levelId,
+      frozenCellIndices,
     });
     if (ok) {
       setShareLabel("copied");
@@ -186,7 +210,7 @@ export function EndScreen({ onShareFeedback }: EndScreenProps) {
 
   if (minimized) {
     return (
-      <div className="pointer-events-none fixed inset-x-0 bottom-[max(5.5rem,env(safe-area-inset-bottom)+4rem)] z-[285] flex justify-center px-4">
+      <div className="pointer-events-none fixed inset-x-0 bottom-[max(5.5rem,env(safe-area-inset-bottom)+4rem)] z-[105] flex justify-center px-4">
         <motion.button
           type="button"
           whileTap={{ scale: 0.92 }}
@@ -198,7 +222,7 @@ export function EndScreen({ onShareFeedback }: EndScreenProps) {
             {Array.from({ length: earnedStars }).map((_, i) => (
               <Star key={i} className="size-4 fill-amber-400 text-amber-500" strokeWidth={1.5} aria-hidden />
             ))}
-            <span className="tabular-nums text-pp-text-muted">· {score} pts</span>
+            <span className="whitespace-nowrap tabular-nums text-pp-text-muted">· {score} pts</span>
           </span>
           <span className="sr-only">Rouvrir le bilan</span>
         </motion.button>
@@ -222,13 +246,13 @@ export function EndScreen({ onShareFeedback }: EndScreenProps) {
         <button
           type="button"
           onClick={() => setMinimized(true)}
-          className="pp-btn-icon absolute right-3 top-7 z-[1]"
+          className="pp-btn-icon absolute right-2 top-[max(0.5rem,env(safe-area-inset-top))] z-[1] min-h-[44px] min-w-[44px]"
           aria-label="Réduire le bilan"
         >
           <X className="size-5" strokeWidth={2} />
         </button>
 
-        <div className="pp-allow-select min-h-0 flex-1 overflow-y-auto overscroll-y-contain px-5 pb-4 pt-8">
+        <div className="pp-allow-select min-h-0 flex-1 overflow-y-auto overscroll-y-contain px-5 pb-16 pt-8">
           <p className="pr-14 font-mono text-[10px] uppercase tracking-[0.35em] text-pp-text-dim">
             Niveau {levelId} · terminé
           </p>
@@ -306,17 +330,17 @@ export function EndScreen({ onShareFeedback }: EndScreenProps) {
                 💔
               </span>
               <p className="font-mono text-sm font-bold tracking-tight text-rose-100">
-                {t.endScreen.insufficientTitle}
+                {mandateBreach ? t.endScreen.mandateFailedTitle : t.endScreen.insufficientTitle}
               </p>
               <p className="max-w-xs font-mono text-[10px] leading-relaxed text-rose-200/85">
-                {t.endScreen.insufficientBody}
+                {mandateBreach ? t.endScreen.mandateFailedBody : t.endScreen.insufficientBody}
               </p>
             </div>
           ) : null}
 
           <p className="mt-8 text-center font-mono text-sm text-pp-text-muted">
             Score obtenu :{" "}
-            <span className="font-semibold tabular-nums text-pp-text">{score}</span>
+            <span className="whitespace-nowrap font-semibold tabular-nums text-pp-text">{score}</span>
           </p>
 
           {nextUnlocked ? (

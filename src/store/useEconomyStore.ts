@@ -3,6 +3,10 @@
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
 
+import {
+  getEffectiveLifeRechargeMs,
+  getEffectiveMaxLives,
+} from "@/src/lib/empire-tower";
 import { getLocalDateSeed } from "@/src/lib/rng";
 import { useProgressStore } from "@/src/store/useProgressStore";
 
@@ -10,11 +14,8 @@ const STORAGE_KEY = "planet-ponzi-economy";
 const PENDING_LAST_BONUS_KEY = "pp-pending-lastBonus-for-economy";
 const DEFAULT_COINS = 100;
 
-/** Plafond vies (mode hardcore). Exporté pour l’UI (EconomyHeader, etc.). */
-export const MAX_LIVES = 3;
-
-/** Délai entre deux recharges +1 vie lorsque `lives` &lt; MAX_LIVES. */
-export const LIFE_RECHARGE_MS = 20 * 60 * 1000;
+/** @deprecated Utiliser `getEffectiveMaxLives()` depuis `@/src/lib/empire-tower` pour le plafond réel. */
+export { EMPIRE_BASE_MAX_LIVES as MAX_LIVES } from "@/src/lib/empire-tower";
 
 function normalizeCoins(n: unknown): number {
   if (typeof n !== "number" || !Number.isFinite(n)) return DEFAULT_COINS;
@@ -22,8 +23,9 @@ function normalizeCoins(n: unknown): number {
 }
 
 function normalizeLives(n: unknown): number {
-  if (typeof n !== "number" || !Number.isFinite(n)) return MAX_LIVES;
-  return Math.min(MAX_LIVES, Math.max(0, Math.floor(n)));
+  const cap = getEffectiveMaxLives();
+  if (typeof n !== "number" || !Number.isFinite(n)) return cap;
+  return Math.min(cap, Math.max(0, Math.floor(n)));
 }
 
 function readPendingLastBonusFromProgressMigration(): string | null {
@@ -41,7 +43,7 @@ function readPendingLastBonusFromProgressMigration(): string | null {
 export type EconomyStore = {
   coins: number;
   lives: number;
-  /** Horodatage (ms) servant d’ancre pour les recharges +1 vie lorsque `lives` &lt; MAX_LIVES. */
+  /** Horodatage (ms) servant d’ancre pour les recharges +1 vie lorsque lives &lt; max effectif. */
   lastLifeRechargeTime: number | null;
   /** Dernier jour (YYYY-MM-DD local) où le bonus quotidien carte a été encaissé. */
   lastBonusDate: string | null;
@@ -53,35 +55,39 @@ export type EconomyStore = {
   consumeLife: () => void;
   refillLives: () => void;
   claimDailyBonus: () => void;
+  /** Prestige : solde à zéro + aligne les vies sur le nouveau plafond passif. */
+  wipeEconomyForPrestige: () => void;
 };
 
 export const useEconomyStore = create<EconomyStore>()(
   persist(
     (set, get) => ({
       coins: DEFAULT_COINS,
-      lives: MAX_LIVES,
+      lives: getEffectiveMaxLives(),
       lastLifeRechargeTime: null,
       lastBonusDate: null,
 
       checkLifeRecharge: () => {
         const now = Date.now();
+        const maxLives = getEffectiveMaxLives();
+        const rechargeMs = getEffectiveLifeRechargeMs();
         set((s) => {
           const { lives, lastLifeRechargeTime } = s;
-          if (lives >= MAX_LIVES) {
+          if (lives >= maxLives) {
             return lastLifeRechargeTime === null ? s : { ...s, lastLifeRechargeTime: null };
           }
           if (lastLifeRechargeTime == null) {
             return { ...s, lastLifeRechargeTime: now };
           }
           const elapsed = now - lastLifeRechargeTime;
-          const gained = Math.floor(elapsed / LIFE_RECHARGE_MS);
+          const gained = Math.floor(elapsed / rechargeMs);
           if (gained <= 0) return s;
-          const newLives = Math.min(MAX_LIVES, lives + gained);
-          const newAnchor = lastLifeRechargeTime + gained * LIFE_RECHARGE_MS;
+          const newLives = Math.min(maxLives, lives + gained);
+          const newAnchor = lastLifeRechargeTime + gained * rechargeMs;
           return {
             ...s,
             lives: newLives,
-            lastLifeRechargeTime: newLives >= MAX_LIVES ? null : newAnchor,
+            lastLifeRechargeTime: newLives >= maxLives ? null : newAnchor,
           };
         });
       },
@@ -102,17 +108,18 @@ export const useEconomyStore = create<EconomyStore>()(
       },
 
       consumeLife: () => {
+        const maxLives = getEffectiveMaxLives();
         set((s) => {
           if (s.lives <= 0) return s;
           const next = s.lives - 1;
           const lastLifeRechargeTime =
-            next < MAX_LIVES ? (s.lastLifeRechargeTime ?? Date.now()) : null;
+            next < maxLives ? (s.lastLifeRechargeTime ?? Date.now()) : null;
           return { ...s, lives: next, lastLifeRechargeTime };
         });
       },
 
       refillLives: () => {
-        set({ lives: MAX_LIVES, lastLifeRechargeTime: null });
+        set({ lives: getEffectiveMaxLives(), lastLifeRechargeTime: null });
       },
 
       claimDailyBonus: () => {
@@ -122,10 +129,23 @@ export const useEconomyStore = create<EconomyStore>()(
         prog.addBoosters("spy", 1);
         set({ lastBonusDate: today });
       },
+
+      wipeEconomyForPrestige: () => {
+        const maxLives = getEffectiveMaxLives();
+        set((s) => {
+          const nextLives = Math.min(maxLives, s.lives);
+          return {
+            coins: 0,
+            lives: nextLives,
+            lastLifeRechargeTime:
+              nextLives < maxLives ? (s.lastLifeRechargeTime ?? Date.now()) : null,
+          };
+        });
+      },
     }),
     {
       name: STORAGE_KEY,
-      version: 2,
+      version: 3,
       storage: createJSONStorage(() => localStorage),
       partialize: (state) => ({
         coins: state.coins,
@@ -142,9 +162,10 @@ export const useEconomyStore = create<EconomyStore>()(
         if (fromVersion < 1 && !lastBonusDate) {
           lastBonusDate = readPendingLastBonusFromProgressMigration();
         }
+        const lives = normalizeLives(base.lives);
         return {
           coins: normalizeCoins(base.coins),
-          lives: normalizeLives(base.lives),
+          lives,
           lastLifeRechargeTime:
             typeof base.lastLifeRechargeTime === "number" && Number.isFinite(base.lastLifeRechargeTime)
               ? base.lastLifeRechargeTime

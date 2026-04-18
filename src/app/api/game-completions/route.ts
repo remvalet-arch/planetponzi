@@ -12,6 +12,7 @@ type Body = {
   deviceId?: string;
   playerId?: string | null;
   pseudo?: string | null;
+  prestigeLevel?: number;
   seed?: string;
   grid?: Array<{ index: number; building: string | null }>;
   placementSequence?: string[];
@@ -53,10 +54,16 @@ export async function POST(req: Request) {
     deviceId,
     playerId,
     pseudo,
+    prestigeLevel: prestigeRaw,
     seed,
     grid,
     placementSequence,
   } = body;
+
+  const prestigeLevel =
+    typeof prestigeRaw === "number" && Number.isFinite(prestigeRaw)
+      ? Math.min(999, Math.max(0, Math.floor(prestigeRaw)))
+      : 0;
 
   const pseudoStr =
     typeof pseudo === "string" ? pseudo.trim().slice(0, 15) : pseudo === null ? "" : "";
@@ -86,7 +93,8 @@ export async function POST(req: Request) {
     !Array.isArray(grid) ||
     grid.length !== 16 ||
     !Array.isArray(placementSequence) ||
-    placementSequence.length !== 16
+    placementSequence.length < 1 ||
+    placementSequence.length > 16
   ) {
     return NextResponse.json({ ok: false, error: "Payload invalide" }, { status: 400 });
   }
@@ -99,7 +107,7 @@ export async function POST(req: Request) {
     puzzle_date: puzzleDate,
     deck_challenge_level: deckChallengeLevel,
     final_score: Math.round(score),
-    turns_completed: 16,
+    turns_completed: placementSequence.length,
     grid,
     daily_building_sequence: placementSequence as BuildingType[],
     meta: {
@@ -107,6 +115,7 @@ export async function POST(req: Request) {
       sagaLevelId: levelId,
       seed: typeof seed === "string" ? seed : "",
       source: "saga",
+      prestigeLevel,
     },
   });
 

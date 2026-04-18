@@ -10,6 +10,8 @@ export type SagaCompletionApiPayload = {
   deviceId: string;
   playerId?: string | null;
   pseudo?: string | null;
+  /** Prestige au moment de la partie (classement). */
+  prestigeLevel?: number;
   seed: string;
   grid: Cell[];
   placementSequence: BuildingType[];
@@ -31,6 +33,10 @@ export function syncGameCompletionToApi(payload: SagaCompletionApiPayload): void
     deviceId: payload.deviceId,
     playerId: payload.playerId ?? null,
     pseudo: payload.pseudo ?? null,
+    prestigeLevel:
+      typeof payload.prestigeLevel === "number" && Number.isFinite(payload.prestigeLevel)
+        ? Math.min(999, Math.max(0, Math.floor(payload.prestigeLevel)))
+        : 0,
     seed: payload.seed,
     grid: payload.grid.map((c) => ({ index: c.index, building: c.building })),
     placementSequence: [...payload.placementSequence],

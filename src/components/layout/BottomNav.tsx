@@ -7,7 +7,7 @@ import { BarChart3, Coffee, Map, ShoppingCart, Trophy } from "lucide-react";
 import { useAppStrings } from "@/src/lib/i18n/useAppStrings";
 
 const tabs = [
-  { href: "/map", labelKey: "empire" as const, Icon: Map },
+  { href: "/map", labelKey: "map" as const, Icon: Map },
   { href: "/shop", labelKey: "shop" as const, Icon: ShoppingCart },
   { href: "/leaderboard", labelKey: "leaderboard" as const, Icon: Trophy },
   { href: "/stats", labelKey: "bank" as const, Icon: BarChart3 },
@@ -20,7 +20,7 @@ export function BottomNav() {
 
   return (
     <nav
-      className="pointer-events-auto fixed bottom-0 left-0 right-0 z-[60] border-t border-pp-border-strong bg-pp-surface/80 pb-[max(0.35rem,env(safe-area-inset-bottom))] pt-1 backdrop-blur-lg"
+      className="pointer-events-auto fixed bottom-0 left-0 right-0 z-50 border-t border-pp-border-strong bg-pp-surface/80 pb-[max(0.35rem,env(safe-area-inset-bottom))] pt-1 backdrop-blur-lg"
       aria-label="Navigation principale"
     >
       <div className="mx-auto flex max-w-md items-stretch justify-around gap-1 px-2">

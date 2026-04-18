@@ -107,8 +107,9 @@ export default function LevelPage() {
     markRulesFirstVisitDone();
   };
 
+  const mandateLen = placementSequence.length;
   const nextType =
-    turn < 16 && placementSequence.length === 16 ? placementSequence[turn] : null;
+    mandateLen > 0 && turn < mandateLen ? placementSequence[turn] : null;
   const nextTheme = nextType ? getBuildingTheme(nextType) : null;
 
   if (!levelValid) {
@@ -116,7 +117,7 @@ export default function LevelPage() {
   }
 
   return (
-    <div className="relative flex h-full min-h-0 max-h-[100dvh] flex-1 flex-col overflow-hidden bg-pp-bg text-pp-text">
+    <div className="relative flex h-full min-h-0 max-h-[100dvh] flex-1 flex-col overflow-hidden overscroll-y-none bg-pp-bg text-pp-text">
       {!persistReady ? (
         <div className="pp-loading-screen" role="status" aria-live="polite" aria-busy="true">
           <p className="pp-kicker opacity-90">Chargement du mandat</p>
@@ -145,7 +146,7 @@ export default function LevelPage() {
             <div className="min-w-0 shrink-0 md:w-64">
               <Manifest />
             </div>
-            <BoostersBar />
+            <BoostersBar onToast={setToastMessage} />
           </div>
 
           <div className="flex min-h-0 flex-1 items-center justify-center overflow-hidden p-2">
@@ -168,7 +169,7 @@ export default function LevelPage() {
                     Bâtiment à placer
                   </p>
                   <p className="truncate font-mono text-xs uppercase text-pp-text-muted">
-                    {nextType} · tour {turn + 1}/16
+                    {nextType} · tour {turn + 1}/{mandateLen || "—"}
                   </p>
                 </div>
               </div>

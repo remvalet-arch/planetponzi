@@ -1,7 +1,7 @@
 import type { BuildingType, Cell, DeckChallengeLevel } from "@/src/types/game";
 import { formatMultiplierFr } from "@/src/lib/difficulty";
 import { calculateStars } from "@/src/lib/levels";
-import { getCellScores } from "@/src/lib/scoring";
+import { getSessionCellScores } from "@/src/lib/session-scoring";
 
 /** Thème visuel (emoji + utilitaires Tailwind) pour un type de bâtiment. */
 export type BuildingTheme = {
@@ -62,14 +62,16 @@ function heatEmojiForShare(cellScore: number, hasBuilding: boolean): string {
 export type ShareMeta = {
   deckChallengeLevel: DeckChallengeLevel;
   levelId?: number;
+  /** Cases gelées (boss) — heatmap alignée sur le score de session. */
+  frozenCellIndices?: number[];
 };
 
 /**
  * Texte de partage (heatmap de performance par case + ROI).
  * Couleurs : ≥4 🟩, 1–3 🟨, ≤0 🟥, vide ⬛.
  */
-function starLineForShare(score: number, levelId: number | undefined): string {
-  const n = levelId != null ? calculateStars(score, levelId) : 0;
+function starLineForShare(score: number, levelId: number | undefined, grid: Cell[]): string {
+  const n = levelId != null ? calculateStars(score, levelId, grid) : 0;
   const filled = "⭐".repeat(n);
   const empty = "☆".repeat(3 - n);
   return `${filled}${empty}`;
@@ -81,7 +83,7 @@ export function generateShareContent(
   seed: string,
   meta?: ShareMeta,
 ): string {
-  const cellScores = getCellScores(grid);
+  const cellScores = getSessionCellScores(grid, meta?.frozenCellIndices ?? []);
   const rows: string[] = [];
   for (let r = 0; r < 4; r++) {
     let line = "";
@@ -97,7 +99,7 @@ export function generateShareContent(
     meta?.levelId != null
       ? `Planet Ponzi Saga 🚀 - Niveau ${meta.levelId}`
       : `Planet Ponzi Saga 🚀 - ${seed}`;
-  const stars = starLineForShare(score, meta?.levelId);
+  const stars = starLineForShare(score, meta?.levelId, grid);
   const header: string[] = [
     headerLine1,
     `Score : ${sign}${score} pts | ${stars}`,

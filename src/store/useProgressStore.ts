@@ -25,6 +25,9 @@ export type ProgressStore = {
   pseudo: string | null;
   /** Dernier niveau gagné (≥1★) — pour animer le CEO sur la carte ; consommé après l’anim. */
   lastCompletedLevelId: number | null;
+  /** Prestige (faillite stratégique) : +10 % score final par palier. */
+  prestigeLevel: number;
+  incrementPrestige: () => void;
   /**
    * Fin de partie : meilleur score / étoiles, débloque le niveau suivant si au moins 1★.
    * Idempotent si les valeurs ne sont pas meilleures que l’existant.
@@ -67,6 +70,13 @@ export const useProgressStore = create<ProgressStore>()(
       playerId: null,
       pseudo: null,
       lastCompletedLevelId: null,
+      prestigeLevel: 0,
+
+      incrementPrestige: () => {
+        set((s) => ({
+          prestigeLevel: Math.min(999, Math.max(0, Math.floor(s.prestigeLevel)) + 1),
+        }));
+      },
 
       clearLastCompletedLevel: () => set({ lastCompletedLevelId: null }),
 
@@ -85,6 +95,7 @@ export const useProgressStore = create<ProgressStore>()(
           lastCompletedLevelId: null,
           playerId: s.playerId,
           pseudo: s.pseudo,
+          prestigeLevel: s.prestigeLevel,
         }));
       },
 
@@ -133,7 +144,7 @@ export const useProgressStore = create<ProgressStore>()(
     }),
     {
       name: "planet-ponzi-progress",
-      version: 8,
+      version: 9,
       storage: createJSONStorage(() => localStorage),
       partialize: (state) => ({
         unlockedLevels: state.unlockedLevels,
@@ -143,6 +154,7 @@ export const useProgressStore = create<ProgressStore>()(
         lastCompletedLevelId: state.lastCompletedLevelId,
         playerId: state.playerId,
         pseudo: state.pseudo,
+        prestigeLevel: state.prestigeLevel,
       }),
       migrate: (persisted, fromVersion) => {
         let base = (persisted ?? {}) as Record<string, unknown>;
@@ -209,6 +221,12 @@ export const useProgressStore = create<ProgressStore>()(
             }
           }
           delete (base as { lastBonusDate?: unknown }).lastBonusDate;
+        }
+        if (fromVersion < 9) {
+          const pl = base.prestigeLevel;
+          const n =
+            typeof pl === "number" && Number.isFinite(pl) ? Math.min(999, Math.max(0, Math.floor(pl))) : 0;
+          base = { ...base, prestigeLevel: n };
         }
         return base;
       },

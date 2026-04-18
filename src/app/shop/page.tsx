@@ -65,20 +65,20 @@ export default function ShopPage() {
 
   return (
     <div className="flex min-h-0 flex-1 flex-col bg-pp-bg text-pp-text">
-      <header className="relative z-10 shrink-0 border-b border-pp-border bg-pp-bg/95 px-4 py-3 backdrop-blur-md">
+      <header className="relative z-40 shrink-0 border-b border-pp-border bg-pp-bg/95 px-4 pb-3 pt-[max(0.5rem,env(safe-area-inset-top))] backdrop-blur-md">
         <div className="flex items-center justify-center gap-2">
           <ShoppingCart className="size-5 text-amber-300/90" strokeWidth={2.2} aria-hidden />
           <h1 className="text-center font-mono text-lg font-bold tracking-tight text-pp-text">
             {t.nav.shop}
           </h1>
         </div>
-        <p className="mt-2 text-center font-mono text-sm text-pp-text-muted">
+        <p className="mt-2 whitespace-nowrap text-center font-mono text-sm text-pp-text-muted">
           {t.shop.coinsLabel}{" "}
           <span className="font-bold tabular-nums text-amber-200">💰 {coins}</span>
         </p>
       </header>
 
-      <div className="min-h-0 flex-1 space-y-3 overflow-y-auto overscroll-y-contain px-4 py-4 pb-[calc(5rem+env(safe-area-inset-bottom))]">
+      <div className="min-h-0 flex-1 space-y-3 overflow-y-auto overscroll-y-contain px-4 py-4 pb-[calc(5.5rem+env(safe-area-inset-bottom))]">
         <article className="rounded-pp-lg border border-pp-border-strong bg-pp-elevated/90 p-4">
           <h2 className="font-mono text-sm font-bold text-pp-text">{t.shop.packSurvivalTitle}</h2>
           <p className="mt-1 font-mono text-xs text-pp-text-muted">{t.shop.packSurvivalDesc}</p>
@@ -121,7 +121,7 @@ export default function ShopPage() {
 
       {toast ? (
         <div
-          className="pointer-events-none fixed bottom-24 left-1/2 z-[130] max-w-sm -translate-x-1/2 rounded-pp-lg border border-pp-border-strong bg-pp-surface px-4 py-2 font-mono text-xs text-pp-text shadow-xl"
+          className="pointer-events-none fixed bottom-24 left-1/2 z-[90] max-w-sm -translate-x-1/2 rounded-pp-lg border border-pp-border-strong bg-pp-surface px-4 py-2 font-mono text-xs text-pp-text shadow-xl"
           role="status"
         >
           {toast}

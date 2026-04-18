@@ -71,12 +71,12 @@ export function GameEntryFlow({ open }: GameEntryFlowProps) {
       open={sheetOpen}
       onClose={() => {}}
       closeOnBackdropPress={false}
-      backdropClassName="!z-[285]"
+      backdropClassName="!z-[100]"
       panelClassName="!max-h-[min(92dvh,720px)] flex flex-col overflow-hidden border-t border-x border-violet-500/35 bg-gradient-to-b from-slate-950 via-indigo-950 to-slate-950 text-slate-100 shadow-[0_0_48px_rgb(124_58_237/0.25)]"
       footer={footer}
       handleClassName="bg-cyan-400/40"
     >
-      <div className="flex min-h-0 flex-1 flex-col overflow-y-auto overscroll-y-contain px-4 pb-4 pt-5">
+      <div className="flex min-h-0 flex-1 flex-col overflow-y-auto overscroll-y-contain px-4 pb-16 pt-5">
         <div className="flex items-center gap-2">
           <Sparkles className="size-4 shrink-0 text-cyan-300" strokeWidth={2} aria-hidden />
           <p className="font-mono text-[10px] uppercase tracking-widest text-cyan-200/80">

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { AnimatePresence, motion } from "framer-motion";
-import { Globe, RotateCcw, Settings, X } from "lucide-react";
+import { Building2, Globe, RotateCcw, Settings, X } from "lucide-react";
 
 import { useAppStrings } from "@/src/lib/i18n/useAppStrings";
 import { useProgressStore } from "@/src/store/useProgressStore";
@@ -42,7 +42,7 @@ export function MapNavDrawer({ open, onClose }: MapNavDrawerProps) {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.18 }}
-            className="min-h-0 flex-1 bg-slate-950/55 backdrop-blur-[2px]"
+            className="relative z-[100] min-h-0 flex-1 bg-slate-950/55 backdrop-blur-[2px]"
             aria-label="Fermer le menu"
             onClick={onClose}
           />
@@ -54,9 +54,9 @@ export function MapNavDrawer({ open, onClose }: MapNavDrawerProps) {
             animate={{ x: 0 }}
             exit={{ x: "100%" }}
             transition={{ type: "spring", stiffness: 420, damping: 38 }}
-            className="flex h-full w-[min(100%,20rem)] flex-col border-l border-pp-border-strong bg-pp-surface shadow-2xl"
+            className="relative z-[101] flex h-full w-[min(100%,20rem)] flex-col border-l border-pp-border-strong bg-pp-surface shadow-2xl"
           >
-            <div className="flex items-center justify-between border-b border-pp-border px-3 py-3">
+            <div className="flex items-center justify-between border-b border-pp-border px-3 pb-3 pt-[max(0.5rem,env(safe-area-inset-top))]">
               <p className="font-mono text-xs uppercase tracking-widest text-pp-text-dim">{t.nav.menu}</p>
               <motion.button
                 type="button"
@@ -68,13 +68,24 @@ export function MapNavDrawer({ open, onClose }: MapNavDrawerProps) {
                 <X className="size-5" strokeWidth={2} />
               </motion.button>
             </div>
-            <nav className="flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto overscroll-y-contain p-3" aria-label="Menu carte">
+            <nav
+              className="flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto overscroll-y-contain p-3 pb-12"
+              aria-label="Menu carte"
+            >
               <Link
                 href="/"
                 onClick={onClose}
                 className="flex min-h-12 items-center rounded-pp-lg border border-pp-border-strong bg-pp-elevated/90 px-4 py-3 font-mono text-sm text-pp-text hover:border-pp-accent/40"
               >
                 Accueil
+              </Link>
+              <Link
+                href="/empire"
+                onClick={onClose}
+                className="flex min-h-12 items-center gap-2 rounded-pp-lg border border-cyan-500/30 bg-slate-900/85 px-4 py-3 font-mono text-sm text-cyan-100 hover:border-cyan-400/50"
+              >
+                <Building2 className="size-5 shrink-0 text-cyan-300" strokeWidth={2} aria-hidden />
+                {t.nav.empire}
               </Link>
               <Link
                 href="/settings"

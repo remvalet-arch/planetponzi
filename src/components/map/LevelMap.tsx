@@ -13,6 +13,7 @@ import {
   getMapCurrentLevel,
   LEVELS,
   PLANETS,
+  planetIdForLevel,
   type PlanetDefinition,
 } from "@/src/lib/levels";
 import { toRomanSector } from "@/src/lib/roman";
@@ -73,11 +74,14 @@ const CONSTELLATION_CHAINS: number[][] = [
   [12, 40, 68, 95],
 ];
 
-function constellationPointsForChain(chain: number[]): string {
+function constellationPointsForChainStacked(
+  chain: number[],
+  topPct: (levelId: number) => number,
+): string {
   const pts: string[] = [];
   for (const id of chain) {
     const l = LEVELS.find((x) => x.id === id);
-    if (l) pts.push(`${l.position.x},${l.position.y}`);
+    if (l) pts.push(`${l.position.x},${topPct(id)}`);
   }
   return pts.join(" ");
 }
@@ -170,29 +174,58 @@ export function LevelMap({ scrollParentRef }: LevelMapProps) {
     return unsub;
   }, [scrollCurrentLevelIntoView]);
 
-  const pathD = orderedLevels.map((l) => `${l.position.x},${l.position.y}`).join(" ");
-  const progressLevels = orderedLevels.filter((l) => l.id <= currentLevel);
-  const progressPts = progressLevels.map((l) => `${l.position.x},${l.position.y}`);
-  const progressD =
-    progressPts.length >= 2
-      ? progressPts.join(" ")
-      : progressPts.length === 1
-        ? `${progressPts[0]} ${progressPts[0]}`
-        : "";
-
   const trackHeightPx = Math.max(3200, orderedLevels.length * 52);
+  const sectorBodyPx = Math.ceil(trackHeightPx / PLANETS.length);
+  /** Espace réservé bannière secteur (my-10 + carte) en flux — calibrage visuel scroll. */
+  const SECTOR_BANNER_STACK_PX = 220;
+  const totalMapHeightPx = PLANETS.length * (SECTOR_BANNER_STACK_PX + sectorBodyPx);
+
+  const stackedTopPercent = useCallback(
+    (levelId: number) => {
+      const idx = planetIdForLevel(levelId);
+      let px = 0;
+      for (let i = 0; i < idx; i++) {
+        px += SECTOR_BANNER_STACK_PX + sectorBodyPx;
+      }
+      px += SECTOR_BANNER_STACK_PX;
+      const planet = PLANETS[idx]!;
+      const lvls = orderedLevels.filter(
+        (l) => l.id >= planet.levelMin && l.id <= planet.levelMax,
+      );
+      const ys = lvls.map((l) => l.position.y);
+      const yMin = Math.min(...ys);
+      const yMax = Math.max(...ys);
+      const den = Math.max(yMax - yMin, 1e-6);
+      const lvl = orderedLevels.find((l) => l.id === levelId);
+      if (!lvl) return 50;
+      px += ((lvl.position.y - yMin) / den) * sectorBodyPx;
+      return (px / totalMapHeightPx) * 100;
+    },
+    [sectorBodyPx, totalMapHeightPx],
+  );
+
+  const pathD = useMemo(
+    () => orderedLevels.map((l) => `${l.position.x},${stackedTopPercent(l.id)}`).join(" "),
+    [stackedTopPercent],
+  );
+
+  const progressD = useMemo(() => {
+    const levels = orderedLevels.filter((l) => l.id <= currentLevel);
+    const pts = levels.map((l) => `${l.position.x},${stackedTopPercent(l.id)}`);
+    if (pts.length >= 2) return pts.join(" ");
+    if (pts.length === 1) return `${pts[0]} ${pts[0]}`;
+    return "";
+  }, [currentLevel, stackedTopPercent]);
 
   const sectorBanners = useMemo(() => {
     const out: Array<{
       planet: PlanetDefinition;
-      first: (typeof orderedLevels)[number];
       title: string;
       subtitle: string;
       blurb: string;
     }> = [];
     for (const planet of PLANETS) {
-      const first = orderedLevels.find((l) => l.id === planet.levelMin);
-      if (!first) continue;
+      if (!orderedLevels.some((l) => l.id === planet.levelMin)) continue;
       const roman = toRomanSector(planet.id + 1);
       const meta = t.planets[planet.id];
       const title =
@@ -201,7 +234,6 @@ export function LevelMap({ scrollParentRef }: LevelMapProps) {
           : t.map.sectorEnter.replace("{{roman}}", roman);
       out.push({
         planet,
-        first,
         title,
         subtitle: meta?.name ?? "",
         blurb: meta?.blurb ?? "",
@@ -218,7 +250,7 @@ export function LevelMap({ scrollParentRef }: LevelMapProps) {
       <div
         className="relative overflow-hidden rounded-2xl border border-violet-500/25 shadow-[0_0_40px_rgba(124,58,237,0.15)] transition-[background] duration-300 ease-out"
         style={{
-          minHeight: trackHeightPx,
+          minHeight: totalMapHeightPx,
           background: scrollBg,
           boxShadow: "inset 0 0 80px rgb(0 0 0 / 0.35)",
         }}
@@ -288,7 +320,7 @@ export function LevelMap({ scrollParentRef }: LevelMapProps) {
             <polyline
               key={i}
               fill="none"
-              points={constellationPointsForChain(chain)}
+              points={constellationPointsForChainStacked(chain, stackedTopPercent)}
               stroke="rgb(250 250 250)"
               strokeOpacity={0.14}
               strokeWidth={0.22}
@@ -313,30 +345,8 @@ export function LevelMap({ scrollParentRef }: LevelMapProps) {
           ))}
         </div>
 
-        {sectorBanners.map(({ planet, first, title, subtitle, blurb }) => (
-          <div
-            key={planet.id}
-            className="pointer-events-none absolute z-[1] w-[min(88%,18rem)] max-w-[18rem]"
-            style={{
-              left: "50%",
-              top: `${first.position.y}%`,
-              transform: "translate(-50%, calc(-100% - 0.35rem))",
-            }}
-          >
-            <div className="rounded-xl border border-cyan-500/25 bg-slate-950/55 px-2.5 py-1.5 text-center shadow-md backdrop-blur-sm">
-              <p className="font-mono text-[9px] font-bold uppercase tracking-[0.18em] text-cyan-200/95">
-                {title}
-              </p>
-              {planet.id > 0 ? (
-                <p className="mt-0.5 line-clamp-1 text-xs font-bold leading-tight text-white/95">{subtitle}</p>
-              ) : null}
-              <p className="mt-0.5 line-clamp-2 font-mono text-[9px] leading-snug text-slate-300/85">{blurb}</p>
-            </div>
-          </div>
-        ))}
-
         <svg
-          className="pointer-events-none absolute inset-0 z-[1] h-full w-full"
+          className="pointer-events-none absolute inset-0 z-[5] h-full w-full"
           viewBox="0 0 100 100"
           preserveAspectRatio="none"
           aria-hidden
@@ -378,92 +388,131 @@ export function LevelMap({ scrollParentRef }: LevelMapProps) {
           ) : null}
         </svg>
 
-        {orderedLevels.map((level) => {
-          const { x, y } = level.position;
-          const unlocked = unlockedLevels.includes(level.id);
-          const isLocked = !unlocked || level.id > currentLevel;
-          const isActive = unlocked && level.id === currentLevel;
-          const isDone = unlocked && level.id < currentLevel;
-          const earned = (starsByLevel[String(level.id)] ?? 0) as 0 | 1 | 2 | 3;
+        <div className="relative z-20 flex w-full flex-col items-stretch">
+          {PLANETS.map((planet) => {
+            const banner = sectorBanners.find((b) => b.planet.id === planet.id);
+            if (!banner) return null;
+            const levelsIn = orderedLevels.filter(
+              (l) => l.id >= planet.levelMin && l.id <= planet.levelMax,
+            );
+            const ys = levelsIn.map((l) => l.position.y);
+            const yMin = Math.min(...ys);
+            const yMax = Math.max(...ys);
+            const yDen = Math.max(yMax - yMin, 1e-6);
+            const { title, subtitle, blurb } = banner;
 
-          const nodeSize = "size-[clamp(2.85rem,12vw,3.35rem)]";
-
-          return (
-            <div
-              key={level.id}
-              data-pp-map-level={level.id}
-              className="absolute z-[15]"
-              style={{
-                left: `${x}%`,
-                top: `${y}%`,
-                transform: "translate(-50%, -50%)",
-              }}
-            >
-              <div className="relative flex flex-col items-center gap-1">
-                {isLocked ? (
-                  <div
-                    className={`${nodeSize} relative flex cursor-not-allowed flex-col items-center justify-center rounded-full border-2 border-slate-700/90 bg-gradient-to-b from-slate-700 via-slate-800 to-slate-950 text-slate-300 shadow-[inset_0_2px_8px_rgb(0_0_0/0.5),0_4px_0_rgb(15_23_42)] ring-1 ring-black/40`}
-                    title={`Niveau ${level.id} verrouillé`}
-                  >
-                    <Lock className="size-[1.1rem] shrink-0 opacity-80" strokeWidth={2.5} aria-hidden />
-                    <span className="sr-only">Niveau {level.id} verrouillé</span>
-                    <span className="absolute bottom-1 font-mono text-[10px] font-black tabular-nums leading-none text-slate-500">
-                      {level.id}
-                    </span>
+            return (
+              <section key={planet.id} className="flex w-full flex-col items-stretch">
+                <header className="mx-auto my-10 w-[min(92%,22rem)] shrink-0 px-1">
+                  <div className="rounded-2xl border border-cyan-500/50 bg-slate-900 px-4 py-4 text-center shadow-[0_0_15px_rgba(6,182,212,0.4)] backdrop-blur-md">
+                    <p className="font-mono text-[11px] font-bold uppercase tracking-[0.22em] text-cyan-200">
+                      {title}
+                    </p>
+                    {planet.id > 0 ? (
+                      <p className="mt-3 text-base font-bold leading-snug text-white sm:text-lg">{subtitle}</p>
+                    ) : null}
+                    <p className="mt-3 whitespace-normal break-words font-mono text-xs leading-relaxed text-slate-200 sm:text-sm">
+                      {blurb}
+                    </p>
                   </div>
-                ) : isDone ? (
-                  <Link
-                    href={`/level/${level.id}`}
-                    onPointerDown={() => vibrateLevelTap()}
-                    className="group flex flex-col items-center gap-1 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-cyan-400/70"
-                    aria-label={`Niveau ${level.id} terminé, rejouer`}
-                  >
-                    <div
-                      className={`${nodeSize} flex items-center justify-center rounded-full border-2 border-emerald-400/70 bg-gradient-to-b from-amber-300 via-emerald-400 to-emerald-700 font-mono text-sm font-black text-emerald-950 shadow-[0_0_20px_rgb(52_211_153/0.55),inset_0_2px_6px_rgb(255_255_255/0.35)] ring-2 ring-emerald-300/40 transition-transform group-hover:scale-[1.04] group-active:scale-[0.96]`}
-                    >
-                      <Check className="size-6 stroke-[3] text-emerald-950 drop-shadow-sm" aria-hidden />
-                    </div>
-                    <div className="flex h-4 items-center justify-center gap-0.5" aria-hidden>
-                      {[0, 1, 2].map((i) => (
-                        <Star
-                          key={i}
-                          className={`size-3.5 ${
-                            i < earned
-                              ? "fill-amber-400 text-amber-600 drop-shadow-[0_0_4px_rgb(251_191_36/0.8)]"
-                              : "fill-slate-600/50 text-slate-500"
-                          }`}
-                          strokeWidth={1.25}
-                        />
-                      ))}
-                    </div>
-                  </Link>
-                ) : isActive ? (
-                  <motion.div
-                    animate={{ y: [0, -5, 0] }}
-                    transition={{ duration: 2.2, repeat: Number.POSITIVE_INFINITY, ease: "easeInOut" }}
-                    className="flex flex-col items-center gap-1"
-                  >
-                    <Link
-                      href={`/level/${level.id}`}
-                      onPointerDown={() => vibrateLevelTap()}
-                      className="group flex flex-col items-center focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-violet-400/80"
-                      aria-current="step"
-                      aria-label={`Niveau ${level.id} — à jouer`}
-                    >
-                      <div
-                        className={`${nodeSize} flex items-center justify-center rounded-full border-2 border-cyan-200/90 bg-gradient-to-b from-violet-200 via-fuchsia-300 to-cyan-300 font-mono text-base font-black text-violet-950 shadow-[0_0_28px_rgb(34_211_238/0.65),0_0_14px_rgb(167_139_250/0.9),inset_0_2px_8px_rgb(255_255_255/0.5)] ring-2 ring-cyan-200/50 transition-transform group-hover:scale-[1.05] group-active:scale-[0.95]`}
-                      >
-                        {level.id}
-                      </div>
-                    </Link>
-                  </motion.div>
-                ) : null}
-              </div>
-            </div>
-          );
-        })}
+                </header>
+                <div
+                  className="relative mx-auto w-full max-w-[min(100%,26rem)] shrink-0"
+                  style={{ height: sectorBodyPx }}
+                  aria-label={`Secteur niveaux ${planet.levelMin}–${planet.levelMax}`}
+                >
+                  {levelsIn.map((level) => {
+                    const { x, y } = level.position;
+                    const localTop = ((y - yMin) / yDen) * 100;
+                    const unlocked = unlockedLevels.includes(level.id);
+                    const isLocked = !unlocked || level.id > currentLevel;
+                    const isActive = unlocked && level.id === currentLevel;
+                    const isDone = unlocked && level.id < currentLevel;
+                    const earned = (starsByLevel[String(level.id)] ?? 0) as 0 | 1 | 2 | 3;
 
-        <MapCeoAvatar />
+                    const nodeSize = "size-[clamp(2.85rem,12vw,3.35rem)]";
+
+                    return (
+                      <div
+                        key={level.id}
+                        data-pp-map-level={level.id}
+                        className="absolute z-20"
+                        style={{
+                          left: `${x}%`,
+                          top: `${localTop}%`,
+                          transform: "translate(-50%, -50%)",
+                        }}
+                      >
+                        <div className="relative flex flex-col items-center gap-1">
+                          {isLocked ? (
+                            <div
+                              className={`${nodeSize} relative flex cursor-not-allowed flex-col items-center justify-center rounded-full border-2 border-slate-700/90 bg-gradient-to-b from-slate-700 via-slate-800 to-slate-950 text-slate-300 shadow-[inset_0_2px_8px_rgb(0_0_0/0.5),0_4px_0_rgb(15_23_42)] ring-1 ring-black/40`}
+                              title={`Niveau ${level.id} verrouillé`}
+                            >
+                              <Lock className="size-[1.1rem] shrink-0 opacity-80" strokeWidth={2.5} aria-hidden />
+                              <span className="sr-only">Niveau {level.id} verrouillé</span>
+                              <span className="absolute bottom-1 font-mono text-[10px] font-black tabular-nums leading-none text-slate-500">
+                                {level.id}
+                              </span>
+                            </div>
+                          ) : isDone ? (
+                            <Link
+                              href={`/level/${level.id}`}
+                              onPointerDown={() => vibrateLevelTap()}
+                              className="group flex flex-col items-center gap-1 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-cyan-400/70"
+                              aria-label={`Niveau ${level.id} terminé, rejouer`}
+                            >
+                              <div
+                                className={`${nodeSize} flex items-center justify-center rounded-full border-2 border-emerald-400/70 bg-gradient-to-b from-amber-300 via-emerald-400 to-emerald-700 font-mono text-sm font-black text-emerald-950 shadow-[0_0_20px_rgb(52_211_153/0.55),inset_0_2px_6px_rgb(255_255_255/0.35)] ring-2 ring-emerald-300/40 transition-transform group-hover:scale-[1.04] group-active:scale-[0.96]`}
+                              >
+                                <Check className="size-6 stroke-[3] text-emerald-950 drop-shadow-sm" aria-hidden />
+                              </div>
+                              <div className="flex h-4 items-center justify-center gap-0.5" aria-hidden>
+                                {[0, 1, 2].map((i) => (
+                                  <Star
+                                    key={i}
+                                    className={`size-3.5 ${
+                                      i < earned
+                                        ? "fill-amber-400 text-amber-600 drop-shadow-[0_0_4px_rgb(251_191_36/0.8)]"
+                                        : "fill-slate-600/50 text-slate-500"
+                                    }`}
+                                    strokeWidth={1.25}
+                                  />
+                                ))}
+                              </div>
+                            </Link>
+                          ) : isActive ? (
+                            <motion.div
+                              animate={{ y: [0, -5, 0] }}
+                              transition={{ duration: 2.2, repeat: Number.POSITIVE_INFINITY, ease: "easeInOut" }}
+                              className="flex flex-col items-center gap-1"
+                            >
+                              <Link
+                                href={`/level/${level.id}`}
+                                onPointerDown={() => vibrateLevelTap()}
+                                className="group flex flex-col items-center focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-violet-400/80"
+                                aria-current="step"
+                                aria-label={`Niveau ${level.id} — à jouer`}
+                              >
+                                <div
+                                  className={`${nodeSize} flex items-center justify-center rounded-full border-2 border-cyan-200/90 bg-gradient-to-b from-violet-200 via-fuchsia-300 to-cyan-300 font-mono text-base font-black text-violet-950 shadow-[0_0_28px_rgb(34_211_238/0.65),0_0_14px_rgb(167_139_250/0.9),inset_0_2px_8px_rgb(255_255_255/0.5)] ring-2 ring-cyan-200/50 transition-transform group-hover:scale-[1.05] group-active:scale-[0.95]`}
+                                >
+                                  {level.id}
+                                </div>
+                              </Link>
+                            </motion.div>
+                          ) : null}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </section>
+            );
+          })}
+        </div>
+
+        <MapCeoAvatar stackedTopPercent={stackedTopPercent} />
       </div>
     </section>
   );

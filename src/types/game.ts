@@ -8,8 +8,13 @@ export type BuildingType = "habitacle" | "eau" | "serre" | "mine";
 export const DECK_CHALLENGE_LEVELS = [0, 1, 2, 3, 4] as const;
 export type DeckChallengeLevel = (typeof DECK_CHALLENGE_LEVELS)[number];
 
-/** Effectifs du manifeste pour la journée (somme = 16). */
+/** Effectifs du manifeste pour la journée (somme = nombre de placements du mandat). */
 export type DailyInventory = Record<BuildingType, number>;
+
+export type TerrainType = "normal" | "lake" | "mountain" | "toxic";
+
+/** Obstacle inconstructible : indice seul (= lac) ou indice + terrain. */
+export type ObstacleSpec = number | { index: number; terrain: Exclude<TerrainType, "normal"> };
 
 /** Cycle de vie minimal d’une partie (store + UI future). */
 export type GameStatus = "ready" | "playing" | "finished";
@@ -21,6 +26,10 @@ export type ActiveBooster = "demolition";
 export type Cell = {
   index: number;
   building: BuildingType | null;
+  /** `false` = obstacle (inconstructible). */
+  isPlayable: boolean;
+  /** Terrain décoratif / obstacle ; les cases jouables sont en général `normal`. */
+  terrainType: TerrainType;
 };
 
 /** Snapshot sérialisable de l’état de jeu (tests, persistance éventuelle). */
@@ -40,4 +49,6 @@ export type GameState = {
   status: GameStatus;
   /** Présent si le snapshot inclut l’état runtime des boosters. */
   activeBooster?: ActiveBooster | null;
+  /** Cases gelées par le boss Contrôle fiscal (0 pt en fin de scoring). */
+  frozenCellIndices?: number[];
 };

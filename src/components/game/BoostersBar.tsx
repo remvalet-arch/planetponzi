@@ -1,9 +1,12 @@
 "use client";
 
 import type { ReactNode } from "react";
+import { useState } from "react";
 import { motion } from "framer-motion";
-import { Eye, Hammer, Shuffle } from "lucide-react";
+import { Eye, Hammer, ShoppingCart, Shuffle } from "lucide-react";
 
+import { BlackMarketModal } from "@/src/components/game/BlackMarketModal";
+import { useAppStrings } from "@/src/lib/i18n/useAppStrings";
 import { useLevelRunStore } from "@/src/store/useLevelRunStore";
 import { useProgressStore } from "@/src/store/useProgressStore";
 
@@ -49,8 +52,15 @@ function BoosterChip({ count, disabled, active, icon, onClick, ariaLabel }: Boos
   );
 }
 
+type BoostersBarProps = {
+  onToast?: (message: string) => void;
+};
+
 /** Boosters compacts : une rangée d’icônes + pastille quantité (mobile-first). */
-export function BoostersBar() {
+export function BoostersBar({ onToast }: BoostersBarProps) {
+  const { t } = useAppStrings();
+  const [blackMarketOpen, setBlackMarketOpen] = useState(false);
+
   const demolition = useProgressStore((s) => s.boosters.demolition);
   const spy = useProgressStore((s) => s.boosters.spy);
   const lobbying = useProgressStore((s) => s.boosters.lobbying);
@@ -65,9 +75,11 @@ export function BoostersBar() {
   const demolitionActive = activeBooster === "demolition";
   const demolitionDisabled = !playing || (!demolitionActive && demolition <= 0);
 
+  const toast = onToast ?? (() => {});
+
   return (
     <aside
-      className="flex w-full shrink-0 flex-row flex-wrap items-center justify-center gap-4 rounded-pp-lg border border-pp-border-strong bg-pp-surface/90 px-2 py-2 shadow-lg backdrop-blur-sm md:max-w-none"
+      className="relative flex w-full shrink-0 flex-row flex-wrap items-center justify-center gap-4 rounded-pp-lg border border-pp-border-strong bg-pp-surface/90 px-2 py-2 shadow-lg backdrop-blur-sm md:max-w-none"
       aria-label="Mallette CEO — boosters"
     >
       <BoosterChip
@@ -95,6 +107,22 @@ export function BoostersBar() {
         icon={<Shuffle className="size-5 text-amber-300 sm:size-6" strokeWidth={2.25} aria-hidden />}
         onClick={() => activateLobbyingBooster()}
         ariaLabel={`Lobbying, ${lobbying} restant${lobbying > 1 ? "s" : ""}`}
+      />
+      <motion.button
+        type="button"
+        disabled={!playing}
+        whileTap={playing ? { scale: 0.92 } : undefined}
+        onClick={() => setBlackMarketOpen(true)}
+        className="flex size-14 shrink-0 items-center justify-center rounded-xl border-2 border-emerald-500/40 bg-gradient-to-b from-emerald-950/80 to-slate-900/90 text-xl shadow-md transition-colors hover:border-emerald-400/60 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-400/70 disabled:cursor-not-allowed disabled:opacity-45 sm:size-[3.75rem]"
+        aria-label={t.blackMarket.openAria}
+      >
+        <ShoppingCart className="size-5 text-emerald-300 sm:size-6" strokeWidth={2.25} aria-hidden />
+      </motion.button>
+      <BlackMarketModal
+        open={blackMarketOpen}
+        onClose={() => setBlackMarketOpen(false)}
+        copy={t.blackMarket}
+        onToast={toast}
       />
     </aside>
   );

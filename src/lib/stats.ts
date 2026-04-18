@@ -176,10 +176,11 @@ export function recordGameCompletion(input: {
     grid &&
     placementSequence &&
     grid.length === 16 &&
-    placementSequence.length === 16
+    placementSequence.length >= 1 &&
+    placementSequence.length <= 16
   ) {
-    const stars = calculateStars(score, levelId);
-    const { playerId, pseudo } = useProgressStore.getState();
+    const stars = calculateStars(score, levelId, grid);
+    const { playerId, pseudo, prestigeLevel } = useProgressStore.getState();
     syncGameCompletionToApi({
       levelId,
       stars,
@@ -189,6 +190,7 @@ export function recordGameCompletion(input: {
       deviceId: getOrCreateDeviceId(),
       playerId,
       pseudo,
+      prestigeLevel,
       seed: typeof seed === "string" ? seed : "",
       grid,
       placementSequence,

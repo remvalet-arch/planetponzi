@@ -1,8 +1,9 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Menu, Star } from "lucide-react";
+import { Building2, Menu, Star } from "lucide-react";
 
 import { MapNavDrawer } from "@/src/components/map/MapNavDrawer";
 import { EconomyHeader } from "@/src/components/layout/EconomyHeader";
@@ -27,7 +28,7 @@ export function MapHeader() {
 
   return (
     <>
-      <header className="relative z-20 shrink-0 border-b border-pp-border bg-pp-bg/95 px-3 py-3 backdrop-blur-md">
+      <header className="relative z-40 shrink-0 border-b border-pp-border bg-pp-bg/95 px-3 pb-3 pt-[max(0.5rem,env(safe-area-inset-top))] backdrop-blur-md">
         <div className="mx-auto flex max-w-lg items-center justify-between gap-2">
           <motion.button
             type="button"
@@ -41,7 +42,16 @@ export function MapHeader() {
             <Menu className="size-6" strokeWidth={2} />
           </motion.button>
 
-          <div className="flex min-w-0 flex-1 items-center justify-center gap-2 rounded-pp-lg border border-pp-border-strong bg-pp-elevated/70 px-3 py-2">
+          <Link
+            href="/empire"
+            className="flex size-11 shrink-0 items-center justify-center rounded-pp-md border border-cyan-500/35 bg-slate-900/80 text-lg shadow-md backdrop-blur-sm transition-colors hover:border-cyan-400/60 hover:bg-slate-800/90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-400/60"
+            aria-label={t.nav.empire}
+            title={t.nav.empire}
+          >
+            <Building2 className="size-5 shrink-0 text-cyan-300" strokeWidth={2} aria-hidden />
+          </Link>
+
+          <div className="flex min-w-0 flex-1 items-center justify-center gap-2 whitespace-nowrap rounded-pp-lg border border-pp-border-strong bg-pp-elevated/70 px-3 py-2">
             <Star className="size-5 shrink-0 fill-amber-400 text-amber-500" strokeWidth={1.5} aria-hidden />
             <span className="font-mono text-sm font-semibold tabular-nums text-pp-text">
               {count}

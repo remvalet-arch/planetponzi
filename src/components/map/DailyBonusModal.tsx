@@ -22,7 +22,7 @@ export function DailyBonusModal({ open, onClose }: DailyBonusModalProps) {
 
   return (
     <BottomSheetShell open={open} onClose={onClose} closeOnBackdropPress={false}>
-      <div className="flex flex-col gap-4 px-4 pb-5 pt-2">
+      <div className="flex flex-col gap-4 px-4 pb-[max(1.25rem,env(safe-area-inset-bottom))] pt-[max(0.5rem,env(safe-area-inset-top))]">
         <div>
           <p className="pp-kicker text-cyan-300/90">{t.dailyBonus.kicker}</p>
           <h2 className="mt-2 font-mono text-lg font-bold text-pp-text">{t.dailyBonus.title}</h2>

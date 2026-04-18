@@ -1,5 +1,6 @@
-import { estimateMaxScore } from "@/src/lib/solver";
-import type { DeckChallengeLevel } from "@/src/types/game";
+import { getPlacementLengthFromObstacles } from "@/src/lib/grid-terrain";
+import { estimateMaxScore, type SolverLevelContext } from "@/src/lib/solver";
+import type { BuildingType, Cell, DeckChallengeLevel, ObstacleSpec } from "@/src/types/game";
 
 /** Seuils de score final pour 1 / 2 / 3 étoiles (inclus). */
 export type LevelStarThresholds = {
@@ -127,28 +128,82 @@ export function getPlanetForLevel(levelId: number): PlanetDefinition {
   return getPlanetById(planetIdForLevel(levelId));
 }
 
+/** Conditions de victoire additionnelles (grille finale). */
+export type WinCondition = {
+  minHabitacle?: number;
+  minEau?: number;
+  minSerre?: number;
+  minMine?: number;
+  /** Alias narratif = `minSerre` (forêts / serres). */
+  minForests?: number;
+};
+
+export function countBuildingOnGrid(grid: Cell[], type: BuildingType): number {
+  return grid.reduce((acc, c) => acc + (c.isPlayable && c.building === type ? 1 : 0), 0);
+}
+
+export function satisfiesWinCondition(grid: Cell[], wc: WinCondition | undefined): boolean {
+  if (!wc) return true;
+  if (typeof wc.minHabitacle === "number" && countBuildingOnGrid(grid, "habitacle") < wc.minHabitacle) {
+    return false;
+  }
+  if (typeof wc.minEau === "number" && countBuildingOnGrid(grid, "eau") < wc.minEau) return false;
+  if (typeof wc.minMine === "number" && countBuildingOnGrid(grid, "mine") < wc.minMine) return false;
+  const needSerre = wc.minSerre ?? wc.minForests;
+  if (typeof needSerre === "number" && countBuildingOnGrid(grid, "serre") < needSerre) return false;
+  return true;
+}
+
 export type LevelDefinition = {
   id: number;
   /** Secteur / biome (0 = niveaux 1–10, … 9 = 91–100). */
   planetId: PlanetId;
-  /** Entrée RNG déterministe pour la cargaison (16 placements). */
+  /** Entrée RNG déterministe pour la cargaison (longueur = cases constructibles). */
   seed: string;
   stars: LevelStarThresholds;
   /** Niveau de défi manifeste (0 = tout visible). */
   deckChallengeLevel?: DeckChallengeLevel;
   /** Coordonnées % pour le chemin vertical (ordre des niveaux = ordre du parcours). */
   position: LevelMapPosition;
+  /** Cases inconstructibles (lac par défaut si nombre seul). */
+  obstacles?: ObstacleSpec[];
+  /** Aléa : à la fin du tour `triggerAtTurn`, détruit une tuile (Faille sismique). */
+  seismicRift?: {
+    triggerAtTurn: number;
+    targetCellIndex?: number;
+  };
+  /** Mandat : contraintes indépendantes du score (sinon 0★ même si seuils dépassés). */
+  winCondition?: WinCondition;
 };
 
 /** Nombre de niveaux Saga générés (carte + progression). */
 export const LEVEL_COUNT = 100;
 
+function buildSolverContext(
+  seed: string,
+  obstacles: ObstacleSpec[] | undefined,
+  seismic: { triggerAtTurn: number; targetCellIndex?: number } | undefined,
+): SolverLevelContext {
+  return {
+    obstacles,
+    placementCount: getPlacementLengthFromObstacles(obstacles),
+    seismicRift: seismic,
+    cargoSeed: seed,
+  };
+}
+
+/** Contexte solver pour l’UI (bannière optimal, etc.). */
+export function getSolverLevelContext(def: LevelDefinition): SolverLevelContext {
+  return buildSolverContext(def.seed, def.obstacles, def.seismicRift);
+}
+
 /** Seuils dérivés du score max estimé (solver glouton + marges 35 % / 60 % / 85 %). */
 function dynamicStarThresholds(
   cargoSeed: string,
   deck: DeckChallengeLevel,
+  solverCtx: SolverLevelContext,
 ): LevelStarThresholds {
-  const maxScore = estimateMaxScore(cargoSeed, deck);
+  const maxScore = estimateMaxScore(cargoSeed, deck, solverCtx);
   let three = Math.floor(maxScore * 0.85);
   let two = Math.floor(maxScore * 0.6);
   const one = Math.max(15, Math.floor(maxScore * 0.35));
@@ -180,13 +235,28 @@ export function generateLevels(count: number): LevelDefinition[] {
 
     const seed = `pp-lvl-${String(id).padStart(4, "0")}-v1`;
     const deckChallengeLevel = deckChallengeForLevel(id);
+    /** Niveau 100 : mandat VIP (obstacles variés) + Faille sismique au 8ᵉ tour. */
+    const obstacles: ObstacleSpec[] | undefined =
+      id === 100
+        ? [
+            { index: 5, terrain: "mountain" },
+            { index: 10, terrain: "lake" },
+          ]
+        : undefined;
+    const seismicRift = id === 100 ? { triggerAtTurn: 8 } : undefined;
+    /** Niveau 15 : mandat « verdissement » (démo conditions de victoire). */
+    const winCondition = id === 15 ? { minForests: 4 } : undefined;
+    const solverCtx = buildSolverContext(seed, obstacles, seismicRift);
     out.push({
       id,
       planetId,
       seed,
-      stars: dynamicStarThresholds(seed, deckChallengeLevel),
+      stars: dynamicStarThresholds(seed, deckChallengeLevel, solverCtx),
       deckChallengeLevel,
       position: { x, y },
+      obstacles,
+      seismicRift,
+      winCondition,
     });
   }
   return out;
@@ -212,11 +282,14 @@ export function starsFromScore(
 /**
  * Étoiles gagnées pour un score final sur un niveau donné
  * (seuils `one` / `two` / `three` dans la config = cibles 1★ / 2★ / 3★).
+ * Si `grid` est fourni, le mandat `winCondition` peut forcer **0★** même si le score le permettait.
  */
-export function calculateStars(score: number, levelId: number): 0 | 1 | 2 | 3 {
+export function calculateStars(score: number, levelId: number, grid?: Cell[]): 0 | 1 | 2 | 3 {
   const def = getLevelById(levelId);
   if (!def) return 0;
-  return starsFromScore(score, def.stars);
+  const s = starsFromScore(score, def.stars);
+  if (grid && !satisfiesWinCondition(grid, def.winCondition)) return 0;
+  return s;
 }
 
 /**

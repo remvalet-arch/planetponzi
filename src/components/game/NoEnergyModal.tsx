@@ -15,7 +15,7 @@ export function NoEnergyModal({ open, onClose }: NoEnergyModalProps) {
 
   return (
     <BottomSheetShell open={open} onClose={onClose} closeOnBackdropPress>
-      <div className="flex max-h-[min(85dvh,28rem)] min-h-0 flex-col gap-4 overflow-y-auto overscroll-y-contain px-4 pb-[max(1rem,env(safe-area-inset-bottom))] pt-2">
+      <div className="flex max-h-[min(85dvh,28rem)] min-h-0 flex-col gap-4 overflow-y-auto overscroll-y-contain px-4 pb-16 pt-[max(0.5rem,env(safe-area-inset-top))]">
         <div>
           <p className="pp-kicker text-rose-300/90">{t.energy.kicker}</p>
           <h2 className="mt-2 font-mono text-lg font-bold text-pp-text">{t.energy.title}</h2>

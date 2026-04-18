@@ -57,20 +57,20 @@ export function BriefingOverlay({ open, onComplete }: BriefingOverlayProps) {
       open={open}
       onClose={dismiss}
       closeOnBackdropPress={false}
-      backdropClassName="!z-[288]"
+      backdropClassName="!z-[100]"
       panelClassName="border-violet-500/35 bg-gradient-to-b from-slate-900 via-indigo-950 to-slate-950 text-pp-text shadow-[0_0_60px_rgb(124_58_237/0.35)]"
       handleClassName="bg-white/20"
     >
       <button
         type="button"
         onClick={dismiss}
-        className="pp-btn-icon absolute right-3 top-7 z-[1] border-white/10 bg-white/5 text-pp-text"
+        className="pp-btn-icon absolute right-2 top-[max(0.75rem,env(safe-area-inset-top))] z-[1] min-h-[44px] min-w-[44px] border-white/10 bg-white/5 text-pp-text"
         aria-label="Fermer le briefing"
       >
         <X className="size-5" strokeWidth={2} />
       </button>
 
-      <div className="pp-allow-select min-h-0 flex-1 overflow-y-auto overscroll-y-contain px-5 pb-2 pt-2">
+      <div className="pp-allow-select min-h-0 flex-1 overflow-y-auto overscroll-y-contain px-5 pb-14 pt-2">
         <div className="mb-3 flex items-center gap-2 text-violet-300">
           <Sparkles className="size-5 shrink-0" strokeWidth={2} aria-hidden />
           <span className="font-mono text-[10px] uppercase tracking-[0.28em]">Briefing CEO</span>

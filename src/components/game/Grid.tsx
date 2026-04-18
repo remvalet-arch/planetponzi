@@ -1,5 +1,8 @@
 "use client";
 
+import { useMemo } from "react";
+import { motion } from "framer-motion";
+
 import { Cell } from "@/src/components/game/Cell";
 import { useLevelRunStore } from "@/src/store/useLevelRunStore";
 
@@ -9,8 +12,12 @@ export function Grid() {
   const activeBooster = useLevelRunStore((s) => s.activeBooster);
   const demolishFlash = useLevelRunStore((s) => s.demolishFlash);
   const placeBuilding = useLevelRunStore((s) => s.placeBuilding);
+  const gridShakeNonce = useLevelRunStore((s) => s.gridShakeNonce);
+  const frozenCellIndices = useLevelRunStore((s) => s.frozenCellIndices);
 
   const demolitionMode = status === "playing" && activeBooster === "demolition";
+
+  const frozenSet = useMemo(() => new Set(frozenCellIndices), [frozenCellIndices]);
 
   return (
     <div
@@ -22,11 +29,25 @@ export function Grid() {
       role="grid"
       aria-label={demolitionMode ? "Grille — mode démolition" : "Grille de placement 4 par 4"}
     >
-      <div className="grid min-h-0 min-w-0 flex-1 grid-cols-4 grid-rows-4 gap-1.5 sm:gap-2">
+      <motion.div
+        key={gridShakeNonce}
+        initial={false}
+        animate={
+          gridShakeNonce > 0
+            ? { x: [0, -6, 6, -5, 5, -3, 3, 0], rotate: [0, -0.45, 0.45, -0.35, 0.35, 0] }
+            : { x: 0, rotate: 0 }
+        }
+        transition={{ duration: 0.48, ease: [0.22, 1, 0.36, 1] }}
+        className="grid min-h-0 min-w-0 flex-1 grid-cols-4 grid-rows-4 gap-1.5 sm:gap-2"
+      >
         {grid.map((cell) => {
-          const canPlace = status === "playing" && !demolitionMode && cell.building === null;
+          const canPlace =
+            status === "playing" &&
+            !demolitionMode &&
+            cell.isPlayable &&
+            cell.building === null;
           const canDemolish =
-            status === "playing" && demolitionMode && cell.building !== null;
+            status === "playing" && demolitionMode && cell.isPlayable && cell.building !== null;
           const onClick =
             canPlace || canDemolish ? () => placeBuilding(cell.index) : undefined;
           const flashNonce =
@@ -39,11 +60,12 @@ export function Grid() {
                 onClick={onClick}
                 demolitionTarget={demolitionMode && cell.building !== null}
                 demolishFlashNonce={flashNonce}
+                fiscalFrozen={frozenSet.has(cell.index)}
               />
             </div>
           );
         })}
-      </div>
+      </motion.div>
     </div>
   );
 }

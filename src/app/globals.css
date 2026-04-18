@@ -70,6 +70,7 @@ html {
   min-height: 100dvh;
   overflow: hidden;
   overscroll-behavior: none;
+  overscroll-behavior-y: none;
 }
 
 body {
@@ -78,6 +79,7 @@ body {
   max-height: 100dvh;
   overflow: hidden;
   overscroll-behavior: none;
+  overscroll-behavior-y: none;
   font-family: var(--font-geist-sans), system-ui, sans-serif;
   -webkit-tap-highlight-color: transparent;
   user-select: none;
@@ -110,12 +112,13 @@ textarea,
   }
 
   .pp-modal-backdrop {
-    @apply fixed inset-0 z-[290] flex items-end justify-center overscroll-none bg-slate-900/45 p-0 backdrop-blur-[2px];
+    @apply fixed inset-0 z-[100] flex items-end justify-center overscroll-none overscroll-y-none bg-slate-900/45 p-0 backdrop-blur-[2px];
     padding-bottom: env(safe-area-inset-bottom);
+    padding-top: env(safe-area-inset-top);
   }
 
   .pp-modal-panel {
-    @apply flex max-h-[min(90dvh,720px)] w-full flex-col overflow-hidden overscroll-contain border-t border-x border-pp-border-strong bg-pp-surface shadow-2xl;
+    @apply relative z-[101] flex max-h-[min(90dvh,720px)] w-full min-h-0 flex-col overflow-hidden overscroll-contain border-t border-x border-pp-border-strong bg-pp-surface shadow-2xl;
     @apply rounded-t-[1.35rem] rounded-b-none;
     box-shadow: var(--pp-shadow-modal);
   }
@@ -125,7 +128,7 @@ textarea,
   }
 
   .pp-modal-header {
-    @apply sticky top-0 flex items-start justify-between gap-3 border-b border-pp-border bg-pp-surface/95 px-4 py-3 backdrop-blur-sm;
+    @apply sticky top-0 z-[1] flex items-start justify-between gap-3 border-b border-pp-border bg-pp-surface/95 px-4 py-3 backdrop-blur-sm;
   }
 
   .pp-kicker {
@@ -152,7 +155,8 @@ textarea,
   }
 
   .pp-header-bar {
-    @apply relative z-50 border-b border-pp-border bg-pp-surface/90 px-3 py-3 backdrop-blur-md sm:px-4;
+    @apply relative z-40 border-b border-pp-border bg-pp-surface/90 px-3 py-3 backdrop-blur-md sm:px-4;
+    padding-top: max(0.5rem, env(safe-area-inset-top));
   }
 
   .pp-toast {
@@ -169,17 +173,18 @@ textarea,
   }
 
   .pp-end-backdrop {
-    @apply fixed inset-0 z-[280] flex items-end justify-center overscroll-none bg-slate-900/45 p-0 backdrop-blur-[2px];
+    @apply fixed inset-0 z-[100] flex items-end justify-center overscroll-none overscroll-y-none bg-slate-900/45 p-0 backdrop-blur-[2px];
     padding-bottom: env(safe-area-inset-bottom);
+    padding-top: env(safe-area-inset-top);
   }
 
   .pp-end-panel {
-    @apply relative flex max-h-[min(92dvh,720px)] w-full flex-col overflow-hidden overscroll-contain rounded-t-[1.35rem] border-t border-x border-pp-border-strong bg-pp-surface shadow-2xl;
+    @apply relative z-[101] flex max-h-[min(92dvh,720px)] w-full min-h-0 flex-col overflow-hidden overscroll-contain rounded-t-[1.35rem] border-t border-x border-pp-border-strong bg-pp-surface shadow-2xl;
     box-shadow: var(--pp-shadow-modal);
   }
 
   .pp-loading-screen {
-    @apply absolute inset-0 z-[250] flex flex-col items-center justify-center bg-pp-bg px-6;
+    @apply absolute inset-0 z-[99] flex flex-col items-center justify-center bg-pp-bg px-6;
   }
 
   /* Grille de jeu : panneau translucide */
@@ -189,6 +194,4 @@ textarea,
   }
 }
 
-#nav-drawer {
-  z-index: 70;
-}
+/* z-index du tiroir menu : défini en Tailwind sur le conteneur (z-[100] / panneau z-[101]). */

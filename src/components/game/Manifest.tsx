@@ -17,9 +17,10 @@ function nextPiecesPreview(
   turn: number,
   count: number,
 ): BuildingType[] {
-  if (sequence.length !== 16 || turn >= 16) return [];
+  const cap = sequence.length;
+  if (cap < 1 || turn >= cap) return [];
   const out: BuildingType[] = [];
-  for (let i = 0; i < count && turn + i < 16; i++) {
+  for (let i = 0; i < count && turn + i < cap; i++) {
     out.push(sequence[turn + i]!);
   }
   return out;

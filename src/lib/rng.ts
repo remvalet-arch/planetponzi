@@ -18,7 +18,7 @@ function assertNonEmptyCargoSeed(seed: string): void {
 }
 
 /** FNV-1a 32-bit — déterministe, suffisant pour dériver un RNG. */
-function fnv1a32(input: string): number {
+export function fnv1a32(input: string): number {
   let hash = 0x811c9dc5;
   for (let i = 0; i < input.length; i++) {
     hash ^= input.charCodeAt(i);
@@ -72,20 +72,22 @@ export function getLocalDateSeed(reference: Date = new Date()): string {
 }
 
 /**
- * Génère la séquence des 16 bâtiments à placer, déterministe pour une `cargoSeed` donnée.
+ * Génère la séquence de bâtiments à placer, déterministe pour une `cargoSeed` donnée.
+ * @param length Nombre de tours (= cases constructibles), défaut 16.
  */
-export function generatePlacementSequence(cargoSeed: string): BuildingType[] {
+export function generatePlacementSequence(cargoSeed: string, length = 16): BuildingType[] {
   assertNonEmptyCargoSeed(cargoSeed);
+  const n = Math.max(1, Math.min(16, Math.floor(length)));
   const rand = mulberry32(fnv1a32(`planet-ponzi|deck|${cargoSeed}`));
   const sequence: BuildingType[] = [];
-  for (let i = 0; i < 16; i++) {
+  for (let i = 0; i < n; i++) {
     const pick = Math.floor(rand() * BUILDING_TYPES.length);
     sequence.push(BUILDING_TYPES[pick]!);
   }
   return sequence;
 }
 
-/** Compte chaque type présent dans la séquence (16 entrées attendues). */
+/** Compte chaque type présent dans la séquence (somme = longueur de la séquence). */
 export function getDailyStats(sequence: BuildingType[]): DailyInventory {
   const counts: DailyInventory = {
     habitacle: 0,

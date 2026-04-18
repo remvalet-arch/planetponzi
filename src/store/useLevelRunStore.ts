@@ -8,10 +8,20 @@ import {
   getDeckScoreMultiplier,
 } from "@/src/lib/difficulty";
 import { vibratePlaceBuilding } from "@/src/lib/haptics";
+import { playPlacementPop } from "@/src/lib/game-sounds";
 import { calculateStars, getLevelById } from "@/src/lib/levels";
+import {
+  applyBuildingToGrid,
+  clearBuildingAt,
+  evaluateTriggers,
+  scoreGridForDeck,
+  validatePlacement,
+  type GridTemporaryEffect,
+} from "@/src/lib/level-run-engine";
 import { generatePlacementSequence, getDailyStats } from "@/src/lib/rng";
-import { calculateGridScore } from "@/src/lib/scoring";
+import { applyPrestigeToRawScore } from "@/src/lib/prestige";
 import { recordGameCompletion } from "@/src/lib/stats";
+import { calculateSessionGridScore } from "@/src/lib/session-scoring";
 import type {
   ActiveBooster,
   BuildingType,
@@ -21,6 +31,13 @@ import type {
   GameState,
   GameStatus,
 } from "@/src/types/game";
+import { BLACK_MARKET_TILE_COST } from "@/src/lib/black-market";
+import {
+  buildGridFromObstacles,
+  getPlacementLengthFromObstacles,
+  mergeGridTerrainWithBuildings,
+  normalizePersistedCell,
+} from "@/src/lib/grid-terrain";
 import { useEconomyStore } from "@/src/store/useEconomyStore";
 import { useProgressStore } from "@/src/store/useProgressStore";
 
@@ -32,6 +49,10 @@ const PLACED_BUILDING_TYPES = new Set<string>([
 ]);
 
 const ALL_BUILDINGS: BuildingType[] = ["habitacle", "eau", "serre", "mine"];
+
+function scoreWithPrestige(raw: number): number {
+  return applyPrestigeToRawScore(raw, useProgressStore.getState().prestigeLevel);
+}
 
 function randomBuildingDifferentFrom(exclude: BuildingType): BuildingType {
   const pool = ALL_BUILDINGS.filter((t) => t !== exclude);
@@ -46,11 +67,8 @@ function hasMeaningfulGridProgress(grid: Cell[], turn: number): boolean {
   );
 }
 
-function createEmptyGrid(): Cell[] {
-  return Array.from({ length: 16 }, (_, index) => ({
-    index,
-    building: null,
-  }));
+function createDefaultPlayableGrid(): Cell[] {
+  return buildGridFromObstacles(undefined);
 }
 
 function toGameState(snapshot: {
@@ -65,6 +83,7 @@ function toGameState(snapshot: {
   score: number;
   status: GameStatus;
   activeBooster: ActiveBooster | null;
+  frozenCellIndices: number[];
 }): GameState {
   return {
     levelId: snapshot.levelId,
@@ -73,11 +92,12 @@ function toGameState(snapshot: {
     dailyInventory: { ...snapshot.dailyInventory },
     deckChallengeLevel: snapshot.deckChallengeLevel,
     deckChallengeLockedSeed: snapshot.deckChallengeLockedSeed,
-    grid: snapshot.grid.map((c) => ({ ...c, building: c.building })),
+    grid: snapshot.grid.map((c) => ({ ...c })),
     turn: snapshot.turn,
     score: snapshot.score,
     status: snapshot.status,
     activeBooster: snapshot.activeBooster,
+    frozenCellIndices: [...snapshot.frozenCellIndices],
   };
 }
 
@@ -99,10 +119,18 @@ export type LevelRunStore = {
   demolishNonce: number;
   /** Tours restants avec aperçu 4 pièces (espion). */
   spyPreviewTurnsRemaining: number;
+  /** Cases dont la contribution au score est forcée à 0 (boss Contrôle fiscal). */
+  frozenCellIndices: number[];
+  /** Journal runtime des effets de grille (gel, fusion méga) — non persisté au-delà du merge. */
+  gridTemporaryEffects: GridTemporaryEffect[];
+  /** Incrémenté à chaque fusion méga pour animer un tremblement de grille. */
+  gridShakeNonce: number;
   enterLevel: (levelId: number) => void;
   /** Verrouille le mandat du jour et passe en jeu (deck imposé par la définition Saga). */
   beginPlacement: () => void;
   placeBuilding: (cellIndex: number) => void;
+  /** Marché noir : −200 💰 et remplace la prochaine tuile (`placementSequence[turn]`). Retourne `false` si refusé. */
+  purchaseBlackMarketTile: (building: BuildingType) => boolean;
   toggleBooster: (type: ActiveBooster) => void;
   activateSpyBooster: () => void;
   activateLobbyingBooster: () => void;
@@ -125,6 +153,7 @@ type PersistedSlice = Pick<
   | "turn"
   | "score"
   | "status"
+  | "frozenCellIndices"
 >;
 
 function explicitDeckLockForSeed(p: Partial<PersistedSlice>, seed: string): string | null {
@@ -142,22 +171,34 @@ function mergePersistedState(persisted: unknown, current: LevelRunStore): LevelR
   if (!persisted || typeof persisted !== "object") return current;
   const p = persisted as Partial<PersistedSlice> & { dailySequence?: BuildingType[] };
 
+  const def = getLevelById(typeof p.levelId === "number" ? p.levelId : current.levelId);
+  const expectedLen = def ? getPlacementLengthFromObstacles(def.obstacles) : 16;
+
   const placementSequenceRaw = p.placementSequence ?? p.dailySequence;
-  const placementSequence =
-    Array.isArray(placementSequenceRaw) && placementSequenceRaw.length === 16
+  let placementSequence =
+    Array.isArray(placementSequenceRaw) && placementSequenceRaw.length === expectedLen
       ? (placementSequenceRaw as BuildingType[])
       : current.placementSequence;
 
-  const grid =
-    Array.isArray(p.grid) && p.grid.length === 16
-      ? (p.grid as Cell[]).map((c, i) => ({
-          index: typeof c?.index === "number" ? c.index : i,
-          building: c?.building ?? null,
-        }))
-      : current.grid;
-
   const seed = typeof p.seed === "string" ? p.seed : current.seed;
   const levelId = typeof p.levelId === "number" && Number.isFinite(p.levelId) ? p.levelId : current.levelId;
+
+  if (def && placementSequence.length !== expectedLen) {
+    placementSequence = generatePlacementSequence(seed, expectedLen);
+  }
+
+  let grid: Cell[];
+  if (def) {
+    const template = buildGridFromObstacles(def.obstacles);
+    grid = mergeGridTerrainWithBuildings(
+      template,
+      Array.isArray(p.grid) && p.grid.length === 16 ? (p.grid as Cell[]) : undefined,
+    );
+  } else if (Array.isArray(p.grid) && p.grid.length === 16) {
+    grid = (p.grid as Cell[]).map((c, i) => normalizePersistedCell(c, i));
+  } else {
+    grid = current.grid;
+  }
 
   let status: GameStatus = isGameStatus(p.status) ? p.status : current.status;
   const turn = typeof p.turn === "number" ? p.turn : current.turn;
@@ -179,8 +220,15 @@ function mergePersistedState(persisted: unknown, current: LevelRunStore): LevelR
     status = "ready";
   }
 
-  const baseScore = calculateGridScore(grid);
-  const score = Math.round(baseScore * getDeckScoreMultiplier(deckChallengeLevel));
+  const frozenCellIndices = Array.isArray(p.frozenCellIndices)
+    ? (p.frozenCellIndices as unknown[]).filter(
+        (i): i is number => typeof i === "number" && Number.isInteger(i) && i >= 0 && i <= 15,
+      )
+    : [];
+
+  const baseScore = calculateSessionGridScore(grid, frozenCellIndices);
+  const rawScore = Math.round(baseScore * getDeckScoreMultiplier(deckChallengeLevel));
+  const score = scoreWithPrestige(rawScore);
 
   return {
     ...current,
@@ -194,10 +242,13 @@ function mergePersistedState(persisted: unknown, current: LevelRunStore): LevelR
     turn,
     score,
     status,
+    frozenCellIndices,
     activeBooster: null,
     demolishFlash: null,
     demolishNonce: current.demolishNonce,
     spyPreviewTurnsRemaining: 0,
+    gridTemporaryEffects: [],
+    gridShakeNonce: 0,
   };
 }
 
@@ -217,6 +268,9 @@ const emptyRun: Pick<
   | "demolishFlash"
   | "demolishNonce"
   | "spyPreviewTurnsRemaining"
+  | "frozenCellIndices"
+  | "gridTemporaryEffects"
+  | "gridShakeNonce"
 > = {
   levelId: 0,
   seed: "",
@@ -224,7 +278,7 @@ const emptyRun: Pick<
   dailyInventory: { habitacle: 0, eau: 0, serre: 0, mine: 0 },
   deckChallengeLevel: 0,
   deckChallengeLockedSeed: null,
-  grid: createEmptyGrid(),
+  grid: createDefaultPlayableGrid(),
   turn: 0,
   score: 0,
   status: "ready",
@@ -232,6 +286,9 @@ const emptyRun: Pick<
   demolishFlash: null,
   demolishNonce: 0,
   spyPreviewTurnsRemaining: 0,
+  frozenCellIndices: [],
+  gridTemporaryEffects: [],
+  gridShakeNonce: 0,
 };
 
 export const useLevelRunStore = create<LevelRunStore>()(
@@ -243,7 +300,8 @@ export const useLevelRunStore = create<LevelRunStore>()(
         const def = getLevelById(levelId);
         if (!def) return;
 
-        const placementSequence = generatePlacementSequence(def.seed);
+        const placementLen = getPlacementLengthFromObstacles(def.obstacles);
+        const placementSequence = generatePlacementSequence(def.seed, placementLen);
         const dailyInventory = getDailyStats(placementSequence);
         const deckChallengeLevel = def.deckChallengeLevel ?? 0;
 
@@ -254,7 +312,7 @@ export const useLevelRunStore = create<LevelRunStore>()(
           dailyInventory,
           deckChallengeLevel,
           deckChallengeLockedSeed: null,
-          grid: createEmptyGrid(),
+          grid: buildGridFromObstacles(def.obstacles),
           turn: 0,
           score: 0,
           status: "ready",
@@ -262,6 +320,9 @@ export const useLevelRunStore = create<LevelRunStore>()(
           demolishFlash: null,
           demolishNonce: 0,
           spyPreviewTurnsRemaining: 0,
+          frozenCellIndices: [],
+          gridTemporaryEffects: [],
+          gridShakeNonce: 0,
         });
       },
 
@@ -269,11 +330,12 @@ export const useLevelRunStore = create<LevelRunStore>()(
         const s = get();
         if (s.status !== "ready") return;
         if (s.deckChallengeLockedSeed === s.seed) return;
-        const base = calculateGridScore(s.grid);
+        const base = calculateSessionGridScore(s.grid, s.frozenCellIndices);
+        const raw = Math.round(base * getDeckScoreMultiplier(s.deckChallengeLevel));
         set({
           deckChallengeLockedSeed: s.seed,
           status: "playing",
-          score: Math.round(base * getDeckScoreMultiplier(s.deckChallengeLevel)),
+          score: scoreWithPrestige(raw),
         });
       },
 
@@ -281,7 +343,7 @@ export const useLevelRunStore = create<LevelRunStore>()(
         if (type !== "demolition") return;
         const s = get();
         if (s.status !== "playing") return;
-        if (s.turn >= 16) return;
+        if (s.turn >= s.placementSequence.length) return;
         if (s.activeBooster === "demolition") {
           set({ activeBooster: null });
           return;
@@ -294,7 +356,7 @@ export const useLevelRunStore = create<LevelRunStore>()(
       activateSpyBooster: () => {
         const s = get();
         if (s.status !== "playing") return;
-        if (s.turn >= 16) return;
+        if (s.turn >= s.placementSequence.length) return;
         const stock = useProgressStore.getState().boosters.spy;
         if (stock <= 0) return;
         useProgressStore.getState().consumeBooster("spy");
@@ -304,8 +366,8 @@ export const useLevelRunStore = create<LevelRunStore>()(
       activateLobbyingBooster: () => {
         const s = get();
         if (s.status !== "playing") return;
-        if (s.turn >= 16) return;
-        if (s.placementSequence.length !== 16) return;
+        if (s.turn >= s.placementSequence.length) return;
+        if (s.placementSequence.length < 1) return;
         const stock = useProgressStore.getState().boosters.lobbying;
         if (stock <= 0) return;
         const cur = s.placementSequence[s.turn];
@@ -319,14 +381,17 @@ export const useLevelRunStore = create<LevelRunStore>()(
 
       placeBuilding: (cellIndex) => {
         const state = get();
-        if (state.status !== "playing") return;
-        if (cellIndex < 0 || cellIndex > 15) return;
+        const placementSlice = {
+          status: state.status,
+          turn: state.turn,
+          grid: state.grid,
+          placementSequence: state.placementSequence,
+          activeBooster: state.activeBooster,
+        };
+        const verdict = validatePlacement(placementSlice, cellIndex);
+        if (!verdict.ok) return;
 
-        if (state.activeBooster === "demolition") {
-          if (state.turn >= 16) return;
-          const cell = state.grid[cellIndex];
-          if (!cell || cell.building === null) return;
-
+        if (verdict.mode === "demolition") {
           const stock = useProgressStore.getState().boosters.demolition;
           if (stock <= 0) {
             set({ activeBooster: null });
@@ -335,27 +400,26 @@ export const useLevelRunStore = create<LevelRunStore>()(
 
           useProgressStore.getState().consumeBooster("demolition");
 
-          const nextGrid = state.grid.map((c, i) =>
-            i === cellIndex ? { ...c, building: null } : c,
-          );
-          const base = calculateGridScore(nextGrid);
+          const nextGrid = clearBuildingAt(state.grid, verdict.cellIndex);
           const mult = getDeckScoreMultiplier(state.deckChallengeLevel);
-          const nextScore = Math.round(base * mult);
+          const rawScore = scoreGridForDeck(nextGrid, state.frozenCellIndices, mult);
+          const nextScore = scoreWithPrestige(rawScore);
           const nonce = state.demolishNonce + 1;
 
           vibratePlaceBuilding();
+          playPlacementPop();
 
           set({
             grid: nextGrid,
             score: nextScore,
             activeBooster: null,
-            demolishFlash: { index: cellIndex, nonce },
+            demolishFlash: { index: verdict.cellIndex, nonce },
             demolishNonce: nonce,
           });
 
           window.setTimeout(() => {
             useLevelRunStore.setState((inner) =>
-              inner.demolishFlash?.index === cellIndex && inner.demolishFlash?.nonce === nonce
+              inner.demolishFlash?.index === verdict.cellIndex && inner.demolishFlash?.nonce === nonce
                 ? { demolishFlash: null }
                 : {},
             );
@@ -363,35 +427,53 @@ export const useLevelRunStore = create<LevelRunStore>()(
           return;
         }
 
-        if (state.turn >= 16) return;
-        if (state.grid[cellIndex]?.building !== null) return;
-        if (state.placementSequence.length !== 16) return;
-
-        const building = state.placementSequence[state.turn];
-        const nextGrid = state.grid.map((c, i) =>
-          i === cellIndex ? { ...c, building } : c,
-        );
+        const gridBeforePlacement = state.grid;
+        const nextGrid = applyBuildingToGrid(gridBeforePlacement, verdict.cellIndex, verdict.building);
         const nextTurn = state.turn + 1;
-        const finished = nextTurn >= 16;
-        const base = calculateGridScore(nextGrid);
+        const maxTurn = state.placementSequence.length;
+        const finished = nextTurn >= maxTurn;
+
+        const levelDef = getLevelById(state.levelId);
+        const triggerOut = evaluateTriggers({
+          levelId: state.levelId,
+          gridBeforePlacement,
+          gridAfterPlacement: nextGrid,
+          newTurn: nextTurn,
+          frozenCellIndices: state.frozenCellIndices,
+          maxTurn,
+          cargoSeed: state.seed,
+          seismicRift: levelDef?.seismicRift,
+        });
+
         const mult = getDeckScoreMultiplier(state.deckChallengeLevel);
-        const nextScore = Math.round(base * mult);
+        const finalGrid = triggerOut.postAleasGrid;
+        const rawScore = scoreGridForDeck(finalGrid, triggerOut.nextFrozenCellIndices, mult);
+        const nextScore = scoreWithPrestige(rawScore);
         const spyRem =
           state.spyPreviewTurnsRemaining > 0 ? state.spyPreviewTurnsRemaining - 1 : 0;
 
+        const mergedEffects = [...state.gridTemporaryEffects, ...triggerOut.newTemporaryEffects].slice(
+          -64,
+        );
+        const nextShake = triggerOut.gridShake ? state.gridShakeNonce + 1 : state.gridShakeNonce;
+
         vibratePlaceBuilding();
+        playPlacementPop();
 
         set({
-          grid: nextGrid,
+          grid: finalGrid,
           turn: nextTurn,
           score: nextScore,
           status: finished ? "finished" : "playing",
           activeBooster: null,
           spyPreviewTurnsRemaining: spyRem,
+          frozenCellIndices: triggerOut.nextFrozenCellIndices,
+          gridTemporaryEffects: mergedEffects,
+          gridShakeNonce: nextShake,
         });
 
         if (finished && state.levelId > 0) {
-          const stars = calculateStars(nextScore, state.levelId);
+          const stars = calculateStars(nextScore, state.levelId, finalGrid);
           useProgressStore.getState().commitLevelResult(state.levelId, stars, nextScore);
           if (stars > 1) {
             useEconomyStore.getState().addCoins(stars * 10);
@@ -402,11 +484,24 @@ export const useLevelRunStore = create<LevelRunStore>()(
             score: nextScore,
             deckChallengeLevel: state.deckChallengeLevel,
             levelId: state.levelId,
-            grid: nextGrid,
+            grid: finalGrid,
             placementSequence: state.placementSequence,
             seed: state.seed,
           });
         }
+      },
+
+      purchaseBlackMarketTile: (building) => {
+        const s = get();
+        if (s.status !== "playing") return false;
+        if (s.turn >= s.placementSequence.length) return false;
+        if (s.placementSequence.length < 1) return false;
+        if (!useEconomyStore.getState().spendCoins(BLACK_MARKET_TILE_COST)) return false;
+        const seq = [...s.placementSequence];
+        seq[s.turn] = building;
+        const dailyInventory = getDailyStats(seq);
+        set({ placementSequence: seq, dailyInventory });
+        return true;
       },
 
       resetBoard: () => {
@@ -414,14 +509,15 @@ export const useLevelRunStore = create<LevelRunStore>()(
         const def = getLevelById(levelId);
         const cargoSeed = def?.seed ?? seed;
         if (!cargoSeed) return;
-        const placementSequence = generatePlacementSequence(cargoSeed);
+        const placementLen = def ? getPlacementLengthFromObstacles(def.obstacles) : 16;
+        const placementSequence = generatePlacementSequence(cargoSeed, placementLen);
         const dailyInventory = getDailyStats(placementSequence);
         const deckChallengeLevel = def?.deckChallengeLevel ?? get().deckChallengeLevel;
         set({
           placementSequence,
           dailyInventory,
           deckChallengeLevel,
-          grid: createEmptyGrid(),
+          grid: def ? buildGridFromObstacles(def.obstacles) : createDefaultPlayableGrid(),
           turn: 0,
           score: 0,
           status: "ready",
@@ -430,6 +526,9 @@ export const useLevelRunStore = create<LevelRunStore>()(
           demolishFlash: null,
           demolishNonce: 0,
           spyPreviewTurnsRemaining: 0,
+          frozenCellIndices: [],
+          gridTemporaryEffects: [],
+          gridShakeNonce: 0,
         });
       },
 
@@ -459,6 +558,7 @@ export const useLevelRunStore = create<LevelRunStore>()(
           score: s.score,
           status: s.status,
           activeBooster: s.activeBooster,
+          frozenCellIndices: s.frozenCellIndices,
         });
       },
     }),
@@ -476,6 +576,7 @@ export const useLevelRunStore = create<LevelRunStore>()(
         turn: state.turn,
         score: state.score,
         status: state.status,
+        frozenCellIndices: state.frozenCellIndices,
       }),
       merge: (persisted, current) => mergePersistedState(persisted, current as LevelRunStore),
       version: 1,

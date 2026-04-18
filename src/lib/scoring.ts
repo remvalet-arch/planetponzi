@@ -26,6 +26,9 @@ function scoreForCell(
   index: number,
   grid: Cell[],
 ): number {
+  const self = grid[index];
+  if (!self || self.isPlayable === false) return 0;
+
   const neighbors = orthogonalNeighborIndices(index);
 
   switch (building) {
@@ -77,8 +80,11 @@ export function getCellScores(grid: Cell[]): number[] {
   const scores = new Array<number>(CELL_COUNT);
   for (let i = 0; i < CELL_COUNT; i++) {
     const building = grid[i]?.building ?? null;
-    scores[i] =
-      building === null ? 0 : scoreForCell(building, i, grid);
+    if (grid[i]?.isPlayable === false) {
+      scores[i] = 0;
+      continue;
+    }
+    scores[i] = building === null ? 0 : scoreForCell(building, i, grid);
   }
   return scores;
 }

@@ -80,7 +80,7 @@ export function AppHeader({
               initial={{ scale: 1 }}
               animate={{ scale: [1, 1.2, 1] }}
               transition={{ duration: 0.38, ease: [0.22, 1, 0.36, 1] }}
-              className={`font-mono text-sm font-semibold tabular-nums sm:text-base ${
+              className={`whitespace-nowrap font-mono text-sm font-semibold tabular-nums sm:text-base ${
                 score >= 0 ? "text-pp-positive" : "text-pp-negative"
               }`}
             >
@@ -91,16 +91,16 @@ export function AppHeader({
       </header>
 
       {menuOpen ? (
-        <div className="fixed inset-0 z-[70] flex" id="nav-drawer">
+        <div className="fixed inset-0 z-[100] flex" id="nav-drawer">
           <motion.button
             type="button"
             whileTap={tap}
-            className="min-h-0 flex-1 bg-slate-900/30 backdrop-blur-[2px]"
+            className="relative z-[100] min-h-0 flex-1 bg-slate-900/30 backdrop-blur-[2px]"
             aria-label="Fermer le menu"
             onClick={() => setMenuOpen(false)}
           />
-          <div className="flex h-full w-[min(100%,22rem)] flex-col border-l border-pp-border-strong bg-pp-surface shadow-2xl">
-            <div className="flex items-center justify-between border-b border-pp-border px-3 py-3">
+          <div className="relative z-[101] flex h-full w-[min(100%,22rem)] flex-col border-l border-pp-border-strong bg-pp-surface shadow-2xl">
+            <div className="flex items-center justify-between border-b border-pp-border px-3 pb-3 pt-[max(0.5rem,env(safe-area-inset-top))]">
               <p className="font-mono text-xs uppercase tracking-widest text-pp-text-dim">Menu</p>
               <motion.button
                 type="button"
