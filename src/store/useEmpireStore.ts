@@ -1,7 +1,7 @@
 "use client";
 
 import { create } from "zustand";
-import { createJSONStorage, persist } from "zustand/middleware";
+import { persist } from "zustand/middleware";
 
 import {
   computePassiveModifiers,
@@ -9,6 +9,7 @@ import {
   getEmpireFloorById,
   type EmpirePassiveModifiers,
 } from "@/src/lib/empire-tower";
+import { persistLocalStorage } from "@/src/lib/zustand-persist-storage";
 
 const STORAGE_KEY = "planet-ponzi-empire";
 
@@ -66,7 +67,7 @@ export const useEmpireStore = create<EmpireStore>()(
     {
       name: STORAGE_KEY,
       version: 1,
-      storage: createJSONStorage(() => localStorage),
+      storage: persistLocalStorage,
       partialize: (state) => ({ unlockedNodes: state.unlockedNodes }),
       migrate: (persisted) => {
         const base = (persisted ?? {}) as { unlockedNodes?: Record<string, boolean> };

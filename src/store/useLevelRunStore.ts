@@ -1,7 +1,7 @@
 "use client";
 
 import { create } from "zustand";
-import { createJSONStorage, persist } from "zustand/middleware";
+import { persist } from "zustand/middleware";
 
 import {
   coerceDeckChallengeLevel,
@@ -19,6 +19,7 @@ import {
   type GridTemporaryEffect,
 } from "@/src/lib/level-run-engine";
 import { generatePlacementSequence, getDailyStats } from "@/src/lib/rng";
+import { persistLocalStorage } from "@/src/lib/zustand-persist-storage";
 import { applyPrestigeToRawScore } from "@/src/lib/prestige";
 import { recordGameCompletion } from "@/src/lib/stats";
 import { calculateSessionGridScore } from "@/src/lib/session-scoring";
@@ -564,7 +565,7 @@ export const useLevelRunStore = create<LevelRunStore>()(
     }),
     {
       name: "planet-ponzi-level-run",
-      storage: createJSONStorage(() => localStorage),
+      storage: persistLocalStorage,
       partialize: (state): PersistedSlice => ({
         levelId: state.levelId,
         seed: state.seed,

@@ -1,9 +1,10 @@
 "use client";
 
 import { create } from "zustand";
-import { createJSONStorage, persist } from "zustand/middleware";
+import { persist } from "zustand/middleware";
 
 import { LEVELS } from "@/src/lib/levels";
+import { persistLocalStorage } from "@/src/lib/zustand-persist-storage";
 import { DEFAULT_BOOSTERS, type BoosterType } from "@/src/types/boosters";
 
 export type StarsCount = 0 | 1 | 2 | 3;
@@ -145,7 +146,7 @@ export const useProgressStore = create<ProgressStore>()(
     {
       name: "planet-ponzi-progress",
       version: 9,
-      storage: createJSONStorage(() => localStorage),
+      storage: persistLocalStorage,
       partialize: (state) => ({
         unlockedLevels: state.unlockedLevels,
         starsByLevel: state.starsByLevel,

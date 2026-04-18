@@ -1,13 +1,14 @@
 "use client";
 
 import { create } from "zustand";
-import { createJSONStorage, persist } from "zustand/middleware";
+import { persist } from "zustand/middleware";
 
 import {
   getEffectiveLifeRechargeMs,
   getEffectiveMaxLives,
 } from "@/src/lib/empire-tower";
 import { getLocalDateSeed } from "@/src/lib/rng";
+import { persistLocalStorage } from "@/src/lib/zustand-persist-storage";
 import { useProgressStore } from "@/src/store/useProgressStore";
 
 const STORAGE_KEY = "planet-ponzi-economy";
@@ -146,7 +147,7 @@ export const useEconomyStore = create<EconomyStore>()(
     {
       name: STORAGE_KEY,
       version: 3,
-      storage: createJSONStorage(() => localStorage),
+      storage: persistLocalStorage,
       partialize: (state) => ({
         coins: state.coins,
         lives: state.lives,
