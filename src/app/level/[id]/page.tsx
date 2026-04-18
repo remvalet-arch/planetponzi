@@ -1,7 +1,7 @@
 "use client";
 
 import { notFound, useParams, useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { BoostersBar } from "@/src/components/game/BoostersBar";
 import { EndScreen } from "@/src/components/game/EndScreen";
@@ -54,6 +54,7 @@ export default function LevelPage() {
   const [persistReady, setPersistReady] = useState(false);
   const [noEnergyOpen, setNoEnergyOpen] = useState(false);
   const [fiscalModalOpen, setFiscalModalOpen] = useState(false);
+  const fusionToastShownRef = useRef(false);
 
   useEffect(() => {
     const bump = () => {
@@ -117,6 +118,29 @@ export default function LevelPage() {
   }, [persistReady, gridTemporaryEffects, hasSeenFiscalFreezeTutorial, markFiscalFreezeTutorialSeen]);
 
   useEffect(() => {
+    if (id !== 1) {
+      fusionToastShownRef.current = false;
+      return;
+    }
+    if (turn === 0 && status === "ready") {
+      fusionToastShownRef.current = false;
+    }
+  }, [id, turn, status]);
+
+  useEffect(() => {
+    if (id !== 1) return;
+    const hasMega = gridTemporaryEffects.some((e) => e.kind === "mega_industrial_fusion");
+    if (hasMega && !fusionToastShownRef.current) {
+      fusionToastShownRef.current = true;
+      queueMicrotask(() =>
+        setToastMessage(
+          `${t.tutorial.level1FusionToast}\n\n${t.tutorial.level1FusionToastCeo}`,
+        ),
+      );
+    }
+  }, [id, gridTemporaryEffects, t.tutorial.level1FusionToast, t.tutorial.level1FusionToastCeo]);
+
+  useEffect(() => {
     if (typeof window === "undefined") return;
     if (hasSeenRulesFirstVisit() && !hasCompletedTutorial()) {
       markTutorialCompleted();
@@ -125,8 +149,9 @@ export default function LevelPage() {
 
   useEffect(() => {
     if (!toastMessage) return;
-    const t = window.setTimeout(() => setToastMessage(null), 2800);
-    return () => window.clearTimeout(t);
+    const ms = toastMessage.length > 120 ? 5200 : 2800;
+    const tid = window.setTimeout(() => setToastMessage(null), ms);
+    return () => window.clearTimeout(tid);
   }, [toastMessage]);
 
   const closeRules = () => {

@@ -146,7 +146,7 @@ textarea,
   }
 
   .pp-bottom-sheet-handle {
-    @apply mx-auto mt-2 h-1 w-10 shrink-0 rounded-full bg-pp-border-strong;
+    @apply mx-auto mt-2.5 mb-1 h-1.5 w-12 shrink-0 rounded-full bg-pp-border-strong/90 ring-1 ring-white/10;
   }
 
   .pp-modal-header {
@@ -182,7 +182,7 @@ textarea,
   }
 
   .pp-toast {
-    @apply pointer-events-none fixed bottom-[max(5.5rem,env(safe-area-inset-bottom)+4.5rem)] left-1/2 z-[90] w-[min(92vw,20rem)] -translate-x-1/2 rounded-pp-md border border-emerald-400/40 bg-pp-surface/95 px-4 py-2.5 text-center font-mono text-xs text-emerald-800 shadow-lg backdrop-blur-md;
+    @apply pointer-events-none fixed bottom-[max(5.5rem,env(safe-area-inset-bottom)+4.5rem)] left-1/2 z-[90] w-[min(92vw,22rem)] max-w-[22rem] -translate-x-1/2 rounded-pp-md border border-emerald-400/40 bg-pp-surface/95 px-4 py-2.5 text-center font-mono text-xs leading-snug text-emerald-800 shadow-lg backdrop-blur-md whitespace-pre-line;
   }
 
   .pp-mandate-strip {

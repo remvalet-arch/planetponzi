@@ -62,6 +62,7 @@ export function BlackMarketModal({ open, onClose, copy, onToast }: BlackMarketMo
     <BottomSheetShell
       open={open}
       onClose={onClose}
+      disableSwipeDown
       panelClassName="pp-modal-panel--dark border-emerald-500/40 shadow-[0_0_40px_rgba(16,185,129,0.18)]"
       footer={footer}
     >

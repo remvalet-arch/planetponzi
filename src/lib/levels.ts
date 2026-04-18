@@ -415,8 +415,11 @@ export function calculateStars(score: number, levelId: number, grid?: Cell[]): 0
 }
 
 /**
- * Niveau « courant » sur la carte : premier (dans l’ordre Saga) encore jouable
- * (non débloqué = prochain objectif, ou débloqué sans 3★).
+ * Niveau « courant » sur la carte : premier objectif pertinent dans l’ordre Saga.
+ * - On privilégie la **progression avant** : si un palier plus haut est déjà débloqué,
+ *   un ancien niveau incomplet (moins de 3★) ne bloque plus l’indicateur carte (évite la
+ *   carte « figée » au niveau 15 après avoir gagné 16–18 avec 1–2★ sur 15).
+ * - Sinon : premier niveau non débloqué, ou premier débloqué sans 3★.
  * Si tout est débloqué et 3★, renvoie le dernier niveau (hub de replay).
  */
 export function getMapCurrentLevel(
@@ -424,10 +427,15 @@ export function getMapCurrentLevel(
   starsByLevel: Record<string, number>,
 ): number {
   const ordered = [...LEVELS].sort((a, b) => a.id - b.id);
+  const maxUnlocked = unlockedLevels.length ? Math.max(...unlockedLevels) : 1;
+
   for (const l of ordered) {
     if (!unlockedLevels.includes(l.id)) return l.id;
     const stars = starsByLevel[String(l.id)] ?? 0;
-    if (stars < 3) return l.id;
+    if (stars < 3) {
+      if (l.id < maxUnlocked) continue;
+      return l.id;
+    }
   }
   return ordered[ordered.length - 1]?.id ?? 1;
 }

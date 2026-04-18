@@ -85,7 +85,19 @@ export default function MapPage() {
         className="relative flex min-h-0 flex-1 flex-col overflow-y-auto overscroll-y-none scroll-pt-[calc(env(safe-area-inset-top)+6.25rem)] pt-[max(2rem,calc(env(safe-area-inset-top)+5rem))] pb-10"
         data-pp-map-scroll
       >
-        <LevelMap scrollParentRef={scrollRef} />
+        {progressHydrated ? (
+          <LevelMap scrollParentRef={scrollRef} />
+        ) : (
+          <div
+            className="flex min-h-[50vh] flex-1 flex-col items-center justify-center gap-3 px-4"
+            role="status"
+            aria-live="polite"
+            aria-busy="true"
+          >
+            <div className="size-9 animate-pulse rounded-full bg-violet-500/25 ring-2 ring-violet-400/20" />
+            <p className="text-center font-mono text-[10px] text-pp-text-muted">{t.map.loadingProgress}</p>
+          </div>
+        )}
       </div>
       <BottomNav />
       <DailyBonusModal open={bonusOpen} onClose={() => setBonusOpen(false)} />

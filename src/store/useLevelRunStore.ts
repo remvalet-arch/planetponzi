@@ -9,7 +9,17 @@ import {
 } from "@/src/lib/difficulty";
 import { vibratePlaceBuilding } from "@/src/lib/haptics";
 import { playPlacementPop } from "@/src/lib/game-sounds";
-import { calculateStars, getLevelById } from "@/src/lib/levels";
+import { captureGameEvent } from "@/src/lib/analytics";
+import {
+  applyLevel1TutorialOpeningMines,
+  LEVEL1_TUTORIAL_CELL_BY_TURN,
+} from "@/src/lib/level1-tutorial";
+import {
+  calculateStars,
+  getLevelById,
+  satisfiesWinCondition,
+  starsFromScore,
+} from "@/src/lib/levels";
 import {
   applyBuildingToGrid,
   clearBuildingAt,
@@ -187,6 +197,9 @@ function mergePersistedState(persisted: unknown, current: LevelRunStore): LevelR
 
   if (def && placementSequence.length !== expectedLen) {
     placementSequence = generatePlacementSequence(seed, expectedLen, def.winCondition);
+    if (def.id === 1) {
+      placementSequence = applyLevel1TutorialOpeningMines(placementSequence);
+    }
   }
 
   let grid: Cell[];
@@ -303,7 +316,10 @@ export const useLevelRunStore = create<LevelRunStore>()(
         if (!def) return;
 
         const placementLen = getPlacementLengthFromObstacles(def.obstacles);
-        const placementSequence = generatePlacementSequence(def.seed, placementLen, def.winCondition);
+        let placementSequence = generatePlacementSequence(def.seed, placementLen, def.winCondition);
+        if (levelId === 1) {
+          placementSequence = applyLevel1TutorialOpeningMines(placementSequence);
+        }
         const dailyInventory = getDailyStats(placementSequence);
         const deckChallengeLevel = def.deckChallengeLevel ?? 0;
 
@@ -339,6 +355,10 @@ export const useLevelRunStore = create<LevelRunStore>()(
           status: "playing",
           score: scoreWithPrestige(raw),
         });
+        captureGameEvent("level_started", {
+          level_id: s.levelId,
+          deck_challenge_level: s.deckChallengeLevel,
+        });
       },
 
       toggleBooster: (type) => {
@@ -358,6 +378,7 @@ export const useLevelRunStore = create<LevelRunStore>()(
       activateSpyBooster: () => {
         const s = get();
         if (s.status !== "playing") return;
+        if (s.levelId === 1 && s.turn < 4) return;
         if (s.turn >= s.placementSequence.length) return;
         const stock = useProgressStore.getState().boosters.spy;
         if (stock <= 0) return;
@@ -368,6 +389,7 @@ export const useLevelRunStore = create<LevelRunStore>()(
       activateLobbyingBooster: () => {
         const s = get();
         if (s.status !== "playing") return;
+        if (s.levelId === 1 && s.turn < 4) return;
         if (s.turn >= s.placementSequence.length) return;
         if (s.placementSequence.length < 1) return;
         const stock = useProgressStore.getState().boosters.lobbying;
@@ -392,6 +414,18 @@ export const useLevelRunStore = create<LevelRunStore>()(
         };
         const verdict = validatePlacement(placementSlice, cellIndex);
         if (!verdict.ok) return;
+
+        if (
+          state.levelId === 1 &&
+          state.status === "playing" &&
+          state.turn < 4 &&
+          verdict.mode !== "demolition"
+        ) {
+          const allowed = LEVEL1_TUTORIAL_CELL_BY_TURN[state.turn];
+          if (typeof allowed === "number" && cellIndex !== allowed) {
+            return;
+          }
+        }
 
         if (verdict.mode === "demolition") {
           const stock = useProgressStore.getState().boosters.demolition;
@@ -489,6 +523,26 @@ export const useLevelRunStore = create<LevelRunStore>()(
 
         if (finished && state.levelId > 0) {
           const stars = calculateStars(nextScore, state.levelId, finalGrid);
+          const finishedDef = getLevelById(state.levelId);
+          if (finishedDef) {
+            const scoreStars = starsFromScore(nextScore, finishedDef.stars);
+            const mandateMet = satisfiesWinCondition(finalGrid, finishedDef.winCondition);
+            if (stars >= 1) {
+              captureGameEvent("level_completed", {
+                level_id: state.levelId,
+                stars_earned: stars,
+                score: nextScore,
+                win_condition_met: mandateMet && scoreStars >= 1,
+              });
+            } else {
+              const reason: "mandate_failed" | "score_too_low" =
+                scoreStars >= 1 && !mandateMet ? "mandate_failed" : "score_too_low";
+              captureGameEvent("level_failed", {
+                level_id: state.levelId,
+                reason,
+              });
+            }
+          }
           useProgressStore.getState().commitLevelResult(state.levelId, stars, nextScore);
           if (stars > 1) {
             useEconomyStore.getState().addCoins(stars * 10);
@@ -509,6 +563,7 @@ export const useLevelRunStore = create<LevelRunStore>()(
       purchaseBlackMarketTile: (building) => {
         const s = get();
         if (s.status !== "playing") return false;
+        if (s.levelId === 1 && s.turn < 4) return false;
         if (s.turn >= s.placementSequence.length) return false;
         if (s.placementSequence.length < 1) return false;
         if (!useEconomyStore.getState().spendCoins(BLACK_MARKET_TILE_COST)) return false;
@@ -525,7 +580,10 @@ export const useLevelRunStore = create<LevelRunStore>()(
         const cargoSeed = def?.seed ?? seed;
         if (!cargoSeed) return;
         const placementLen = def ? getPlacementLengthFromObstacles(def.obstacles) : 16;
-        const placementSequence = generatePlacementSequence(cargoSeed, placementLen, def?.winCondition);
+        let placementSequence = generatePlacementSequence(cargoSeed, placementLen, def?.winCondition);
+        if (levelId === 1) {
+          placementSequence = applyLevel1TutorialOpeningMines(placementSequence);
+        }
         const dailyInventory = getDailyStats(placementSequence);
         const deckChallengeLevel = def?.deckChallengeLevel ?? get().deckChallengeLevel;
         set({

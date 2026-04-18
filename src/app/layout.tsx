@@ -1,6 +1,8 @@
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 
+import { PostHogProvider } from "@/src/components/analytics/PostHogProvider";
+
 import "./globals.css";
 
 const geistSans = Geist({
@@ -81,7 +83,9 @@ export default function RootLayout({
           id="pp-game-shell"
         >
           <div className="scanlines" aria-hidden />
-          <div className="relative z-[40] flex min-h-0 min-w-0 flex-1 flex-col">{children}</div>
+          <div className="relative z-[40] flex min-h-0 min-w-0 flex-1 flex-col">
+            <PostHogProvider>{children}</PostHogProvider>
+          </div>
         </main>
       </body>
     </html>

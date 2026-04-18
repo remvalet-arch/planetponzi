@@ -38,7 +38,13 @@ export function CEOContractModal({ open, onClose }: CEOContractModalProps) {
   );
 
   return (
-    <BottomSheetShell open={open} onClose={onClose} closeOnBackdropPress footer={footer}>
+    <BottomSheetShell
+      open={open}
+      onClose={onClose}
+      closeOnBackdropPress
+      disableSwipeDown
+      footer={footer}
+    >
       <div className="pp-modal-scroll flex flex-col gap-4 pt-2">
         <div>
           <p className="pp-kicker text-amber-200/90">{t.ceoContract.kicker}</p>

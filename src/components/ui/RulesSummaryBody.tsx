@@ -137,6 +137,13 @@ export function RulesSummaryBody() {
       </section>
 
       <section className="space-y-2 border-t border-pp-border pt-4">
+        <SectionTitle>{t.rules.megaStructureTitle}</SectionTitle>
+        <p className="rounded-xl border border-pp-border bg-pp-elevated/50 px-3 py-3 text-center font-mono text-[11px] leading-relaxed text-pp-text-muted">
+          {t.rules.megaStructureBody}
+        </p>
+      </section>
+
+      <section className="space-y-2 border-t border-pp-border pt-4">
         <SectionTitle>{t.rules.fiscalBossTitle}</SectionTitle>
         <p className="rounded-xl border border-pp-border bg-pp-elevated/50 px-3 py-3 text-center font-mono text-[11px] leading-relaxed text-pp-text-muted">
           {t.rules.fiscalBossBody}

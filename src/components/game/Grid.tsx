@@ -4,6 +4,7 @@ import { useMemo } from "react";
 import { motion } from "framer-motion";
 
 import { Cell } from "@/src/components/game/Cell";
+import { TutorialOverlay } from "@/src/components/game/TutorialOverlay";
 import { useLevelRunStore } from "@/src/store/useLevelRunStore";
 
 export function Grid() {
@@ -38,7 +39,7 @@ export function Grid() {
             : { x: 0, rotate: 0 }
         }
         transition={{ duration: 0.48, ease: [0.22, 1, 0.36, 1] }}
-        className="grid min-h-0 min-w-0 flex-1 grid-cols-4 grid-rows-4 gap-1.5 sm:gap-2"
+        className="relative grid min-h-0 min-w-0 flex-1 grid-cols-4 grid-rows-4 gap-1.5 sm:gap-2"
       >
         {grid.map((cell) => {
           const canPlace =
@@ -65,6 +66,7 @@ export function Grid() {
             </div>
           );
         })}
+        <TutorialOverlay />
       </motion.div>
     </div>
   );

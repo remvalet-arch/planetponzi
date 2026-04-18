@@ -115,6 +115,7 @@ export function GameEntryFlow({ open }: GameEntryFlowProps) {
     <BottomSheetShell
       open={sheetOpen}
       onClose={() => {}}
+      onSwipeDismiss={handlePlay}
       closeOnBackdropPress={false}
       backdropClassName="!z-[100]"
       panelClassName="!max-h-[min(92dvh,720px)] flex flex-col overflow-hidden border-t border-x border-violet-500/35 bg-gradient-to-b from-slate-950 via-indigo-950 to-slate-950 text-slate-100 shadow-[0_0_48px_rgb(124_58_237/0.25)]"

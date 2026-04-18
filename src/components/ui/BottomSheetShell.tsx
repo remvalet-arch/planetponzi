@@ -1,7 +1,7 @@
 "use client";
 
 import type { ReactNode } from "react";
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, motion, type PanInfo } from "framer-motion";
 
 export type BottomSheetShellProps = {
   open: boolean;
@@ -19,11 +19,22 @@ export type BottomSheetShellProps = {
   showHandle?: boolean;
   /** Classe du tiret (ex. briefing : fond clair). */
   handleClassName?: string;
+  /**
+   * Action après un swipe vers le bas prononcé sur le panneau.
+   * Défaut : `onClose`. Ex. mandat : même effet que le CTA « Lancer ».
+   */
+  onSwipeDismiss?: () => void;
+  /** Désactive le geste de fermeture par glisser vers le bas. */
+  disableSwipeDown?: boolean;
 };
 
 /**
  * Coque commune des bottom sheets : scrim, panneau arrondi haut, handle, animations.
  */
+function shouldDismissFromSwipe(info: PanInfo): boolean {
+  return info.offset.y > 100 || info.velocity.y > 500;
+}
+
 export function BottomSheetShell({
   open,
   onClose,
@@ -34,7 +45,11 @@ export function BottomSheetShell({
   closeOnBackdropPress = true,
   showHandle = true,
   handleClassName = "",
+  onSwipeDismiss,
+  disableSwipeDown = false,
 }: BottomSheetShellProps) {
+  const finishSwipe = onSwipeDismiss ?? onClose;
+
   return (
     <AnimatePresence>
       {open ? (
@@ -60,6 +75,13 @@ export function BottomSheetShell({
             exit={{ y: 20, opacity: 0 }}
             transition={{ type: "spring", stiffness: 420, damping: 32 }}
             onMouseDown={(e) => e.stopPropagation()}
+            drag={disableSwipeDown ? false : "y"}
+            dragConstraints={{ top: 0, bottom: 0 }}
+            dragElastic={0.2}
+            onDragEnd={(_, info) => {
+              if (disableSwipeDown) return;
+              if (shouldDismissFromSwipe(info)) finishSwipe();
+            }}
           >
             {showHandle ? (
               <div

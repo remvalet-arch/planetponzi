@@ -34,6 +34,7 @@ export const strings = {
     map: {
       sectorFirst: "Secteur {{roman}}",
       sectorEnter: "Vous entrez dans le Secteur {{roman}}",
+      loadingProgress: "Chargement de la progression…",
       starGateHint:
         "Accumulez plus d'étoiles dans ce secteur pour affronter le Boss !",
       starGateBadge: (n: number, cap: number) => `⭐ ${n} / ${cap}`,
@@ -223,6 +224,9 @@ export const strings = {
     rules: {
       title: "Règles",
       kicker: "Grille & score",
+      megaStructureTitle: "Méga-structures (fusion 2×2)",
+      megaStructureBody:
+        "Formez un carré 2×2 avec le même type de bâtiment (ex. : 4 Mines) pour créer une Méga-Structure qui rapporte énormément de points.",
       fiscalBossTitle: "Contrôle fiscal (Boss)",
       fiscalBossBody:
         "Tous les 10 niveaux (Niveaux Boss), le Fisc s'invite ! Tous les 4 tours de jeu, le Fisc gèlera votre case la plus rentable. Une case gelée rapporte 0 M$ à la fin de la partie. Construisez intelligemment pour minimiser les pertes.",
@@ -231,6 +235,11 @@ export const strings = {
       fiscalFreezeTutorialCta: "J'ai compris",
     },
     tutorial: {
+      level1PlaceMine: "Placez l'usine ici",
+      level1FusionToast:
+        "Fusion réussie ! Les méga-structures rapportent beaucoup plus !",
+      level1FusionToastCeo:
+        "Vous voyez ce carré de 4 mines ? C'est ça, la synergie d'entreprise !",
       skip: "Passer",
       next: "Suivant",
       done: "Choisir le mode",
@@ -265,6 +274,7 @@ export const strings = {
     map: {
       sectorFirst: "Sector {{roman}}",
       sectorEnter: "You are entering Sector {{roman}}",
+      loadingProgress: "Loading progress…",
       starGateHint: "Earn more stars in this sector to challenge the Boss!",
       starGateBadge: (n: number, cap: number) => `⭐ ${n} / ${cap}`,
     },
@@ -451,6 +461,9 @@ export const strings = {
     rules: {
       title: "Rules",
       kicker: "Grid & score",
+      megaStructureTitle: "Mega-structures (2×2 fusion)",
+      megaStructureBody:
+        "Make a 2×2 square of the same building type (e.g. four Mines) to create a Mega-Structure that pays a huge score bonus.",
       fiscalBossTitle: "Tax audit (Boss levels)",
       fiscalBossBody:
         "Every 10 levels (Boss levels), the taxman shows up! Every 4 turns, the taxman freezes your highest‑yielding cell. A frozen cell pays 0 M$ at the end of the run. Build smart to limit the damage.",
@@ -459,6 +472,10 @@ export const strings = {
       fiscalFreezeTutorialCta: "Got it",
     },
     tutorial: {
+      level1PlaceMine: "Place the factory here",
+      level1FusionToast: "Fusion complete! Mega-structures pay a lot more!",
+      level1FusionToastCeo:
+        "See that 2×2 block of mines? That's what we call corporate synergy.",
       skip: "Skip",
       next: "Next",
       done: "Pick mode",

@@ -33,7 +33,13 @@ export function DailyBonusModal({ open, onClose }: DailyBonusModalProps) {
   );
 
   return (
-    <BottomSheetShell open={open} onClose={onClose} closeOnBackdropPress={false} footer={footer}>
+    <BottomSheetShell
+      open={open}
+      onClose={onClose}
+      closeOnBackdropPress={false}
+      disableSwipeDown
+      footer={footer}
+    >
       <div className="pp-modal-scroll pt-1">
         <div>
           <p className="pp-kicker text-cyan-300/90">{t.dailyBonus.kicker}</p>

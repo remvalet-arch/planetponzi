@@ -201,7 +201,9 @@ export function EndScreen({ onShareFeedback }: EndScreenProps) {
 
   const nextId = levelId + 1;
   const hasNextLevel = LEVELS.some((l) => l.id === nextId);
-  const nextUnlocked = hasNextLevel && unlockedLevels.includes(nextId);
+  /** ≥1★ sur ce run débloque toujours le suivant (évite un `unlockedLevels` React légèrement obsolète). */
+  const nextUnlocked =
+    hasNextLevel && (earnedStars >= 1 || unlockedLevels.includes(nextId));
 
   const handleShare = async () => {
     const ok = await copyShareToClipboard(grid, score, seed, {
