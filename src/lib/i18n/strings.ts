@@ -254,6 +254,7 @@ export const strings = {
       coinsEarned: (n: number) => `+${n} 💰`,
       nextStopLevel: (n: number) => `Prochain arrêt : niveau ${n}`,
       escapeOrBackdropHint: "Échap ou fond : réduire",
+      backToHqCountdown: (seconds: number) => `Retour au QG dans ${seconds}s…`,
     },
     energy: {
       kicker: "Énergie",
@@ -537,6 +538,7 @@ export const strings = {
       coinsEarned: (n: number) => `+${n} 💰`,
       nextStopLevel: (n: number) => `Next stop: level ${n}`,
       escapeOrBackdropHint: "Esc or backdrop: shrink",
+      backToHqCountdown: (seconds: number) => `Back to HQ in ${seconds}s…`,
     },
     energy: {
       kicker: "Energy",

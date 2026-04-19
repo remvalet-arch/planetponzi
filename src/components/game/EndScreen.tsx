@@ -7,7 +7,8 @@ import confetti from "canvas-confetti";
 import { motion } from "framer-motion";
 import { PanelBottomOpen, Share2, Star, X } from "lucide-react";
 
-import { playVictoryCash } from "@/src/lib/game-sounds";
+import { Grid } from "@/src/components/game/Grid";
+import { playUIClick, playVictoryCash } from "@/src/lib/game-sounds";
 import { vibrateVictoryStars } from "@/src/lib/haptics";
 import { computePassiveModifiers } from "@/src/lib/empire-tower";
 import {
@@ -60,6 +61,9 @@ const starItemFilled = {
 };
 
 const VICTORY_CONFETTI_GOLD = ["#FFD700", "#FFA500", "#FFEC8B", "#E6AC00", "#FFC107"];
+
+/** Délai de la barre « retour QG » avant navigation auto vers `/map`. */
+const AUTO_MAP_REDIRECT_SEC = 15;
 
 const thumbZone =
   "shrink-0 space-y-3 border-t border-pp-border bg-pp-surface px-4 py-4 pb-[max(1rem,env(safe-area-inset-bottom))]";
@@ -262,6 +266,7 @@ export function EndScreen({ onShareFeedback }: EndScreenProps) {
   };
 
   const handleContinue = () => {
+    playUIClick();
     skipAutoMapRef.current = true;
     setShowVictoryExitBar(false);
     if (nextUnlocked) {
@@ -326,8 +331,15 @@ export function EndScreen({ onShareFeedback }: EndScreenProps) {
             Récompenses
           </h2>
 
+          <div
+            className="pointer-events-none mx-auto mt-4 max-w-[min(100%,22rem)] origin-top scale-[0.75]"
+            aria-hidden
+          >
+            <Grid />
+          </div>
+
           <motion.div
-            className="mt-8 flex justify-center gap-4"
+            className="mt-5 flex justify-center gap-4"
             variants={starContainer}
             initial="hidden"
             animate="show"
@@ -439,6 +451,7 @@ export function EndScreen({ onShareFeedback }: EndScreenProps) {
               href="/map"
               className="text-pp-accent underline-offset-2 hover:underline"
               onClick={() => {
+                playUIClick();
                 skipAutoMapRef.current = true;
               }}
             >
@@ -451,14 +464,14 @@ export function EndScreen({ onShareFeedback }: EndScreenProps) {
           {earnedStars > 0 && showVictoryExitBar ? (
             <div className="mt-5 px-1">
               <p className="mb-2 text-center font-mono text-[10px] text-pp-text-muted">
-                Retour au QG dans 3s…
+                {t.endScreen.backToHqCountdown(AUTO_MAP_REDIRECT_SEC)}
               </p>
               <div className="h-1.5 w-full overflow-hidden rounded-full bg-pp-border">
                 <motion.div
                   className="h-full origin-left rounded-full bg-gradient-to-r from-emerald-500 to-cyan-400"
                   initial={{ scaleX: 1 }}
                   animate={{ scaleX: 0 }}
-                  transition={{ duration: 3, ease: "linear" }}
+                  transition={{ duration: AUTO_MAP_REDIRECT_SEC, ease: "linear" }}
                   onAnimationComplete={() => {
                     if (!skipAutoMapRef.current) {
                       router.push("/map");

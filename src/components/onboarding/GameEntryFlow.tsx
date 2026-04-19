@@ -182,46 +182,55 @@ export function GameEntryFlow({ open }: GameEntryFlowProps) {
         </h2>
 
         {def ? (
-          <div
-            className="mt-4 grid grid-cols-1 gap-2.5 sm:grid-cols-3"
+          <motion.div
+            className="mt-4 flex flex-wrap items-center justify-center gap-2"
+            initial={{ opacity: 0, y: 6 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.32, ease: [0.22, 1, 0.36, 1] }}
             aria-label={t.entryFlow.objectives}
           >
             {[
-              { k: "1" as const, label: t.entryFlow.starCard1, pts: def.stars.one, hue: "from-amber-500/25 to-slate-900/90 border-amber-400/40" },
-              { k: "2" as const, label: t.entryFlow.starCard2, pts: def.stars.two, hue: "from-cyan-500/20 to-slate-900/90 border-cyan-400/35" },
-              { k: "3" as const, label: t.entryFlow.starCard3, pts: def.stars.three, hue: "from-violet-500/25 to-slate-900/90 border-violet-400/40" },
+              {
+                k: "1" as const,
+                short: "1★",
+                label: t.entryFlow.starCard1,
+                pts: def.stars.one,
+                ring: "border-amber-400/45 bg-amber-500/15",
+              },
+              {
+                k: "2" as const,
+                short: "2★",
+                label: t.entryFlow.starCard2,
+                pts: def.stars.two,
+                ring: "border-cyan-400/40 bg-cyan-500/12",
+              },
+              {
+                k: "3" as const,
+                short: "3★",
+                label: t.entryFlow.starCard3,
+                pts: def.stars.three,
+                ring: "border-violet-400/45 bg-violet-500/12",
+              },
             ].map((row, i) => (
               <motion.div
                 key={row.k}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.08 + i * 0.07, duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
-                className={`relative overflow-hidden rounded-xl border bg-gradient-to-br ${row.hue} px-3 py-3 shadow-lg`}
+                initial={{ opacity: 0, scale: 0.92 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: 0.04 + i * 0.05, type: "spring", stiffness: 420, damping: 22 }}
+                className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1.5 shadow-md ${row.ring}`}
+                title={`${row.label} — ${row.pts} ${t.entryFlow.ptsSuffix}`}
               >
-                <div className="flex items-center justify-between gap-2">
-                  <span className="font-mono text-[10px] font-bold uppercase tracking-wider text-slate-300">
-                    {row.label}
-                  </span>
-                  <Star className="size-4 shrink-0 fill-amber-400/90 text-amber-500" strokeWidth={1.5} aria-hidden />
-                </div>
-                <p className="mt-2 font-mono text-2xl font-black tabular-nums text-white">{row.pts}</p>
-                <p className="mt-0.5 font-mono text-[10px] uppercase tracking-widest text-slate-400">
+                <Star className="size-4 shrink-0 fill-amber-300 text-amber-500 drop-shadow-sm" strokeWidth={1.75} aria-hidden />
+                <span className="font-mono text-[10px] font-bold uppercase tracking-wide text-slate-200/95">
+                  {row.short}
+                </span>
+                <span className="font-mono text-sm font-black tabular-nums text-white">{row.pts}</span>
+                <span className="font-mono text-[9px] font-semibold uppercase text-slate-400">
                   {t.entryFlow.ptsSuffix}
-                </p>
-                <div
-                  className="mt-2 h-1.5 overflow-hidden rounded-full bg-slate-800/80"
-                  aria-hidden
-                >
-                  <motion.div
-                    className="h-full rounded-full bg-gradient-to-r from-cyan-400 to-violet-400"
-                    initial={{ width: "0%" }}
-                    animate={{ width: `${Math.min(100, (row.pts / Math.max(def.stars.three, 1)) * 100)}%` }}
-                    transition={{ delay: 0.25 + i * 0.08, duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
-                  />
-                </div>
+                </span>
               </motion.div>
             ))}
-          </div>
+          </motion.div>
         ) : (
           <p className="mt-5 font-mono text-sm text-slate-400">{t.entryFlow.loading}</p>
         )}

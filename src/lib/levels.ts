@@ -329,10 +329,13 @@ function dynamicStarThresholds(
   return { one, two, three };
 }
 
-/** Campagne : pas de mode 4 (réservé futur hardcore). */
+/**
+ * Campagne : pas de mode 4 (réservé futur hardcore).
+ * Au moins 2 types masqués dès qu’il y a du « brouillard » manifeste (évite la déduction par soustraction).
+ */
 function deckChallengeForLevel(levelId: number): DeckChallengeLevel {
   if (levelId <= 20) return 0;
-  if (levelId <= 50) return 1;
+  if (levelId <= 50) return 2;
   if (levelId <= 80) return 2;
   return 3;
 }

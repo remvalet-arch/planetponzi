@@ -41,10 +41,17 @@ function beep(
   osc.stop(t0 + durationSec + 0.02);
 }
 
-/** Placement / démolition validé. */
+/** Clic UI (boutons navigation, etc.) — très court, aigu. */
+export function playUIClick(): void {
+  resumeAudio();
+  beep(2000, 0.02, "triangle", 0.08);
+}
+
+/** Placement / démolition validé (fréquence légèrement randomisée pour éviter la monotonie). */
 export function playPlacementPop(): void {
   resumeAudio();
-  beep(920, 0.045, "sine", 0.1);
+  const freq = 920 * (0.85 + Math.random() * 0.3);
+  beep(freq, 0.045, "sine", 0.1);
 }
 
 /** Marché noir refusé, etc. */
