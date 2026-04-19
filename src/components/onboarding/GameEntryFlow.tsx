@@ -2,7 +2,7 @@
 
 import { useCallback, useMemo } from "react";
 import { motion } from "framer-motion";
-import { AlertTriangle, Sparkles, Star } from "lucide-react";
+import { AlertTriangle, Sparkles } from "lucide-react";
 
 import { BottomSheetShell } from "@/src/components/ui/BottomSheetShell";
 import { markRulesFirstVisitDone } from "@/src/components/ui/RulesModal";
@@ -192,21 +192,21 @@ export function GameEntryFlow({ open }: GameEntryFlowProps) {
             {[
               {
                 k: "1" as const,
-                short: "1★",
+                starCount: 1 as const,
                 label: t.entryFlow.starCard1,
                 pts: def.stars.one,
                 ring: "border-amber-400/45 bg-amber-500/15",
               },
               {
                 k: "2" as const,
-                short: "2★",
+                starCount: 2 as const,
                 label: t.entryFlow.starCard2,
                 pts: def.stars.two,
                 ring: "border-cyan-400/40 bg-cyan-500/12",
               },
               {
                 k: "3" as const,
-                short: "3★",
+                starCount: 3 as const,
                 label: t.entryFlow.starCard3,
                 pts: def.stars.three,
                 ring: "border-violet-400/45 bg-violet-500/12",
@@ -217,12 +217,15 @@ export function GameEntryFlow({ open }: GameEntryFlowProps) {
                 initial={{ opacity: 0, scale: 0.92 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ delay: 0.04 + i * 0.05, type: "spring", stiffness: 420, damping: 22 }}
-                className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1.5 shadow-md ${row.ring}`}
+                className={`inline-flex items-center gap-2 rounded-full border px-2.5 py-1.5 shadow-md ${row.ring}`}
                 title={`${row.label} — ${row.pts} ${t.entryFlow.ptsSuffix}`}
+                aria-label={`${row.label}: ${row.pts} ${t.entryFlow.ptsSuffix}`}
               >
-                <Star className="size-4 shrink-0 fill-amber-300 text-amber-500 drop-shadow-sm" strokeWidth={1.75} aria-hidden />
-                <span className="font-mono text-[10px] font-bold uppercase tracking-wide text-slate-200/95">
-                  {row.short}
+                <span
+                  className="select-none text-[15px] leading-none tracking-[-0.08em]"
+                  aria-hidden
+                >
+                  {"⭐".repeat(row.starCount)}
                 </span>
                 <span className="font-mono text-sm font-black tabular-nums text-white">{row.pts}</span>
                 <span className="font-mono text-[9px] font-semibold uppercase text-slate-400">
