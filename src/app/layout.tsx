@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 
 import { PostHogProvider } from "@/src/components/analytics/PostHogProvider";
+import { PassiveIncomeLoopProvider } from "@/src/components/providers/PassiveIncomeLoopProvider";
 import { CloudSaveSyncProvider } from "@/src/components/settings/CloudSaveSyncProvider";
 import { InstallAppBanner } from "@/src/components/pwa/InstallAppBanner";
 
@@ -108,7 +109,9 @@ export default function RootLayout({
           <div className="scanlines" aria-hidden />
           <div className="relative z-[40] flex min-h-0 min-w-0 flex-1 flex-col">
             <PostHogProvider>
-              <CloudSaveSyncProvider>{children}</CloudSaveSyncProvider>
+              <CloudSaveSyncProvider>
+                <PassiveIncomeLoopProvider>{children}</PassiveIncomeLoopProvider>
+              </CloudSaveSyncProvider>
             </PostHogProvider>
             <InstallAppBanner />
           </div>

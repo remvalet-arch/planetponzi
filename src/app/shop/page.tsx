@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState, type ReactNode } from "react";
+import { motion } from "framer-motion";
 import { Heart, Pickaxe, ScanSearch } from "lucide-react";
 
 import { BottomNav } from "@/src/components/layout/BottomNav";
@@ -142,7 +143,14 @@ export default function ShopPage() {
           <p className="font-mono text-[10px] uppercase tracking-[0.35em] text-slate-500">{t.shop.coinsLabel}</p>
           <p className="mt-1 flex items-center justify-center gap-2 text-4xl font-black tabular-nums text-amber-400">
             <span aria-hidden>💰</span>
-            {coins}
+            <motion.span
+              key={coins}
+              initial={{ scale: 1.06 }}
+              animate={{ scale: 1 }}
+              transition={{ duration: 0.34, ease: [0.22, 1, 0.36, 1] }}
+            >
+              {coins}
+            </motion.span>
           </p>
         </header>
 

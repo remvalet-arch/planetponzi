@@ -4,6 +4,7 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
 import {
+  computePassiveModifiers,
   getEffectiveLifeRechargeMs,
   getEffectiveMaxLives,
 } from "@/src/lib/empire-tower";
@@ -48,6 +49,8 @@ export type EconomyStore = {
   lastLifeRechargeTime: number | null;
   /** Dernier jour (YYYY-MM-DD local) où le bonus quotidien carte a été encaissé. */
   lastBonusDate: string | null;
+  /** Dernier tick (ms) du revenu passif online (1 min) — ancre pour éviter le double comptage avec le catch-up hors-ligne. */
+  lastTickTimestamp: number | null;
 
   checkLifeRecharge: () => void;
   addCoins: (amount: number) => void;
@@ -60,6 +63,8 @@ export type EconomyStore = {
   claimDailyBonus: () => void;
   /** Prestige : solde à zéro + aligne les vies sur le nouveau plafond passif. */
   wipeEconomyForPrestige: () => void;
+  /** Tick revenu passif pendant la session (crédit si taux &gt; 0). Met à jour `lastTickTimestamp`. */
+  applyOnlinePassiveIncomeTick: (unlockedNodes: Record<string, boolean>) => void;
 };
 
 export const useEconomyStore = create<EconomyStore>()(
@@ -69,6 +74,20 @@ export const useEconomyStore = create<EconomyStore>()(
       lives: getEffectiveMaxLives(),
       lastLifeRechargeTime: null,
       lastBonusDate: null,
+      lastTickTimestamp: null,
+
+      applyOnlinePassiveIncomeTick: (unlockedNodes) => {
+        const rate = computePassiveModifiers(unlockedNodes).totalPassiveIncomePerMinute;
+        const now = Date.now();
+        set((s) => {
+          const add = rate > 0 ? Math.floor(rate) : 0;
+          return {
+            ...s,
+            coins: add > 0 ? s.coins + add : s.coins,
+            lastTickTimestamp: now,
+          };
+        });
+      },
 
       checkLifeRecharge: () => {
         const now = Date.now();
@@ -154,19 +173,21 @@ export const useEconomyStore = create<EconomyStore>()(
             lives: nextLives,
             lastLifeRechargeTime:
               nextLives < maxLives ? (s.lastLifeRechargeTime ?? Date.now()) : null,
+            lastTickTimestamp: Date.now(),
           };
         });
       },
     }),
     {
       name: STORAGE_KEY,
-      version: 3,
+      version: 4,
       storage: persistLocalStorage,
       partialize: (state) => ({
         coins: state.coins,
         lives: state.lives,
         lastLifeRechargeTime: state.lastLifeRechargeTime,
         lastBonusDate: state.lastBonusDate,
+        lastTickTimestamp: state.lastTickTimestamp,
       }),
       migrate: (persisted, fromVersion) => {
         const base = (persisted ?? {}) as Record<string, unknown>;
@@ -178,6 +199,10 @@ export const useEconomyStore = create<EconomyStore>()(
           lastBonusDate = readPendingLastBonusFromProgressMigration();
         }
         const lives = normalizeLives(base.lives);
+        const lastTickTimestamp =
+          typeof base.lastTickTimestamp === "number" && Number.isFinite(base.lastTickTimestamp)
+            ? base.lastTickTimestamp
+            : null;
         return {
           coins: normalizeCoins(base.coins),
           lives,
@@ -186,6 +211,7 @@ export const useEconomyStore = create<EconomyStore>()(
               ? base.lastLifeRechargeTime
               : null,
           lastBonusDate,
+          lastTickTimestamp,
         };
       },
       onRehydrateStorage: () => (_finished, error) => {

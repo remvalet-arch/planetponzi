@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { motion } from "framer-motion";
 
 import {
   computePassiveModifiers,
@@ -72,7 +73,15 @@ export function EconomyHeader({
         <span className="shrink-0 text-sm leading-none sm:text-base" aria-hidden>
           💰
         </span>
-        <span className="min-w-0 truncate whitespace-nowrap text-amber-200 tabular-nums">{coins}</span>
+        <motion.span
+          key={coins}
+          initial={{ scale: 1.08 }}
+          animate={{ scale: 1 }}
+          transition={{ duration: 0.32, ease: [0.22, 1, 0.36, 1] }}
+          className="min-w-0 truncate whitespace-nowrap text-amber-200 tabular-nums"
+        >
+          {coins}
+        </motion.span>
       </span>
       {showLives ? (
         <span className={pill} title="Vies">

@@ -6,6 +6,7 @@ import { persist } from "zustand/middleware";
 import {
   computePassiveModifiers,
   EMPIRE_FLOORS,
+  EMPIRE_MINING_FLOOR_IDS,
   getEmpireFloorById,
   type EmpirePassiveModifiers,
 } from "@/src/lib/empire-tower";
@@ -66,7 +67,7 @@ export const useEmpireStore = create<EmpireStore>()(
     }),
     {
       name: STORAGE_KEY,
-      version: 2,
+      version: 3,
       storage: persistLocalStorage,
       partialize: (state) => ({ unlockedNodes: state.unlockedNodes }),
       migrate: (persisted, fromVersion) => {
@@ -76,9 +77,20 @@ export const useEmpireStore = create<EmpireStore>()(
         for (const f of EMPIRE_FLOORS) {
           if (f.defaultUnlocked) merged[f.id] = true;
         }
-        /** Ancienne progression : « Direction » avant l’étage Ferme de Minage — évite un cul-de-sac. */
+        /** Ancien id unique « Ferme de Minage (Bots) » → premier palier minage. */
+        if (merged["ferme-minage-bots"]) {
+          merged["botnet-etudiant"] = true;
+          delete merged["ferme-minage-bots"];
+        }
+        /** v1 : « Direction » sans minage — évite un cul-de-sac (ancien ordre). */
         if (fromVersion < 2 && merged["etage-direction"]) {
-          merged["ferme-minage-bots"] = true;
+          merged["botnet-etudiant"] = true;
+        }
+        /** v2→v3 : la chaîne minage compte 6 paliers ; si Direction était déjà débloquée, on aligne la progression. */
+        if (fromVersion < 3 && merged["etage-direction"]) {
+          for (const id of EMPIRE_MINING_FLOOR_IDS) {
+            merged[id] = true;
+          }
         }
         return { unlockedNodes: merged };
       },
