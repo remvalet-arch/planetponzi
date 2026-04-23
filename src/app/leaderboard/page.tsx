@@ -28,15 +28,15 @@ function rowSurfaceClasses(prestige: number, isYou: boolean): string {
     return "border-2 border-cyan-200/80 bg-gradient-to-br from-cyan-950/50 via-slate-900/85 to-indigo-950/55 shadow-[0_0_26px_rgb(34_211_238/0.28)]";
   }
   if (p >= 3) {
-    return "border-2 border-amber-400/70 bg-gradient-to-r from-amber-950/40 via-pp-elevated/88 to-yellow-950/30 shadow-[0_0_22px_rgb(251_191_36/0.2)]";
+    return "border-2 border-amber-400/70 bg-gradient-to-r from-amber-950/40 via-slate-900/90 to-yellow-950/30 shadow-[0_0_22px_rgb(251_191_36/0.2)]";
   }
   if (p >= 1) {
-    return "border border-slate-300/55 bg-pp-elevated/88 shadow-[inset_0_1px_0_rgb(255_255_255/0.07)]";
+    return "border border-slate-600/50 bg-slate-900/85 shadow-[inset_0_1px_0_rgb(255_255_255/0.05)]";
   }
   if (isYou) {
     return "border-amber-400/55 bg-gradient-to-r from-amber-500/25 via-amber-400/15 to-yellow-500/10 shadow-[0_0_20px_rgb(251_191_36/0.12)]";
   }
-  return "border-pp-border-strong bg-pp-elevated/80";
+  return "border-slate-700/60 bg-slate-900/75";
 }
 
 function LeaderboardSkeleton() {
@@ -45,12 +45,12 @@ function LeaderboardSkeleton() {
       {Array.from({ length: 10 }, (_, i) => (
         <li
           key={i}
-          className="flex items-center gap-3 rounded-pp-lg border border-pp-border-strong bg-pp-elevated/50 px-3 py-3"
+          className="flex items-center gap-3 rounded-pp-lg border border-slate-700/60 bg-slate-900/60 px-3 py-3"
         >
-          <div className="h-4 w-8 animate-pulse rounded bg-pp-border-strong" />
+          <div className="h-4 w-8 animate-pulse rounded bg-slate-700" />
           <div className="min-w-0 flex-1 space-y-2">
-            <div className="h-3.5 w-2/5 max-w-[12rem] animate-pulse rounded bg-pp-border-strong" />
-            <div className="h-3 w-16 animate-pulse rounded bg-pp-border-strong/80" />
+            <div className="h-3.5 w-2/5 max-w-[12rem] animate-pulse rounded bg-slate-700" />
+            <div className="h-3 w-16 animate-pulse rounded bg-slate-600/80" />
           </div>
         </li>
       ))}
@@ -112,18 +112,18 @@ export default function LeaderboardPage() {
   }, [load]);
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col bg-pp-bg text-pp-text">
-      <HubShellBar title={t.nav.leaderboard} />
+    <div className="flex min-h-0 flex-1 flex-col bg-[#0B0F19] text-slate-100">
+      <HubShellBar title={t.nav.leaderboard} variant="dark" />
       <div className="min-h-0 flex-1 overflow-y-auto overscroll-y-contain pb-[calc(5.5rem+env(safe-area-inset-bottom))]">
         {entries === null ? (
           <LeaderboardSkeleton />
         ) : error && entries.length === 0 ? (
-          <p className="px-4 py-8 text-center font-mono text-sm text-pp-text-muted">{error}</p>
+          <p className="px-4 py-8 text-center font-mono text-sm text-slate-400">{error}</p>
         ) : entries.length === 0 ? (
-          <p className="px-4 py-8 text-center font-mono text-sm text-pp-text-muted">{t.leaderboard.empty}</p>
+          <p className="px-4 py-8 text-center font-mono text-sm text-slate-400">{t.leaderboard.empty}</p>
         ) : (
           <>
-            <p className="px-4 pt-3 font-mono text-[10px] uppercase tracking-widest text-pp-text-dim">
+            <p className="px-4 pt-3 font-mono text-[10px] uppercase tracking-widest text-slate-500">
               {t.leaderboard.meritHint}
             </p>
             <ol className="flex flex-col gap-2 px-3 py-3 pb-16">
@@ -134,7 +134,7 @@ export default function LeaderboardPage() {
               const pl = Number.isFinite(row.prestige_level) ? Math.max(0, row.prestige_level) : 0;
               const tierEmoji = pl >= 5 ? "💎" : pl >= 3 ? "👑" : "";
               const ringYou =
-                isYou && pl >= 1 ? " ring-2 ring-amber-400/45 ring-offset-2 ring-offset-pp-bg" : "";
+                isYou && pl >= 1 ? " ring-2 ring-amber-400/45 ring-offset-2 ring-offset-[#0B0F19]" : "";
               const surface = rowSurfaceClasses(pl, isYou);
               return (
                 <li
@@ -143,13 +143,13 @@ export default function LeaderboardPage() {
                 >
                   <span
                     className={`w-8 shrink-0 text-center text-xs font-bold ${
-                      isYou ? "text-amber-200" : pl >= 5 ? "text-cyan-200" : pl >= 3 ? "text-amber-200" : "text-pp-text-muted"
+                      isYou ? "text-amber-200" : pl >= 5 ? "text-cyan-200" : pl >= 3 ? "text-amber-200" : "text-slate-500"
                     }`}
                   >
                     #{row.rank}
                   </span>
                   <div className="min-w-0 flex-1 overflow-hidden">
-                    <div className={`flex min-w-0 items-center gap-2 font-semibold ${isYou ? "text-amber-50" : "text-pp-text"}`}>
+                    <div className={`flex min-w-0 items-center gap-2 font-semibold ${isYou ? "text-amber-50" : "text-slate-100"}`}>
                       {tierEmoji ? (
                         <span className="shrink-0 text-base leading-none" aria-hidden>
                           {tierEmoji}
@@ -162,15 +162,15 @@ export default function LeaderboardPage() {
                         </span>
                       ) : null}
                     </div>
-                    <p className="whitespace-nowrap text-xs text-pp-text-muted">
+                    <p className="whitespace-nowrap text-xs text-slate-400">
                       {pl > 0 ? (
                         <>
                           <span className="font-semibold text-amber-200/90">{t.leaderboard.prestigeShort(pl)}</span>
-                          <span className="text-pp-text-dim"> · </span>
+                          <span className="text-slate-600"> · </span>
                         </>
                       ) : null}
                       {row.total_stars} ★
-                      <span className="text-pp-text-dim"> · </span>
+                      <span className="text-slate-600"> · </span>
                       {t.leaderboard.maxScoreLabel}{" "}
                       {Number(row.max_score ?? 0).toLocaleString()}
                     </p>
@@ -182,7 +182,7 @@ export default function LeaderboardPage() {
           </>
         )}
       </div>
-      <BottomNav />
+      <BottomNav variant="dark" />
     </div>
   );
 }

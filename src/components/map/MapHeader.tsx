@@ -44,13 +44,13 @@ export function MapHeader() {
 
   return (
     <>
-      <header className="relative z-40 min-h-0 shrink-0 border-b border-pp-border bg-pp-bg/95 px-3 pb-3 pt-[max(env(safe-area-inset-top),1rem)] backdrop-blur-md">
+      <header className="relative z-40 min-h-0 shrink-0 border-b border-cyan-500/20 bg-slate-950/90 px-3 pb-3 pt-[max(env(safe-area-inset-top),1rem)] text-slate-100 backdrop-blur-md">
         <div className="mx-auto flex max-w-lg items-center justify-between gap-3">
           <motion.button
             type="button"
             whileTap={tap}
             onClick={() => setDrawerOpen(true)}
-            className="flex size-11 shrink-0 items-center justify-center rounded-pp-md border border-pp-border-strong bg-pp-elevated text-pp-text transition-colors hover:border-pp-accent/40 hover:bg-pp-surface focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-pp-accent/60"
+            className="flex size-11 shrink-0 items-center justify-center rounded-pp-md border border-white/10 bg-slate-900/80 text-cyan-200 transition-colors hover:border-cyan-400/40 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-400/55"
             aria-expanded={drawerOpen}
             aria-controls="app-nav-drawer"
             aria-label={t.nav.menu}
@@ -58,11 +58,11 @@ export function MapHeader() {
             <Menu className="size-6" strokeWidth={2} />
           </motion.button>
 
-          <div className="flex min-w-0 flex-1 items-center justify-center gap-2 whitespace-nowrap rounded-pp-lg border border-pp-border-strong bg-pp-elevated/70 px-3 py-2">
+          <div className="flex min-w-0 flex-1 items-center justify-center gap-2 whitespace-nowrap rounded-pp-lg border border-slate-600/60 bg-slate-900/70 px-3 py-2">
             <Star className="size-5 shrink-0 fill-amber-400 text-amber-500" strokeWidth={1.5} aria-hidden />
-            <span className="font-mono text-sm font-semibold tabular-nums text-pp-text">
+            <span className="font-mono text-sm font-semibold tabular-nums text-white">
               {count}
-              <span className="ml-1 text-xs font-medium text-pp-text-muted">étoiles</span>
+              <span className="ml-1 text-xs font-medium text-slate-400">étoiles</span>
             </span>
           </div>
 

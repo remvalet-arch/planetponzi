@@ -104,15 +104,15 @@ export function Cell({
         transition={
           hasFlash ? { duration: 0.44, ease: [0.22, 1, 0.36, 1] } : { duration: 0.15 }
         }
-        className={`${baseTileClasses} border-2 border-dashed border-pp-border-strong bg-pp-surface/50 text-pp-text-dim backdrop-blur-sm transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-pp-accent/60 ${
+        className={`${baseTileClasses} border-2 border-dashed border-slate-600/55 bg-slate-900/45 text-slate-500 backdrop-blur-sm transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-400/55 ${
           interactive
-            ? "cursor-pointer hover:border-pp-accent/50 hover:bg-pp-gold/15 hover:text-pp-text"
+            ? "cursor-pointer hover:border-cyan-400/45 hover:bg-amber-500/10 hover:text-slate-200"
             : "cursor-not-allowed opacity-55"
-        } ${hasFlash ? "ring-2 ring-rose-400/75 ring-offset-2 ring-offset-pp-bg" : ""}`}
+        } ${hasFlash ? "ring-2 ring-rose-400/75 ring-offset-2 ring-offset-[#0B0F19]" : ""}`}
         aria-label={`Case ${cell.index + 1}, vide`}
       >
         {!minimalMode ? (
-          <span className="text-xs font-mono uppercase tracking-widest text-pp-text-dim">+</span>
+          <span className="text-xs font-mono uppercase tracking-widest text-slate-500">+</span>
         ) : null}
       </motion.button>
     );
@@ -143,7 +143,7 @@ export function Cell({
           demolitionTarget
             ? "cursor-crosshair ring-rose-500/90 shadow-[0_0_22px_rgb(244_63_94/0.5)]"
             : "ring-transparent"
-        } ${fiscalFrozen ? "ring-sky-400/50 ring-offset-2 ring-offset-pp-bg" : ""}`}
+        } ${fiscalFrozen ? "ring-sky-400/50 ring-offset-2 ring-offset-slate-950" : ""}`}
         aria-label={`Démolir ${building} — case ${cell.index + 1}`}
       >
         {freezeOverlay}

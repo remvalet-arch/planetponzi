@@ -94,6 +94,7 @@ export default function EmpirePage() {
     <div className="flex min-h-0 flex-1 flex-col bg-gradient-to-b from-slate-950 via-indigo-950 to-slate-950 text-slate-100">
       <HubShellBar
         variant="dark"
+        showLives={false}
         title={t.empirePage.title}
         subtitle={t.empirePage.subtitle}
         rightSlot={<EconomyHeader className="max-w-[min(52vw,14rem)] sm:max-w-none" />}
@@ -236,7 +237,7 @@ export default function EmpirePage() {
         </div>
       ) : null}
 
-      <BottomNav />
+      <BottomNav variant="dark" />
     </div>
   );
 }

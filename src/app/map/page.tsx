@@ -78,7 +78,7 @@ export default function MapPage() {
 
   return (
     <div
-      className="flex min-h-0 flex-1 flex-col bg-pp-bg text-pp-text"
+      className="flex min-h-0 flex-1 flex-col bg-[#0B0F19] text-slate-100"
       onPointerDownCapture={() => resumeAudio()}
     >
       <MapHeader />
@@ -97,11 +97,11 @@ export default function MapPage() {
             aria-busy="true"
           >
             <div className="size-9 animate-pulse rounded-full bg-violet-500/25 ring-2 ring-violet-400/20" />
-            <p className="text-center font-mono text-[10px] text-pp-text-muted">{t.map.loadingProgress}</p>
+            <p className="text-center font-mono text-[10px] text-slate-400">{t.map.loadingProgress}</p>
           </div>
         )}
       </div>
-      <BottomNav />
+      <BottomNav variant="dark" />
       <DailyBonusModal open={bonusOpen} onClose={() => setBonusOpen(false)} />
       {storyMilestone != null && storyMemo ? (
         <StoryModal

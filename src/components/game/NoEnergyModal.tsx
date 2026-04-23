@@ -98,7 +98,7 @@ export function NoEnergyModal({ open, onClose }: NoEnergyModalProps) {
   }, [grantAndClose, openTwitterIntent, usedToday]);
 
   const footer = (
-    <div className="pp-modal-footer flex flex-col gap-2 border-rose-200/15 bg-pp-surface/98">
+    <div className="pp-modal-footer flex flex-col gap-2 border-rose-500/20 bg-slate-950/95">
       <Link
         href="/shop"
         onClick={onClose}
@@ -118,26 +118,37 @@ export function NoEnergyModal({ open, onClose }: NoEnergyModalProps) {
         <button
           type="button"
           onClick={() => void handleTwitterOnly()}
-          className="pp-btn-ghost min-h-11 border-emerald-500/25 font-mono text-xs text-emerald-200/90"
+          className="flex min-h-11 w-full items-center justify-center rounded-pp-lg border border-emerald-500/30 bg-slate-900/60 px-4 py-2.5 font-mono text-xs text-emerald-200/90 transition-colors hover:border-emerald-400/40 hover:bg-slate-800/80"
         >
           {t.energy.shareTwitter}
         </button>
       ) : null}
-      <button type="button" onClick={onClose} className="pp-btn-ghost">
+      <button
+        type="button"
+        onClick={onClose}
+        className="flex min-h-12 w-full items-center justify-center rounded-pp-lg border border-slate-600/60 bg-slate-900/50 px-4 py-2.5 font-mono text-xs font-medium text-slate-300 transition-colors hover:border-slate-500 hover:bg-slate-800/70"
+      >
         {t.energy.dismiss}
       </button>
     </div>
   );
 
   return (
-    <BottomSheetShell open={open} onClose={onClose} closeOnBackdropPress footer={footer}>
-      <div className="pp-modal-scroll pt-1">
+    <BottomSheetShell
+      open={open}
+      onClose={onClose}
+      closeOnBackdropPress
+      footer={footer}
+      panelClassName="pp-modal-panel--dark"
+      handleClassName="!bg-slate-600/80 !ring-slate-500/40"
+    >
+      <div className="pp-modal-scroll pt-1 text-slate-100">
         <div>
-          <p className="pp-kicker text-rose-300/90">{t.energy.kicker}</p>
-          <h2 className="mt-2 font-mono text-lg font-bold text-pp-text">{t.energy.title}</h2>
-          <p className="mt-3 text-sm leading-relaxed text-pp-text-muted">{t.energy.body}</p>
+          <p className="font-mono text-[10px] uppercase tracking-[0.35em] text-rose-300/90">{t.energy.kicker}</p>
+          <h2 className="mt-2 font-mono text-lg font-bold text-white">{t.energy.title}</h2>
+          <p className="mt-3 text-sm leading-relaxed text-slate-400">{t.energy.body}</p>
           {!usedToday ? (
-            <p className="mt-2 font-mono text-[11px] leading-relaxed text-pp-text-dim">{t.energy.shareForLifeHint}</p>
+            <p className="mt-2 font-mono text-[11px] leading-relaxed text-slate-500">{t.energy.shareForLifeHint}</p>
           ) : null}
         </div>
       </div>

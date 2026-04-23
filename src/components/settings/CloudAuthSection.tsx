@@ -31,7 +31,7 @@ export function CloudAuthSection() {
 
   const sb = getSupabaseBrowser();
   if (!sb) {
-    return <p className="font-mono text-xs leading-relaxed text-pp-text-muted">{t.cloudSave.missingEnv}</p>;
+    return <p className="font-mono text-xs leading-relaxed text-slate-400">{t.cloudSave.missingEnv}</p>;
   }
 
   const onMagic = async (e: FormEvent) => {
@@ -64,12 +64,12 @@ export function CloudAuthSection() {
   if (userEmail) {
     return (
       <div className="flex flex-col gap-3">
-        <p className="break-all font-mono text-sm text-pp-text">{t.cloudSave.signedInAs(userEmail)}</p>
+        <p className="break-all font-mono text-sm text-slate-100">{t.cloudSave.signedInAs(userEmail)}</p>
         <motion.button
           type="button"
           whileTap={{ scale: 0.98 }}
           onClick={() => void sb.auth.signOut()}
-          className="rounded-pp-lg border border-pp-border bg-pp-surface/60 px-4 py-2.5 font-mono text-xs font-semibold text-pp-text hover:border-pp-accent/40"
+          className="rounded-pp-lg border border-slate-600/80 bg-slate-950/70 px-4 py-2.5 font-mono text-xs font-semibold text-slate-200 hover:border-cyan-500/40"
         >
           {t.cloudSave.signOut}
         </motion.button>
@@ -80,7 +80,7 @@ export function CloudAuthSection() {
   return (
     <div className="flex flex-col gap-3">
       <form onSubmit={onMagic} className="flex flex-col gap-2">
-        <label className="font-mono text-[10px] uppercase tracking-widest text-pp-text-dim" htmlFor="cloud-email">
+        <label className="font-mono text-[10px] uppercase tracking-widest text-slate-500" htmlFor="cloud-email">
           {t.cloudSave.emailLabel}
         </label>
         <input
@@ -91,30 +91,30 @@ export function CloudAuthSection() {
           value={email}
           onChange={(ev) => setEmail(ev.target.value)}
           placeholder={t.cloudSave.emailPlaceholder}
-          className="rounded-pp-lg border border-pp-border bg-pp-surface/80 px-3 py-2 font-mono text-sm text-pp-text placeholder:text-pp-text-dim focus:border-pp-accent focus:outline-none"
+          className="rounded-pp-lg border border-slate-600/80 bg-slate-950/80 px-3 py-2 font-mono text-sm text-slate-100 placeholder:text-slate-500 focus:border-cyan-500/50 focus:outline-none"
         />
         <motion.button
           type="submit"
           disabled={loading}
           whileTap={{ scale: 0.98 }}
-          className="rounded-pp-lg border border-pp-accent bg-pp-accent/15 px-4 py-2.5 font-mono text-xs font-semibold text-pp-accent disabled:opacity-50"
+          className="rounded-pp-lg border border-cyan-500/45 bg-cyan-500/10 px-4 py-2.5 font-mono text-xs font-semibold text-cyan-300 disabled:opacity-50"
         >
           {loading ? "…" : t.cloudSave.sendMagicLink}
         </motion.button>
       </form>
-      <div className="relative py-1 text-center font-mono text-[10px] uppercase tracking-widest text-pp-text-dim">
-        <span className="bg-pp-elevated/60 px-2">{t.cloudSave.orDivider}</span>
+      <div className="relative py-1 text-center font-mono text-[10px] uppercase tracking-widest text-slate-500">
+        <span className="bg-slate-900/80 px-2">{t.cloudSave.orDivider}</span>
       </div>
       <motion.button
         type="button"
         whileTap={{ scale: 0.98 }}
         onClick={onGoogle}
-        className="rounded-pp-lg border border-pp-border bg-pp-surface/80 px-4 py-2.5 font-mono text-xs font-semibold text-pp-text hover:border-pp-accent/40"
+        className="rounded-pp-lg border border-slate-600/80 bg-slate-950/70 px-4 py-2.5 font-mono text-xs font-semibold text-slate-200 hover:border-cyan-500/40"
       >
         {t.cloudSave.googleCta}
       </motion.button>
       {sent ? (
-        <p className="font-mono text-xs text-pp-accent">{t.cloudSave.magicLinkSent}</p>
+        <p className="font-mono text-xs text-cyan-400">{t.cloudSave.magicLinkSent}</p>
       ) : null}
       {error ? <p className="font-mono text-xs text-red-400">{error}</p> : null}
     </div>

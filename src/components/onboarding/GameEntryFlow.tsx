@@ -187,7 +187,7 @@ export function GameEntryFlow({ open }: GameEntryFlowProps) {
             initial={{ opacity: 0, y: 6 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.32, ease: [0.22, 1, 0.36, 1] }}
-            aria-label={t.entryFlow.objectives}
+            aria-label={`${t.entryFlow.objectives}. ${t.entryFlow.starStripAria}`}
           >
             {[
               {
@@ -221,11 +221,24 @@ export function GameEntryFlow({ open }: GameEntryFlowProps) {
                 title={`${row.label} — ${row.pts} ${t.entryFlow.ptsSuffix}`}
                 aria-label={`${row.label}: ${row.pts} ${t.entryFlow.ptsSuffix}`}
               >
-                <span
-                  className="select-none text-[15px] leading-none tracking-[-0.08em]"
-                  aria-hidden
-                >
-                  {"⭐".repeat(row.starCount)}
+                <span className="flex select-none items-center gap-0.5" aria-hidden>
+                  {Array.from({ length: row.starCount }).map((_, j) => (
+                    <motion.span
+                      key={j}
+                      initial={{ scale: 0.2, opacity: 0, rotate: -22 }}
+                      animate={{ scale: 1, opacity: 1, rotate: 0 }}
+                      transition={{
+                        delay: 0.08 + i * 0.07 + j * 0.09,
+                        type: "spring",
+                        stiffness: 560,
+                        damping: 14,
+                      }}
+                      className="inline-flex select-none text-3xl leading-none drop-shadow-[0_0_8px_rgba(251,191,36,0.8)] sm:text-4xl"
+                      aria-hidden
+                    >
+                      💰
+                    </motion.span>
+                  ))}
                 </span>
                 <span className="font-mono text-sm font-black tabular-nums text-white">{row.pts}</span>
                 <span className="font-mono text-[9px] font-semibold uppercase text-slate-400">

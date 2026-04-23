@@ -1,8 +1,12 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState, type ReactNode } from "react";
+import { Heart, Pickaxe, ScanSearch } from "lucide-react";
+
 import { BottomNav } from "@/src/components/layout/BottomNav";
 import { HubShellBar } from "@/src/components/layout/HubShellBar";
+import { ShopDailyBonusHero } from "@/src/components/shop/ShopDailyBonusHero";
+import { ShopProductCard, type ShopProductAccent } from "@/src/components/shop/ShopProductCard";
 import { useAppStrings } from "@/src/lib/i18n/useAppStrings";
 import { useEconomyStore } from "@/src/store/useEconomyStore";
 import { useProgressStore } from "@/src/store/useProgressStore";
@@ -10,6 +14,28 @@ import { useProgressStore } from "@/src/store/useProgressStore";
 const PRICE_SURVIVAL = 100;
 const PRICE_DEMOLITION = 50;
 const PRICE_SPY = 30;
+
+const noop = () => {};
+
+type BoosterRow = {
+  id: "survival" | "demolition" | "spy";
+  accent: ShopProductAccent;
+  icon: ReactNode;
+};
+
+function ShopRayonTitle({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="flex items-center gap-3 pt-2">
+      <h2 className="max-w-[min(100%,15rem)] shrink-0 font-mono text-[11px] font-bold uppercase leading-snug tracking-[0.2em] text-cyan-200/95 sm:max-w-none sm:text-xs">
+        {children}
+      </h2>
+      <div
+        className="h-px min-w-[2rem] flex-1 bg-gradient-to-r from-cyan-400/60 via-violet-500/50 to-transparent"
+        aria-hidden
+      />
+    </div>
+  );
+}
 
 export default function ShopPage() {
   const { t } = useAppStrings();
@@ -62,64 +88,150 @@ export default function ShopPage() {
     setToast(t.shop.boughtSpy);
   }, [addBoosters, spendCoins, t.shop]);
 
+  const boosterRows = useMemo<BoosterRow[]>(
+    () => [
+      {
+        id: "demolition",
+        accent: "rose",
+        icon: <Pickaxe className="size-6" strokeWidth={2} aria-hidden />,
+      },
+      {
+        id: "spy",
+        accent: "violet",
+        icon: <ScanSearch className="size-6" strokeWidth={2} aria-hidden />,
+      },
+      {
+        id: "survival",
+        accent: "emerald",
+        icon: <Heart className="size-6" strokeWidth={2} aria-hidden />,
+      },
+    ],
+    [],
+  );
+
+  const productMeta = useMemo(
+    () => ({
+      survival: {
+        title: t.shop.packSurvivalTitle,
+        description: t.shop.packSurvivalDesc,
+        price: PRICE_SURVIVAL,
+        onBuy: buySurvival,
+      },
+      demolition: {
+        title: t.shop.demolitionTitle,
+        description: t.shop.demolitionDesc,
+        price: PRICE_DEMOLITION,
+        onBuy: buyDemolition,
+      },
+      spy: {
+        title: t.shop.spyTitle,
+        description: t.shop.spyDesc,
+        price: PRICE_SPY,
+        onBuy: buySpy,
+      },
+    }),
+    [t.shop, buySurvival, buyDemolition, buySpy],
+  );
+
   return (
-    <div className="flex min-h-0 flex-1 flex-col bg-pp-bg text-pp-text">
-      <HubShellBar
-        title={t.nav.shop}
-        subtitle={`${t.shop.coinsLabel} 💰 ${coins}`}
-      />
+    <div className="flex min-h-0 flex-1 flex-col bg-[#0B0F19] text-slate-100">
+      <HubShellBar title={t.nav.shop} variant="dark" />
 
-      <div className="min-h-0 flex-1 space-y-3 overflow-y-auto overscroll-y-contain px-4 py-4 pb-[calc(5.5rem+env(safe-area-inset-bottom))]">
-        <article className="rounded-pp-lg border border-pp-border-strong bg-pp-elevated/90 p-4">
-          <h2 className="font-mono text-sm font-bold text-pp-text">{t.shop.packSurvivalTitle}</h2>
-          <p className="mt-1 font-mono text-xs text-pp-text-muted">{t.shop.packSurvivalDesc}</p>
-          <p className="mt-2 font-mono text-xs text-pp-accent">{PRICE_SURVIVAL} coins</p>
-          <button
-            type="button"
-            onClick={buySurvival}
-            className="mt-3 w-full min-h-11 rounded-pp-lg border border-emerald-500/45 bg-emerald-950/40 px-3 font-mono text-xs font-bold uppercase tracking-wide text-emerald-100 transition-colors hover:bg-emerald-900/50"
-          >
-            {t.shop.buy}
-          </button>
-        </article>
+      <div className="min-h-0 flex-1 space-y-6 overflow-y-auto overscroll-y-contain px-4 pb-[calc(5.5rem+env(safe-area-inset-bottom))] pt-4">
+        <header className="rounded-2xl border border-slate-700/60 bg-gradient-to-b from-slate-900/95 to-slate-950/90 px-4 py-5 text-center shadow-[inset_0_1px_0_rgba(251,191,36,0.06)] shadow-black/30">
+          <p className="font-mono text-[10px] uppercase tracking-[0.35em] text-slate-500">{t.shop.coinsLabel}</p>
+          <p className="mt-1 flex items-center justify-center gap-2 text-4xl font-black tabular-nums text-amber-400">
+            <span aria-hidden>💰</span>
+            {coins}
+          </p>
+        </header>
 
-        <article className="rounded-pp-lg border border-pp-border-strong bg-pp-elevated/90 p-4">
-          <h2 className="font-mono text-sm font-bold text-pp-text">{t.shop.demolitionTitle}</h2>
-          <p className="mt-1 font-mono text-xs text-pp-text-muted">{t.shop.demolitionDesc}</p>
-          <p className="mt-2 font-mono text-xs text-pp-accent">{PRICE_DEMOLITION} coins</p>
-          <button
-            type="button"
-            onClick={buyDemolition}
-            className="mt-3 w-full min-h-11 rounded-pp-lg border border-rose-500/45 bg-rose-950/35 px-3 font-mono text-xs font-bold uppercase tracking-wide text-rose-100 transition-colors hover:bg-rose-900/45"
-          >
-            {t.shop.buy}
-          </button>
-        </article>
+        <ShopDailyBonusHero />
 
-        <article className="rounded-pp-lg border border-pp-border-strong bg-pp-elevated/90 p-4">
-          <h2 className="font-mono text-sm font-bold text-pp-text">{t.shop.spyTitle}</h2>
-          <p className="mt-1 font-mono text-xs text-pp-text-muted">{t.shop.spyDesc}</p>
-          <p className="mt-2 font-mono text-xs text-pp-accent">{PRICE_SPY} coins</p>
-          <button
-            type="button"
-            onClick={buySpy}
-            className="mt-3 w-full min-h-11 rounded-pp-lg border border-violet-500/45 bg-violet-950/40 px-3 font-mono text-xs font-bold uppercase tracking-wide text-violet-100 transition-colors hover:bg-violet-900/50"
-          >
-            {t.shop.buy}
-          </button>
-        </article>
+        <section className="space-y-4">
+          <ShopRayonTitle>{t.shop.sectionBlackMarket}</ShopRayonTitle>
+          <div className="space-y-4">
+            {boosterRows.map((p) => {
+              const meta = productMeta[p.id];
+              return (
+                <ShopProductCard
+                  key={p.id}
+                  title={meta.title}
+                  description={meta.description}
+                  price={meta.price}
+                  icon={p.icon}
+                  buyLabel={t.shop.buy}
+                  onBuy={meta.onBuy}
+                  disabled={coins < meta.price}
+                  accent={p.accent}
+                />
+              );
+            })}
+          </div>
+        </section>
+
+        <section className="space-y-4">
+          <ShopRayonTitle>{t.shop.sectionPrestige}</ShopRayonTitle>
+          <div className="space-y-4">
+            <ShopProductCard
+              title={t.shop.teaserCeoTitle}
+              description={t.shop.teaserCeoDesc}
+              price={0}
+              icon={<span className="text-2xl leading-none">👔</span>}
+              buyLabel={t.shop.buy}
+              onBuy={noop}
+              disabled={false}
+              accent="violet"
+              isComingSoon
+              omitPrice
+              soonLabel={t.shop.comingSoon}
+            />
+            <ShopProductCard
+              title={t.shop.teaserThemeTitle}
+              description={t.shop.teaserThemeDesc}
+              price={0}
+              icon={<span className="text-2xl leading-none">🎨</span>}
+              buyLabel={t.shop.buy}
+              onBuy={noop}
+              disabled={false}
+              accent="emerald"
+              isComingSoon
+              omitPrice
+              soonLabel={t.shop.comingSoon}
+            />
+          </div>
+        </section>
+
+        <section className="space-y-4 pb-2">
+          <ShopRayonTitle>{t.shop.sectionFunds}</ShopRayonTitle>
+          <div className="space-y-4">
+            <ShopProductCard
+              title={t.shop.teaserBriefcaseTitle}
+              description={t.shop.teaserBriefcaseDesc}
+              price={0}
+              icon={<span className="text-2xl leading-none">💼</span>}
+              buyLabel={t.shop.buy}
+              onBuy={noop}
+              disabled={false}
+              accent="emerald"
+              isComingSoon
+              omitPrice
+              soonLabel={t.shop.comingSoon}
+            />
+          </div>
+        </section>
       </div>
 
       {toast ? (
         <div
-          className="pointer-events-none fixed bottom-24 left-1/2 z-[90] max-w-sm -translate-x-1/2 rounded-pp-lg border border-pp-border-strong bg-pp-surface px-4 py-2 font-mono text-xs text-pp-text shadow-xl"
+          className="pointer-events-none fixed bottom-24 left-1/2 z-[90] max-w-sm -translate-x-1/2 rounded-pp-lg border border-slate-600/70 bg-slate-900/95 px-4 py-2 font-mono text-xs text-slate-100 shadow-xl shadow-black/40"
           role="status"
         >
           {toast}
         </div>
       ) : null}
 
-      <BottomNav />
+      <BottomNav variant="dark" />
     </div>
   );
 }

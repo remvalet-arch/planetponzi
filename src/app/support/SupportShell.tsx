@@ -10,14 +10,14 @@ export function SupportShell() {
   const { t } = useAppStrings();
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col bg-pp-bg text-pp-text">
-      <HubShellBar title={t.nav.support} />
+    <div className="flex min-h-0 flex-1 flex-col bg-[#0B0F19] text-slate-100">
+      <HubShellBar title={t.nav.support} variant="dark" />
       <div className="flex min-h-0 flex-1 flex-col items-center justify-center gap-8 overflow-y-auto overscroll-y-contain px-6 py-8 pb-[calc(5.5rem+env(safe-area-inset-bottom))]">
         <div className="max-w-md text-center">
-          <p className="pp-kicker">Merci</p>
-          <h1 className="mt-3 text-2xl font-bold tracking-tight sm:text-3xl">Un mot du développeur</h1>
-          <p className="mt-4 font-mono text-sm leading-relaxed text-pp-text-muted">
-            Merci d&apos;avoir joué à <span className="font-semibold text-pp-text">Planet Ponzi Saga</span>.
+          <p className="font-mono text-[10px] uppercase tracking-[0.35em] text-cyan-300/90">Merci</p>
+          <h1 className="mt-3 text-2xl font-bold tracking-tight text-white sm:text-3xl">Un mot du développeur</h1>
+          <p className="mt-4 font-mono text-sm leading-relaxed text-slate-400">
+            Merci d&apos;avoir joué à <span className="font-semibold text-slate-100">Planet Ponzi Saga</span>.
             Si le jeu vous a fait sourire (ou rager sur une grille), un petit soutien aide à garder le projet
             vivant : correctifs, niveaux, et idées un peu trop ambitieuses.
           </p>
@@ -32,18 +32,18 @@ export function SupportShell() {
           Buy me a Coffee
         </a>
 
-        <p className="font-mono text-[11px] text-pp-text-dim">
+        <p className="font-mono text-[11px] text-slate-500">
           Lien externe — s&apos;ouvre dans un nouvel onglet
         </p>
 
         <Link
           href="/map"
-          className="font-mono text-sm text-pp-accent underline-offset-4 hover:underline"
+          className="font-mono text-sm text-cyan-400 underline-offset-4 hover:underline"
         >
           {t.nav.backToMap}
         </Link>
       </div>
-      <BottomNav />
+      <BottomNav variant="dark" />
     </div>
   );
 }

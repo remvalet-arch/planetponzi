@@ -6,7 +6,6 @@ import {
   BarChart3,
   BookOpen,
   Coffee,
-  Globe,
   Map,
   RotateCcw,
   Settings,
@@ -20,11 +19,17 @@ import { useProgressStore } from "@/src/store/useProgressStore";
 
 const tap = { scale: 0.92 };
 
-const linkClass =
-  "flex min-h-12 items-center gap-3 rounded-pp-lg border border-pp-border-strong bg-pp-elevated/90 px-4 py-3 font-mono text-sm text-pp-text hover:border-pp-accent/40";
+/** Liens & boutons nav : accent gauche + léger glow au survol (cyan / violet alternés). */
+const navLinkClass =
+  "group flex min-h-12 items-center gap-3 rounded-pp-lg border border-slate-700/60 border-l-[3px] border-l-transparent bg-slate-900/90 px-4 py-3 font-mono text-sm text-slate-100 transition-all duration-200 hover:border-slate-600 hover:bg-slate-800/95 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-400/50";
 
-const rowButtonClass =
-  "flex min-h-12 w-full items-center gap-3 rounded-pp-lg border border-pp-border-strong bg-pp-elevated/90 px-4 py-3 text-left font-mono text-sm text-pp-text hover:border-pp-accent/40";
+const navLinkHoverCyan =
+  "hover:border-l-cyan-400/85 hover:shadow-[0_0_22px_rgba(34,211,238,0.18),inset_0_0_0_1px_rgba(34,211,238,0.08)]";
+
+const navLinkHoverViolet =
+  "hover:border-l-violet-400/80 hover:shadow-[0_0_22px_rgba(139,92,246,0.16),inset_0_0_0_1px_rgba(139,92,246,0.06)]";
+
+const navRowClass = `${navLinkClass} w-full text-left`;
 
 export type AppNavLevelMenuExtras = {
   onNavigateToMap: () => void;
@@ -35,9 +40,9 @@ export type AppNavDrawerProps = {
   open: boolean;
   onClose: () => void;
   onOpenRules: () => void;
-  /** Banque ouvre la modale stats (niveau) au lieu de `/stats`. */
+  /** Archives : modale stats sur le niveau au lieu de `/stats`. */
   onOpenStats?: () => void;
-  /** Mandat : entrées Carte + Recommencer sous le bloc standard. */
+  /** Mandat : Recommencer uniquement (Carte = entrée principale). */
   levelMenu?: AppNavLevelMenuExtras | null;
 };
 
@@ -48,14 +53,8 @@ export function AppNavDrawer({
   onOpenStats,
   levelMenu,
 }: AppNavDrawerProps) {
-  const { t, locale, setLocale } = useAppStrings();
+  const { t } = useAppStrings();
   const resetCareer = useProgressStore((s) => s.resetCareer);
-
-  const handleLanguages = () => {
-    const next = locale === "fr" ? "en" : "fr";
-    setLocale(next);
-    onClose();
-  };
 
   const handleReset = () => {
     if (typeof window === "undefined") return;
@@ -87,15 +86,15 @@ export function AppNavDrawer({
             animate={{ x: 0 }}
             exit={{ x: "100%" }}
             transition={{ type: "spring", stiffness: 420, damping: 38 }}
-            className="relative z-[101] flex h-full w-[min(100%,20rem)] flex-col border-l border-pp-border-strong bg-pp-surface shadow-2xl"
+            className="relative z-[101] flex h-full w-[min(100%,20rem)] flex-col border-l border-slate-700/70 bg-slate-950 text-slate-100 shadow-2xl shadow-black/50"
           >
-            <div className="flex min-h-0 items-center justify-between border-b border-pp-border px-3 pb-3 pt-[max(1rem,env(safe-area-inset-top))]">
-              <p className="font-mono text-xs uppercase tracking-widest text-pp-text-dim">{t.nav.menu}</p>
+            <div className="flex min-h-0 items-center justify-between border-b border-slate-800 px-3 pb-3 pt-[max(1rem,env(safe-area-inset-top))]">
+              <p className="font-mono text-xs uppercase tracking-widest text-slate-500">{t.nav.menu}</p>
               <motion.button
                 type="button"
                 whileTap={tap}
                 onClick={onClose}
-                className="flex size-11 items-center justify-center rounded-pp-md border border-pp-border-strong bg-pp-elevated text-pp-text hover:bg-pp-surface"
+                className="flex size-11 items-center justify-center rounded-pp-md border border-slate-600/80 bg-slate-900 text-slate-200 hover:border-cyan-500/40 hover:bg-slate-800 hover:text-white"
                 aria-label={t.nav.closeMenu}
               >
                 <X className="size-5" strokeWidth={2} />
@@ -105,26 +104,19 @@ export function AppNavDrawer({
               className="flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto overscroll-y-contain p-3 pb-12"
               aria-label={t.nav.menu}
             >
-              <Link href="/" onClick={onClose} className={linkClass}>
-                {t.nav.home}
-              </Link>
-              <motion.button
-                type="button"
-                whileTap={tap}
-                onClick={() => {
-                  onClose();
-                  onOpenRules();
-                }}
-                className={rowButtonClass}
+              <Link
+                href="/map"
+                onClick={onClose}
+                className={`${navLinkClass} ${navLinkHoverCyan}`}
               >
-                <BookOpen className="size-5 shrink-0 text-pp-accent" strokeWidth={2} aria-hidden />
-                {t.rules.title}
-              </motion.button>
-              <Link href="/settings" onClick={onClose} className={linkClass}>
-                <Settings className="size-5 shrink-0 text-pp-accent" strokeWidth={2} aria-hidden />
-                {t.nav.settings}
+                <Map className="size-5 shrink-0 text-pp-gold-dark" strokeWidth={2} aria-hidden />
+                {t.nav.map}
               </Link>
-              <Link href="/leaderboard" onClick={onClose} className={linkClass}>
+              <Link
+                href="/leaderboard"
+                onClick={onClose}
+                className={`${navLinkClass} ${navLinkHoverViolet}`}
+              >
                 <Trophy className="size-5 shrink-0 text-amber-400" strokeWidth={2} aria-hidden />
                 {t.nav.leaderboard}
               </Link>
@@ -132,7 +124,7 @@ export function AppNavDrawer({
                 <motion.button
                   type="button"
                   whileTap={tap}
-                  className={rowButtonClass}
+                  className={`${navRowClass} ${navLinkHoverCyan}`}
                   onClick={() => {
                     onClose();
                     onOpenStats();
@@ -142,63 +134,65 @@ export function AppNavDrawer({
                   {t.nav.bank}
                 </motion.button>
               ) : (
-                <Link href="/stats" onClick={onClose} className={linkClass}>
+                <Link
+                  href="/stats"
+                  onClick={onClose}
+                  className={`${navLinkClass} ${navLinkHoverCyan}`}
+                >
                   <BarChart3 className="size-5 shrink-0 text-pp-violet" strokeWidth={2} aria-hidden />
                   {t.nav.bank}
                 </Link>
               )}
-              <Link href="/support" onClick={onClose} className={linkClass}>
-                <Coffee className="size-5 shrink-0 text-pp-text-muted" strokeWidth={2} aria-hidden />
+              <motion.button
+                type="button"
+                whileTap={tap}
+                onClick={() => {
+                  onClose();
+                  onOpenRules();
+                }}
+                className={`${navRowClass} ${navLinkHoverViolet}`}
+              >
+                <BookOpen className="size-5 shrink-0 text-pp-accent" strokeWidth={2} aria-hidden />
+                {t.rules.title}
+              </motion.button>
+              <Link
+                href="/support"
+                onClick={onClose}
+                className={`${navLinkClass} ${navLinkHoverCyan}`}
+              >
+                <Coffee className="size-5 shrink-0 text-slate-400" strokeWidth={2} aria-hidden />
                 {t.nav.support}
               </Link>
+              <Link
+                href="/settings"
+                onClick={onClose}
+                className={`${navLinkClass} ${navLinkHoverViolet}`}
+              >
+                <Settings className="size-5 shrink-0 text-pp-accent" strokeWidth={2} aria-hidden />
+                {t.nav.settings}
+              </Link>
 
-              {levelMenu ? (
-                <>
-                  <motion.button
-                    type="button"
-                    whileTap={tap}
-                    className={rowButtonClass}
-                    onClick={() => {
-                      onClose();
-                      levelMenu.onNavigateToMap();
-                    }}
-                  >
-                    <Map className="size-5 shrink-0 text-pp-gold-dark" strokeWidth={2} aria-hidden />
-                    {t.nav.map}
-                  </motion.button>
-                  {levelMenu.onRestartLevel ? (
-                    <motion.button
-                      type="button"
-                      whileTap={tap}
-                      className="flex min-h-12 w-full items-center gap-3 rounded-pp-lg border border-pp-border-strong bg-pp-elevated/90 px-4 py-3 text-left font-mono text-sm text-pp-text transition-colors hover:border-rose-400/45 hover:bg-pp-surface"
-                      onClick={() => {
-                        useLevelRunStore.getState().restartCurrentLevel();
-                        onClose();
-                        levelMenu.onRestartLevel?.();
-                      }}
-                    >
-                      <RotateCcw className="size-5 shrink-0 text-rose-500" strokeWidth={2} aria-hidden />
-                      {t.nav.restartLevel}
-                    </motion.button>
-                  ) : null}
-                </>
+              {levelMenu?.onRestartLevel ? (
+                <motion.button
+                  type="button"
+                  whileTap={tap}
+                  className="flex min-h-12 w-full items-center gap-3 rounded-pp-lg border border-slate-700/60 border-l-[3px] border-l-transparent bg-slate-900/90 px-4 py-3 text-left font-mono text-sm text-slate-100 transition-all duration-200 hover:border-l-rose-400/70 hover:border-slate-600 hover:bg-rose-950/40 hover:shadow-[0_0_18px_rgba(244,63,94,0.12)]"
+                  onClick={() => {
+                    useLevelRunStore.getState().restartCurrentLevel();
+                    onClose();
+                    levelMenu.onRestartLevel?.();
+                  }}
+                >
+                  <RotateCcw className="size-5 shrink-0 text-rose-500" strokeWidth={2} aria-hidden />
+                  {t.nav.restartLevel}
+                </motion.button>
               ) : null}
 
               <motion.button
                 type="button"
                 whileTap={tap}
-                onClick={handleLanguages}
-                className="flex min-h-12 w-full items-center gap-3 rounded-pp-lg border border-pp-border-strong bg-pp-elevated/90 px-4 py-3 text-left font-mono text-sm text-pp-text hover:border-pp-violet/40"
-              >
-                <Globe className="size-5 shrink-0 text-pp-violet" strokeWidth={2} aria-hidden />
-                {t.nav.languages}
-                <span className="ml-auto font-mono text-[10px] text-pp-text-dim">{locale.toUpperCase()}</span>
-              </motion.button>
-              <motion.button
-                type="button"
-                whileTap={tap}
                 onClick={handleReset}
-                className="flex min-h-12 w-full items-center gap-3 rounded-pp-lg border border-rose-500/35 bg-rose-500/10 px-4 py-3 text-left font-mono text-sm text-rose-800 hover:border-rose-500/55"
+                className="flex min-h-12 w-full items-center gap-3 rounded-pp-lg border border-rose-500/40 bg-rose-950/30 px-4 py-3 text-left font-mono text-sm text-rose-200 hover:border-rose-400/55 hover:bg-rose-950/45"
               >
                 <RotateCcw className="size-5 shrink-0 text-rose-600" strokeWidth={2} aria-hidden />
                 {t.nav.resetCareer}

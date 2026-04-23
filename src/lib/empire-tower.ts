@@ -55,8 +55,17 @@ export const EMPIRE_FLOORS: EmpireFloorDef[] = [
     cost: 500,
   },
   {
-    id: "etage-direction",
+    id: "ferme-minage-bots",
     order: 2,
+    name: "Ferme de Minage (Bots)",
+    description:
+      "Génère des Ponzi Coins en tâche de fond. +100 💰 toutes les 24h de connexion.",
+    emoji: "⛏️",
+    cost: 1500,
+  },
+  {
+    id: "etage-direction",
+    order: 3,
     name: "L'Étage de Direction",
     description: "Le comité exécutif accélère les cycles : recharges vie 20 min → 15 min.",
     emoji: "🪑",
@@ -65,7 +74,7 @@ export const EMPIRE_FLOORS: EmpireFloorDef[] = [
   },
   {
     id: "serveurs-offshore",
-    order: 3,
+    order: 4,
     name: "Serveurs Offshore",
     description: "Latence minimale, éthique maximale… négative. (+1 pt par mine — effet Sprint 3.)",
     emoji: "🖥️",
@@ -74,7 +83,7 @@ export const EMPIRE_FLOORS: EmpireFloorDef[] = [
   },
   {
     id: EMPIRE_HELIPORT_FLOOR_ID,
-    order: 4,
+    order: 5,
     name: "L'Héliport Privé",
     description: "Rooftop deal. +1 vie max pour négocier depuis les nuages.",
     emoji: "🚁",
@@ -83,7 +92,7 @@ export const EMPIRE_FLOORS: EmpireFloorDef[] = [
   },
   {
     id: "skydeck-yield",
-    order: 5,
+    order: 6,
     name: "Skydeck « Yield Infini »",
     description:
       "Terrasse vitrée où l'on respire le CO₂ des autres. Une vie de plus s'achète comme une option sur votre prochain burn-out.",
@@ -93,7 +102,7 @@ export const EMPIRE_FLOORS: EmpireFloorDef[] = [
   },
   {
     id: "cloison-structured",
-    order: 6,
+    order: 7,
     name: "Cloisons structurées (tranche AAA-)",
     description:
       "Chaque mine rapporte plus, car la notation, c'est de la confiance... et la confiance se monnaie.",
@@ -103,7 +112,7 @@ export const EMPIRE_FLOORS: EmpireFloorDef[] = [
   },
   {
     id: "wellness-captive",
-    order: 7,
+    order: 8,
     name: "Étage Wellness Captif",
     description:
       "Fontaine à kombucha et +1 vie max : le bien-être n'est pas un droit, c'est un lock-in productif.",
@@ -113,7 +122,7 @@ export const EMPIRE_FLOORS: EmpireFloorDef[] = [
   },
   {
     id: "war-room-narratif",
-    order: 8,
+    order: 9,
     name: "War Room du Narratif",
     description: "Table ovale et vérité ajustable. Les mines deviennent une story : +2 pts / mine.",
     emoji: "📡",
@@ -122,7 +131,7 @@ export const EMPIRE_FLOORS: EmpireFloorDef[] = [
   },
   {
     id: "orbite-board",
-    order: 9,
+    order: 10,
     name: "Orbite du Board (LEO)",
     description:
       "Satellite corporate. Visibilité planétaire, moralité nulle. Package exécutif : +1 vie max et +1 pt / mine.",

@@ -19,7 +19,14 @@ function formatCountdown(ms: number): string {
 /**
  * Badges compacts pièces + vies (+ compte à rebours recharge si vies &lt; max).
  */
-export function EconomyHeader({ className = "" }: { className?: string }) {
+export function EconomyHeader({
+  className = "",
+  showLives = true,
+}: {
+  className?: string;
+  /** Affiche le badge vies + timer (ex. masqué sur la Tour). */
+  showLives?: boolean;
+}) {
   const coins = useEconomyStore((s) => s.coins);
   const lives = useEconomyStore((s) => s.lives);
   const lastLifeRechargeTime = useEconomyStore((s) => s.lastLifeRechargeTime);
@@ -67,22 +74,24 @@ export function EconomyHeader({ className = "" }: { className?: string }) {
         </span>
         <span className="min-w-0 truncate whitespace-nowrap text-amber-200 tabular-nums">{coins}</span>
       </span>
-      <span className={pill} title="Vies">
-        <span className="shrink-0 text-sm leading-none sm:text-base" aria-hidden>
-          ❤️
-        </span>
-        <span className="whitespace-nowrap text-rose-100">
-          {lives}/{maxLives}
-        </span>
-        {showTimer ? (
-          <span
-            key={tick}
-            className="border-l border-white/15 pl-1 font-mono text-[9px] tabular-nums text-slate-300 sm:text-[10px]"
-          >
-            {formatCountdown(remainingMs)}
+      {showLives ? (
+        <span className={pill} title="Vies">
+          <span className="shrink-0 text-sm leading-none sm:text-base" aria-hidden>
+            ❤️
           </span>
-        ) : null}
-      </span>
+          <span className="whitespace-nowrap text-rose-100">
+            {lives}/{maxLives}
+          </span>
+          {showTimer ? (
+            <span
+              key={tick}
+              className="border-l border-white/15 pl-1 font-mono text-[9px] tabular-nums text-slate-300 sm:text-[10px]"
+            >
+              {formatCountdown(remainingMs)}
+            </span>
+          ) : null}
+        </span>
+      ) : null}
     </div>
   );
 }

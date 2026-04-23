@@ -57,7 +57,7 @@ export function AppHeader({
             type="button"
             whileTap={tap}
             onClick={() => setMenuOpen(true)}
-            className="flex size-12 shrink-0 items-center justify-center rounded-pp-md border border-pp-border-strong bg-pp-elevated text-pp-text transition-colors hover:border-pp-accent/40 hover:bg-pp-surface focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-pp-accent/60"
+            className="flex size-12 shrink-0 items-center justify-center rounded-pp-md border border-white/10 bg-slate-900/80 text-cyan-200 transition-colors hover:border-cyan-400/40 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-400/55"
             aria-expanded={menuOpen}
             aria-controls="app-nav-drawer"
             aria-label={t.nav.menu}
@@ -66,7 +66,7 @@ export function AppHeader({
           </motion.button>
 
           <div className="min-w-0 flex-1">
-            <p className="font-mono text-[9px] uppercase tracking-[0.28em] text-pp-text-dim sm:text-[10px] sm:tracking-[0.35em]">
+            <p className="font-mono text-[9px] uppercase tracking-[0.28em] text-slate-500 sm:text-[10px] sm:tracking-[0.35em]">
               Saga · Grille 4×4
             </p>
             <h1 className="truncate text-lg font-black tracking-tight sm:text-xl">
@@ -78,8 +78,8 @@ export function AppHeader({
 
           <EconomyHeader className="max-w-[min(42vw,12rem)] sm:max-w-none" />
 
-          <div className="shrink-0 rounded-pp-md border border-pp-border-strong bg-pp-surface px-2 py-2 text-right shadow-md sm:px-3">
-            <p className="font-mono text-[9px] uppercase tracking-widest text-pp-text-dim sm:text-[10px]">
+          <div className="shrink-0 rounded-pp-md border border-slate-600/70 bg-slate-900/80 px-2 py-2 text-right shadow-md shadow-black/30 sm:px-3">
+            <p className="font-mono text-[9px] uppercase tracking-widest text-slate-500 sm:text-[10px]">
               Score
             </p>
             <motion.p

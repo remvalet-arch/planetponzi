@@ -29,7 +29,7 @@ function BoosterChip({ count, disabled, active, icon, onClick, ariaLabel }: Boos
       className={`relative flex size-14 shrink-0 items-center justify-center rounded-xl border-2 shadow-md transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-violet-400/70 disabled:cursor-not-allowed disabled:opacity-45 sm:size-[3.75rem] ${
         active
           ? "border-rose-500/80 bg-gradient-to-b from-rose-950/90 to-rose-900/70 shadow-[0_0_18px_rgb(244_63_94/0.45)]"
-          : "border-pp-border-strong bg-gradient-to-b from-pp-elevated to-pp-surface/95 hover:border-violet-400/45 hover:from-pp-surface"
+          : "border-slate-600/70 bg-gradient-to-b from-slate-800/95 to-slate-950/90 hover:border-violet-400/45 hover:from-slate-800"
       }`}
       aria-pressed={active}
       aria-label={ariaLabel}
@@ -45,7 +45,7 @@ function BoosterChip({ count, disabled, active, icon, onClick, ariaLabel }: Boos
       <span className="relative text-xl sm:text-2xl" aria-hidden>
         {icon}
       </span>
-      <span className="absolute -right-1 -top-1 flex min-w-[1.25rem] items-center justify-center rounded-full border border-pp-border-strong bg-pp-bg px-1 py-0.5 font-mono text-[10px] font-bold leading-none tabular-nums text-pp-text shadow-sm">
+      <span className="absolute -right-1 -top-1 flex min-w-[1.25rem] items-center justify-center rounded-full border border-slate-600/80 bg-slate-950 px-1 py-0.5 font-mono text-[10px] font-bold leading-none tabular-nums text-slate-200 shadow-sm">
         {count}
       </span>
     </motion.button>
@@ -79,7 +79,7 @@ export function BoostersBar({ onToast }: BoostersBarProps) {
 
   return (
     <aside
-      className="relative flex w-full shrink-0 flex-row flex-wrap items-center justify-center gap-4 rounded-pp-lg border border-pp-border-strong bg-pp-surface/90 px-2 py-2 shadow-lg backdrop-blur-sm md:max-w-none"
+      className="relative flex w-full shrink-0 flex-row flex-wrap items-center justify-center gap-4 rounded-pp-lg border border-slate-700/60 bg-slate-900/75 px-2 py-2 shadow-lg shadow-black/25 backdrop-blur-sm md:max-w-none"
       aria-label="Mallette CEO — boosters"
     >
       <BoosterChip

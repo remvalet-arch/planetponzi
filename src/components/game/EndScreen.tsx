@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import confetti from "canvas-confetti";
 import { motion } from "framer-motion";
-import { PanelBottomOpen, Share2, Star, X } from "lucide-react";
+import { PanelBottomOpen, Share2, X } from "lucide-react";
 
 import { Grid } from "@/src/components/game/Grid";
 import { playUIClick, playVictoryCash } from "@/src/lib/game-sounds";
@@ -35,7 +35,24 @@ const VICTORY_CONFETTI_GOLD = ["#FFD700", "#FFA500", "#FFEC8B", "#E6AC00", "#FFC
 const AUTO_MAP_REDIRECT_SEC = 15;
 
 const thumbZone =
-  "shrink-0 space-y-2 border-t border-pp-border bg-pp-surface px-4 pt-2 pb-[max(1rem,env(safe-area-inset-bottom))]";
+  "shrink-0 space-y-2 border-t border-slate-700/60 bg-slate-950 px-4 pt-2 pb-[max(1rem,env(safe-area-inset-bottom))]";
+
+const endCoinStripParent = {
+  hidden: {},
+  show: {
+    transition: { staggerChildren: 0.12, delayChildren: 0.06 },
+  },
+};
+
+const endCoinPopIn = {
+  hidden: { scale: 0.22, opacity: 0, rotate: -16 },
+  show: {
+    scale: 1,
+    opacity: 1,
+    rotate: 0,
+    transition: { type: "spring" as const, stiffness: 580, damping: 14 },
+  },
+};
 
 function EndScreenHeatmapOverlay({ scores }: { scores: readonly number[] }) {
   return (
@@ -239,10 +256,10 @@ export function EndScreen({ onShareFeedback }: EndScreenProps) {
     });
     if (ok) {
       setShareLabel("copied");
-      onShareFeedback("Résumé copié dans le presse-papiers.");
+      onShareFeedback(t.endScreen.shareFeedbackCopied);
     } else {
       setShareLabel("error");
-      onShareFeedback("Copie impossible sur cet appareil.");
+      onShareFeedback(t.endScreen.shareFeedbackError);
     }
     window.setTimeout(() => setShareLabel("idle"), 2200);
   };
@@ -268,7 +285,11 @@ export function EndScreen({ onShareFeedback }: EndScreenProps) {
   };
 
   const shareButtonText =
-    shareLabel === "copied" ? "Copié ✓" : shareLabel === "error" ? "Réessayer" : "Partager le résumé";
+    shareLabel === "copied"
+      ? t.endScreen.shareCopied
+      : shareLabel === "error"
+        ? t.endScreen.shareRetry
+        : t.endScreen.shareSummary;
 
   if (minimized) {
     return (
@@ -277,16 +298,32 @@ export function EndScreen({ onShareFeedback }: EndScreenProps) {
           type="button"
           whileTap={{ scale: 0.92 }}
           onClick={() => setMinimized(false)}
-          className="pointer-events-auto flex min-h-12 items-center gap-2 rounded-full border border-pp-border-strong bg-pp-elevated/95 px-4 py-2.5 font-mono text-xs font-semibold text-pp-text shadow-lg backdrop-blur-md transition-colors hover:border-pp-accent/50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-pp-accent/60"
+          className="pointer-events-auto flex min-h-12 items-center gap-2 rounded-full border border-slate-600/70 bg-slate-900/95 px-4 py-2.5 font-mono text-xs font-semibold text-slate-100 shadow-lg shadow-black/40 backdrop-blur-md transition-colors hover:border-cyan-500/40 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-400/50"
         >
-          <PanelBottomOpen className="size-4 shrink-0 text-pp-accent" strokeWidth={2} aria-hidden />
+          <PanelBottomOpen className="size-4 shrink-0 text-cyan-300" strokeWidth={2} aria-hidden />
           <span className="flex items-center gap-1.5">
             {Array.from({ length: earnedStars }).map((_, i) => (
-              <Star key={i} className="size-4 fill-amber-400 text-amber-500" strokeWidth={1.5} aria-hidden />
+              <motion.span
+                key={i}
+                initial={{ scale: 0.2, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                transition={{
+                  type: "spring",
+                  stiffness: 560,
+                  damping: 14,
+                  delay: i * 0.08,
+                }}
+                className="inline-flex select-none text-3xl leading-none drop-shadow-[0_0_8px_rgba(251,191,36,0.8)]"
+                aria-hidden
+              >
+                💰
+              </motion.span>
             ))}
-            <span className="whitespace-nowrap tabular-nums text-pp-text-muted">· {score} pts</span>
+            <span className="whitespace-nowrap tabular-nums text-slate-400">
+              · {score} {t.endScreen.pointsUnit}
+            </span>
           </span>
-          <span className="sr-only">Rouvrir le bilan</span>
+          <span className="sr-only">{t.endScreen.reopenBilanSr}</span>
         </motion.button>
       </div>
     );
@@ -303,55 +340,78 @@ export function EndScreen({ onShareFeedback }: EndScreenProps) {
       }}
     >
       <div className="pp-end-panel" onMouseDown={(e) => e.stopPropagation()}>
-        <div className="pp-bottom-sheet-handle" aria-hidden />
+        <div
+          className="pp-bottom-sheet-handle mx-auto mt-2.5 mb-1 h-1.5 w-12 shrink-0 rounded-full bg-slate-600/80 ring-1 ring-slate-500/40"
+          aria-hidden
+        />
 
         <button
           type="button"
           onClick={() => setMinimized(true)}
-          className="pp-btn-icon absolute right-2 top-[max(1rem,env(safe-area-inset-top))] z-[1] min-h-[44px] min-w-[44px]"
-          aria-label="Réduire le bilan"
+          className="absolute right-2 top-[max(1rem,env(safe-area-inset-top))] z-[1] flex min-h-[44px] min-w-[44px] items-center justify-center rounded-pp-md border border-slate-600/80 bg-slate-800/90 text-slate-200 transition-colors hover:border-cyan-500/45 hover:bg-slate-800 hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-400/55 active:scale-[0.92]"
+          aria-label={t.endScreen.minimizeAria}
         >
           <X className="size-5" strokeWidth={2} />
         </button>
 
-        <div className="pp-allow-select min-h-0 flex-1 overflow-y-auto overscroll-y-contain px-5 pb-0 pt-2">
-          <p className="pr-14 font-mono text-[10px] uppercase tracking-[0.35em] text-pp-text-dim">
-            Niveau {levelId} · terminé
+        <div className="pp-allow-select min-h-0 flex-1 overflow-y-auto overscroll-y-contain px-5 pb-0 pt-2 text-slate-100">
+          <p className="pr-14 font-mono text-[10px] uppercase tracking-[0.35em] text-slate-500">
+            {t.endScreen.levelKicker(levelId)}
           </p>
-          <h2 id="end-title" className="mt-1 text-xl font-bold tracking-tight text-pp-text">
-            Récompenses
+          <h2 id="end-title" className="mt-1 text-xl font-bold tracking-tight text-white">
+            {t.endScreen.rewardsTitle}
           </h2>
 
           <div
             className="my-1 flex flex-col items-center"
             role="img"
             aria-label={
-              earnedStars === 0
-                ? "Aucune étoile sur 3"
-                : `${earnedStars} étoile${earnedStars > 1 ? "s" : ""} sur 3`
+              earnedStars === 0 ? t.endScreen.starsAriaNone : t.endScreen.starsAria(earnedStars)
             }
           >
-            <div className="flex justify-center gap-1">
-              {[0, 1, 2].map((index) => (
-                <Star
-                  key={index}
-                  className={
-                    index < earnedStars
-                      ? "size-8 fill-amber-400 text-amber-500"
-                      : "size-8 text-slate-700"
-                  }
-                  strokeWidth={2}
-                  aria-hidden
-                />
-              ))}
-            </div>
+            <motion.div
+              className="flex justify-center gap-1"
+              variants={endCoinStripParent}
+              initial="hidden"
+              animate="show"
+            >
+              {[0, 1, 2].map((index) => {
+                const earned = index < earnedStars;
+                return (
+                  <motion.span
+                    key={index}
+                    variants={endCoinPopIn}
+                    className={`inline-flex select-none leading-none ${
+                      earned
+                        ? "text-4xl drop-shadow-[0_0_8px_rgba(251,191,36,0.8)]"
+                        : "text-4xl grayscale opacity-30 drop-shadow-none"
+                    }`}
+                    aria-hidden
+                  >
+                    💰
+                  </motion.span>
+                );
+              })}
+            </motion.div>
           </div>
+          <p className="mt-1 text-center font-mono text-[10px] uppercase tracking-[0.28em] text-slate-400">
+            {t.endScreen.finalYieldLabel}
+          </p>
           <div className="mt-1 mb-3 flex items-center justify-center gap-6">
-            <p className="text-3xl font-black">
-              {score} <span className="text-lg text-slate-400">pts</span>
+            <p className="text-3xl font-black text-white">
+              {score}{" "}
+              <span className="text-lg text-slate-400">{t.endScreen.pointsUnit}</span>
             </p>
             {earnedCoins > 0 && (
-              <p className="text-2xl font-black text-amber-400">+{earnedCoins} 💰</p>
+              <p className="flex items-center gap-1.5 text-2xl font-black text-amber-400 tabular-nums">
+                +{earnedCoins}
+                <span
+                  className="inline-flex select-none text-3xl leading-none drop-shadow-[0_0_8px_rgba(251,191,36,0.8)]"
+                  aria-hidden
+                >
+                  💰
+                </span>
+              </p>
             )}
           </div>
 
@@ -416,19 +476,19 @@ export function EndScreen({ onShareFeedback }: EndScreenProps) {
           ) : null}
 
           {nextUnlocked ? (
-            <p className="mt-2 text-center font-mono text-[10px] text-pp-text-dim">
+            <p className="mt-2 text-center font-mono text-[10px] text-slate-500">
               {t.endScreen.nextStopLevel(nextId)}
             </p>
           ) : (
-            <p className="mt-2 text-center font-mono text-[10px] text-pp-text-dim">
+            <p className="mt-2 text-center font-mono text-[10px] text-slate-500">
               {t.nav.backToMap}
             </p>
           )}
 
-          <p className="mt-2 text-center font-mono text-[10px] leading-relaxed text-pp-text-dim">
+          <p className="mt-2 text-center font-mono text-[10px] leading-relaxed text-slate-400">
             <Link
               href="/map"
-              className="text-pp-accent underline-offset-2 hover:underline"
+              className="text-cyan-400 underline-offset-2 hover:text-cyan-300 hover:underline"
               onClick={() => {
                 playUIClick();
                 skipAutoMapRef.current = true;
@@ -442,10 +502,10 @@ export function EndScreen({ onShareFeedback }: EndScreenProps) {
 
           {earnedStars > 0 && showVictoryExitBar ? (
             <div className="mt-2 px-1">
-              <p className="mb-1 text-center font-mono text-[10px] text-pp-text-muted">
+              <p className="mb-1 text-center font-mono text-[10px] text-slate-400">
                 {t.endScreen.backToHqCountdown(AUTO_MAP_REDIRECT_SEC)}
               </p>
-              <div className="h-1.5 w-full overflow-hidden rounded-full bg-pp-border">
+              <div className="h-1.5 w-full overflow-hidden rounded-full bg-slate-700/80">
                 <motion.div
                   className="h-full origin-left rounded-full bg-gradient-to-r from-emerald-500 to-cyan-400"
                   initial={{ scaleX: 1 }}
@@ -468,9 +528,9 @@ export function EndScreen({ onShareFeedback }: EndScreenProps) {
               type="button"
               whileTap={{ scale: 0.92 }}
               onClick={handleReplay}
-              className="flex min-h-14 w-full items-center justify-center rounded-pp-xl border border-pp-border-strong bg-pp-elevated px-5 py-3 font-mono text-sm font-semibold text-pp-text shadow-lg hover:border-pp-accent/40 hover:bg-pp-surface focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-pp-accent/60"
+              className="flex min-h-14 w-full items-center justify-center rounded-pp-xl border border-slate-600/80 bg-slate-800/90 px-5 py-3 font-mono text-sm font-semibold text-slate-100 shadow-lg shadow-black/30 hover:border-cyan-500/40 hover:bg-slate-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-400/50"
             >
-              Rejouer
+              {t.endScreen.replay}
             </motion.button>
             <motion.button
               type="button"
@@ -478,7 +538,7 @@ export function EndScreen({ onShareFeedback }: EndScreenProps) {
               onClick={handleContinue}
               className="flex min-h-14 w-full items-center justify-center rounded-pp-xl border border-emerald-600/60 bg-gradient-to-b from-emerald-500 to-emerald-700 px-5 py-3 font-mono text-sm font-semibold text-white shadow-lg hover:brightness-110 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-300"
             >
-              Continuer
+              {t.endScreen.continue}
             </motion.button>
           </div>
 
@@ -486,14 +546,18 @@ export function EndScreen({ onShareFeedback }: EndScreenProps) {
             type="button"
             whileTap={{ scale: 0.92 }}
             onClick={handleShare}
-            className="flex min-h-12 w-full items-center justify-center gap-2 rounded-pp-lg border border-pp-border bg-pp-elevated/80 px-4 py-2.5 font-mono text-xs font-medium text-pp-text-muted transition-colors hover:border-pp-accent/40 hover:text-pp-text"
+            className="flex min-h-12 w-full items-center justify-center gap-2 rounded-pp-lg border border-slate-600/70 bg-slate-800/80 px-4 py-2.5 font-mono text-xs font-medium text-slate-300 transition-colors hover:border-cyan-500/35 hover:text-slate-100"
           >
             <Share2 className="size-4" strokeWidth={2} aria-hidden />
             {shareButtonText}
           </motion.button>
 
-          <button type="button" onClick={() => setMinimized(true)} className="pp-btn-ghost">
-            Fermer — voir la grille
+          <button
+            type="button"
+            onClick={() => setMinimized(true)}
+            className="flex min-h-12 w-full items-center justify-center rounded-pp-lg border border-slate-600/60 bg-slate-900/80 px-4 py-2.5 font-mono text-xs font-medium text-slate-400 transition-colors hover:border-slate-500 hover:bg-slate-800/90 hover:text-slate-200 active:scale-[0.98]"
+          >
+            {t.endScreen.closeSeeGrid}
           </button>
         </div>
       </div>

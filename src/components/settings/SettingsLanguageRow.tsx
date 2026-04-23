@@ -29,8 +29,8 @@ export function SettingsLanguageRow() {
   };
 
   return (
-    <div className="flex w-full max-w-sm flex-col gap-2 rounded-pp-xl border border-pp-border-strong bg-pp-elevated/60 p-4">
-      <p className="font-mono text-[10px] uppercase tracking-widest text-pp-text-dim">Langue</p>
+    <div className="flex w-full max-w-sm flex-col gap-2 rounded-pp-xl border border-slate-700/60 bg-slate-900/55 p-4">
+      <p className="font-mono text-[10px] uppercase tracking-widest text-slate-500">Langue</p>
       <div className="flex gap-2">
         {(["fr", "en"] as const).map((loc) => (
           <motion.button
@@ -40,8 +40,8 @@ export function SettingsLanguageRow() {
             onClick={() => apply(loc)}
             className={`flex-1 rounded-pp-lg border px-3 py-2 font-mono text-xs font-semibold transition-colors ${
               locale === loc
-                ? "border-pp-accent bg-pp-surface text-pp-accent"
-                : "border-pp-border bg-pp-surface/60 text-pp-text-muted hover:border-pp-accent/40"
+                ? "border-cyan-500/50 bg-slate-800/90 text-cyan-300"
+                : "border-slate-600/70 bg-slate-950/60 text-slate-400 hover:border-cyan-500/35"
             }`}
           >
             {loc === "fr" ? "Français" : "English"}

@@ -32,16 +32,17 @@ export function StatsModal({ open, onClose }: StatsModalProps) {
     <BottomSheetShell
       open={open}
       onClose={onClose}
-      panelClassName="shadow-[0_0_32px_rgba(168,85,247,0.08)]"
+      panelClassName="pp-modal-panel--dark shadow-[0_0_32px_rgba(168,85,247,0.12)]"
+      handleClassName="!bg-slate-600/80 !ring-slate-500/40"
     >
       <div className="pp-modal-header">
         <div>
-          <p className="font-mono text-[10px] uppercase tracking-[0.35em] text-pp-violet/90">
+          <p className="font-mono text-[10px] uppercase tracking-[0.35em] text-violet-300/90">
             Local
           </p>
           <h2
             id="stats-modal-title"
-            className="mt-1 font-mono text-base font-bold tracking-tight text-pp-text"
+            className="mt-1 font-mono text-base font-bold tracking-tight text-white"
           >
             {t.nav.bank}
           </h2>
@@ -49,7 +50,7 @@ export function StatsModal({ open, onClose }: StatsModalProps) {
         <button
           type="button"
           onClick={onClose}
-          className="pp-btn-icon focus-visible:outline-pp-accent/60"
+          className="pp-btn-icon"
           aria-label={`${t.energy.dismiss} — ${t.nav.bank}`}
         >
           <X className="size-5" strokeWidth={2} />

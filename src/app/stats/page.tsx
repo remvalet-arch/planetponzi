@@ -9,12 +9,12 @@ export default function StatsPage() {
   const { t } = useAppStrings();
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col bg-pp-bg text-pp-text">
-      <HubShellBar title={t.nav.bank} />
+    <div className="flex min-h-0 flex-1 flex-col bg-[#0B0F19] text-slate-100">
+      <HubShellBar title={t.nav.bank} variant="dark" />
       <div className="min-h-0 flex-1 overflow-y-auto overscroll-y-contain pb-[calc(5.5rem+env(safe-area-inset-bottom))]">
         <StatsScreen />
       </div>
-      <BottomNav />
+      <BottomNav variant="dark" />
     </div>
   );
 }

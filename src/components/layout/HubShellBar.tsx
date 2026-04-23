@@ -1,11 +1,11 @@
 "use client";
 
-import type { ReactNode } from "react";
-import { useState } from "react";
+import { cloneElement, isValidElement, type ReactNode, useState } from "react";
 import { motion } from "framer-motion";
 import { Menu } from "lucide-react";
 
 import { AppNavDrawer } from "@/src/components/layout/AppNavDrawer";
+import { EconomyHeader } from "@/src/components/layout/EconomyHeader";
 import { RulesModal, markRulesFirstVisitDone } from "@/src/components/ui/RulesModal";
 import { useAppStrings } from "@/src/lib/i18n/useAppStrings";
 
@@ -17,9 +17,25 @@ type HubShellBarProps = {
   /** Ex. `<EconomyHeader />` sur la Tour */
   rightSlot?: ReactNode;
   variant?: "light" | "dark";
+  /** Propagé à `EconomyHeader` dans `rightSlot` quand c’est ce composant. Défaut : true. */
+  showLives?: boolean;
 };
 
-export function HubShellBar({ title, subtitle, rightSlot, variant = "light" }: HubShellBarProps) {
+function injectEconomyHeaderShowLives(rightSlot: ReactNode, showLives: boolean): ReactNode {
+  if (!isValidElement(rightSlot) || rightSlot.type !== EconomyHeader) return rightSlot;
+  const prev = rightSlot.props as { showLives?: boolean };
+  return cloneElement(rightSlot, {
+    showLives: prev.showLives ?? showLives,
+  });
+}
+
+export function HubShellBar({
+  title,
+  subtitle,
+  rightSlot,
+  variant = "light",
+  showLives = true,
+}: HubShellBarProps) {
   const { t } = useAppStrings();
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [rulesOpen, setRulesOpen] = useState(false);
@@ -70,7 +86,11 @@ export function HubShellBar({ title, subtitle, rightSlot, variant = "light" }: H
               </p>
             ) : null}
           </div>
-          {rightSlot ? <div className="shrink-0">{rightSlot}</div> : <div className="w-11 shrink-0 sm:w-0" aria-hidden />}
+          {rightSlot ? (
+            <div className="shrink-0">{injectEconomyHeaderShowLives(rightSlot, showLives)}</div>
+          ) : (
+            <div className="w-11 shrink-0 sm:w-0" aria-hidden />
+          )}
         </div>
       </header>
 

@@ -196,11 +196,13 @@ export default function LevelPage() {
   }
 
   return (
-    <div className="relative flex h-full min-h-0 max-h-[100dvh] flex-1 flex-col overflow-hidden overscroll-y-none overscroll-x-none bg-pp-bg text-pp-text [overscroll-behavior-y:none]">
+    <div className="relative flex h-full min-h-0 max-h-[100dvh] flex-1 flex-col overflow-hidden overscroll-y-none overscroll-x-none bg-[#0B0F19] text-slate-100 [overscroll-behavior-y:none]">
       {!persistReady ? (
         <div className="pp-loading-screen" role="status" aria-live="polite" aria-busy="true">
-          <p className="pp-kicker opacity-90">Chargement du mandat</p>
-          <p className="mt-3 max-w-xs text-center font-mono text-xs text-pp-text-muted">
+          <p className="font-mono text-[10px] uppercase tracking-[0.35em] text-cyan-300/90 opacity-90">
+            Chargement du mandat
+          </p>
+          <p className="mt-3 max-w-xs text-center font-mono text-xs text-slate-400">
             Synchronisation avec votre session locale…
           </p>
         </div>
@@ -243,13 +245,13 @@ export default function LevelPage() {
                   <span aria-hidden>{nextTheme.emoji}</span>
                 </div>
                 <div className="min-w-0 flex-1">
-                  <p className="font-mono text-[10px] uppercase tracking-widest text-pp-text-dim">
+                  <p className="font-mono text-[10px] uppercase tracking-widest text-slate-500">
                     Mandat terrain
                   </p>
-                  <p className="truncate text-sm font-semibold text-pp-text">
+                  <p className="truncate text-sm font-semibold text-white">
                     Bâtiment à placer
                   </p>
-                  <p className="truncate font-mono text-xs uppercase text-pp-text-muted">
+                  <p className="truncate font-mono text-xs uppercase text-slate-400">
                     {nextType} · tour {turn + 1}/{mandateLen || "—"}
                   </p>
                 </div>

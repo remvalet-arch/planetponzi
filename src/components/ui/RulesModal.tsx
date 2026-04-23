@@ -34,13 +34,18 @@ export function RulesModal({ open, onClose }: RulesModalProps) {
   }, [open, onClose]);
 
   return (
-    <BottomSheetShell open={open} onClose={onClose}>
+    <BottomSheetShell
+      open={open}
+      onClose={onClose}
+      panelClassName="pp-modal-panel--dark"
+      handleClassName="!bg-slate-600/80 !ring-slate-500/40"
+    >
       <div className="pp-modal-header">
         <div className="min-w-0">
           <p className="pp-kicker">Règles</p>
           <h2
             id="rules-modal-title"
-            className="mt-1 font-mono text-base font-bold tracking-tight text-pp-text"
+            className="mt-1 font-mono text-base font-bold tracking-tight text-white"
           >
             Grille & score
           </h2>

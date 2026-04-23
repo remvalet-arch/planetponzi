@@ -8,7 +8,7 @@ export function Toast({ message }: ToastProps) {
   if (!message) return null;
   return (
     <div
-      className="pp-toast text-emerald-800"
+      className="pp-toast"
       role="status"
       aria-live="polite"
     >

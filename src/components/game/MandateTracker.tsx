@@ -46,7 +46,7 @@ export function MandateTracker() {
 
   return (
     <div
-      className="mx-auto flex w-full max-w-lg shrink-0 flex-wrap items-center justify-center gap-x-4 gap-y-1.5 border-b border-pp-border/80 bg-pp-surface/90 px-2 py-1.5 backdrop-blur-sm"
+      className="mx-auto flex w-full max-w-lg shrink-0 flex-wrap items-center justify-center gap-x-4 gap-y-1.5 border-b border-slate-700/50 bg-slate-950/85 px-2 py-1.5 backdrop-blur-sm"
       role="status"
       aria-live="polite"
       aria-label={t.entryFlow.mandate}

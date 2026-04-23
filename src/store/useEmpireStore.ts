@@ -66,15 +66,19 @@ export const useEmpireStore = create<EmpireStore>()(
     }),
     {
       name: STORAGE_KEY,
-      version: 1,
+      version: 2,
       storage: persistLocalStorage,
       partialize: (state) => ({ unlockedNodes: state.unlockedNodes }),
-      migrate: (persisted) => {
+      migrate: (persisted, fromVersion) => {
         const base = (persisted ?? {}) as { unlockedNodes?: Record<string, boolean> };
         const raw = base.unlockedNodes;
         const merged = { ...initialUnlockedNodes(), ...(typeof raw === "object" && raw ? raw : {}) };
         for (const f of EMPIRE_FLOORS) {
           if (f.defaultUnlocked) merged[f.id] = true;
+        }
+        /** Ancienne progression : « Direction » avant l’étage Ferme de Minage — évite un cul-de-sac. */
+        if (fromVersion < 2 && merged["etage-direction"]) {
+          merged["ferme-minage-bots"] = true;
         }
         return { unlockedNodes: merged };
       },
