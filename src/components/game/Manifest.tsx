@@ -2,10 +2,8 @@
 
 import { useMemo } from "react";
 
-import {
-  formatMultiplierFr,
-  getDeckChallengeTitle,
-} from "@/src/lib/difficulty";
+import { formatMultiplierFr, getDeckChallengeTitle } from "@/src/lib/difficulty";
+import { useAppStrings } from "@/src/lib/i18n/useAppStrings";
 import { pickHiddenDeckBuildingTypes } from "@/src/lib/rng";
 import { getBuildingTheme } from "@/src/lib/ui-helpers";
 import { getManifestAmbientCopy } from "@/src/lib/manifest-copy";
@@ -34,6 +32,7 @@ const MANIFEST_ORDER: BuildingType[] = [
 ];
 
 export function Manifest() {
+  const { t } = useAppStrings();
   const levelId = useLevelRunStore((s) => s.levelId);
   const seed = useLevelRunStore((s) => s.seed);
   const dailyInventory = useLevelRunStore((s) => s.dailyInventory);
@@ -66,8 +65,10 @@ export function Manifest() {
         </p>
         <span className="shrink-0 font-mono text-[8px] font-semibold text-pp-accent sm:text-[9px]">FUN</span>
       </div>
-      <p className="mb-0.5 font-mono text-[8px] uppercase tracking-widest text-pp-gold-dark sm:text-[9px]">
-        {getDeckChallengeTitle(deckChallengeLevel)} · {formatMultiplierFr(deckChallengeLevel)}
+      <p className="mb-0.5 font-mono text-[11px] font-bold uppercase leading-snug tracking-wide text-pp-gold-dark sm:text-xs">
+        {deckChallengeLevel >= 1
+          ? `${t.manifest.deckTypesHidden(deckChallengeLevel)} · ${formatMultiplierFr(deckChallengeLevel)}`
+          : `${getDeckChallengeTitle(deckChallengeLevel)} · ${formatMultiplierFr(deckChallengeLevel)}`}
       </p>
       <p className="mb-1 hidden font-mono text-[11px] leading-relaxed text-pp-text-muted sm:mb-2 sm:block">
         {ambient}

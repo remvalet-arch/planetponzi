@@ -39,6 +39,9 @@ export const strings = {
         "Accumulez plus d'étoiles dans ce secteur pour affronter le Boss !",
       starGateBadge: (n: number, cap: number) => `⭐ ${n} / ${cap}`,
     },
+    manifest: {
+      deckTypesHidden: (n: number) => (n <= 1 ? "1 type masqué" : `${n} types masqués`),
+    },
     installPwa: {
       bannerText: "Téléchargez Planet Ponzi pour jouer hors-ligne ! 🚀",
       installCta: "Installer",
@@ -113,15 +116,16 @@ export const strings = {
     entryFlow: {
       mandate: "Mandat",
       objectives: "Cibles de rentabilité",
+      starStripAria: "Seuils d’étoiles : scores pour 1, 2 et 3 étoiles",
       ptsSuffix: "pts",
       cta: "Lancer l'exploitation",
       ctaSub: "Jouer",
       loading: "Chargement du mandat…",
-      maxEstimatedLabel: "Rendement maximal estimé",
+      maxEstimatedLabel: "Plafond estimé",
       starCard1: "Seuil 1★",
       starCard2: "Seuil 2★",
       starCard3: "Seuil 3★",
-      specialDirectivesTitle: "⚠️ DIRECTIVES SPÉCIALES",
+      specialDirectivesTitle: "⚠️ Directives",
       directiveMandateMin: (p: { count: number; label: string }) =>
         `Mandat : construisez au moins ${p.count} ${p.label} (en fin de partie).`,
       directiveSeismic: (turn: number) =>
@@ -236,25 +240,28 @@ export const strings = {
       },
     },
     endScreen: {
-      insufficientTitle: "Rendement Insuffisant",
-      insufficientBody: "Une vie a été déduite.",
-      mandateFailedTitle: "❌ MANDAT NON RESPECTÉ",
-      mandateFailedLead: "Ce n’est pas un problème de points : le mandat sur la grille n’a pas été tenu.",
+      insufficientTitle: "Rendement insuffisant",
+      insufficientBody: "−1 vie.",
+      mandateFailedTitle: "Mandat non tenu",
+      mandateFailedLead: "Le mandat grille n’a pas été respecté (pas un problème de points seuls).",
       mandateFailedBody:
-        "Le Board exigeait des conditions supplémentaires sur la grille (ex. forêts). Score honorable, mais zéro étoile : le narratif prime sur le M$.",
+        "Conditions grille non remplies (ex. forêts). Score OK, 0★ : le mandat prime.",
       mandateFailedMissing: (fragments: string) =>
-        `Objectifs non atteints : ${fragments}. Rejouez en priorisant ces placements.`,
+        `Manque : ${fragments}. Rejouez en ciblant ça.`,
       mandateFailedFragment: (label: string, current: number, required: number) =>
         `${label} (${current}/${required} requis)`,
       mandateSpatialIsolatedFail: (label: string) =>
         `${label} : mandat d’isolation non respecté (deux mêmes types ne doivent pas se toucher).`,
       mandateSpatialAlignedFail: (label: string, cur: number, req: number) =>
         `${label} alignés : ${cur}/${req} requis sur une ligne ou colonne.`,
-      optimalBanner: "RENDEMENT OPTIMAL ATTEINT !",
+      optimalBanner: "Plafond atteint",
       coinsEarned: (n: number) => `+${n} 💰`,
-      nextStopLevel: (n: number) => `Prochain arrêt : niveau ${n}`,
-      escapeOrBackdropHint: "Échap ou fond : réduire",
-      backToHqCountdown: (seconds: number) => `Retour au QG dans ${seconds}s…`,
+      /** Mode deck masqué — texte très lisible sur le bilan (évite tout jargon « type inconnu »). */
+      hiddenDeckBanner: (hiddenCount: number) =>
+        hiddenCount <= 1 ? "1 type masqué sur le manifeste" : `${hiddenCount} types masqués`,
+      nextStopLevel: (n: number) => `Suite : niv. ${n}`,
+      escapeOrBackdropHint: "Échap / fond : réduire",
+      backToHqCountdown: (seconds: number) => `QG dans ${seconds}s`,
     },
     energy: {
       kicker: "Énergie",
@@ -324,6 +331,9 @@ export const strings = {
       loadingProgress: "Loading progress…",
       starGateHint: "Earn more stars in this sector to challenge the Boss!",
       starGateBadge: (n: number, cap: number) => `⭐ ${n} / ${cap}`,
+    },
+    manifest: {
+      deckTypesHidden: (n: number) => (n <= 1 ? "1 hidden type" : `${n} hidden types`),
     },
     installPwa: {
       bannerText: "Install Planet Ponzi to play offline! 🚀",
@@ -397,15 +407,16 @@ export const strings = {
     entryFlow: {
       mandate: "Mandate",
       objectives: "Profit targets",
+      starStripAria: "Star thresholds: scores for 1, 2, and 3 stars",
       ptsSuffix: "pts",
       cta: "Start extraction",
       ctaSub: "Play",
       loading: "Loading mandate…",
-      maxEstimatedLabel: "Estimated max yield",
+      maxEstimatedLabel: "Est. cap",
       starCard1: "1★ target",
       starCard2: "2★ target",
       starCard3: "3★ target",
-      specialDirectivesTitle: "⚠️ SPECIAL DIRECTIVES",
+      specialDirectivesTitle: "⚠️ Directives",
       directiveMandateMin: (p: { count: number; label: string }) =>
         `Mandate: place at least ${p.count} ${p.label} on the final grid.`,
       directiveSeismic: (turn: number) =>
@@ -521,24 +532,26 @@ export const strings = {
     },
     endScreen: {
       insufficientTitle: "Insufficient yield",
-      insufficientBody: "A life was lost.",
-      mandateFailedTitle: "❌ MANDATE NOT MET",
-      mandateFailedLead: "This is not a scoring issue—the grid mandate was not satisfied.",
+      insufficientBody: "−1 life.",
+      mandateFailedTitle: "Mandate not met",
+      mandateFailedLead: "Grid mandate failed (not just points).",
       mandateFailedBody:
-        "The Board required extra grid conditions (e.g. forests). Respectable score, but zero stars—narrative beats M$.",
+        "Grid rules not met (e.g. forests). OK score, 0★ — mandate wins.",
       mandateFailedMissing: (fragments: string) =>
-        `Targets missed: ${fragments}. Replay and prioritize these buildings.`,
+        `Missing: ${fragments}. Replay with focus.`,
       mandateFailedFragment: (label: string, current: number, required: number) =>
         `${label} (${current}/${required} required)`,
       mandateSpatialIsolatedFail: (label: string) =>
         `${label}: isolation mandate failed (same types cannot touch orthogonally).`,
       mandateSpatialAlignedFail: (label: string, cur: number, req: number) =>
         `${label} aligned: ${cur}/${req} required on one row or column.`,
-      optimalBanner: "OPTIMAL YIELD ACHIEVED!",
+      optimalBanner: "Cap reached",
       coinsEarned: (n: number) => `+${n} 💰`,
-      nextStopLevel: (n: number) => `Next stop: level ${n}`,
-      escapeOrBackdropHint: "Esc or backdrop: shrink",
-      backToHqCountdown: (seconds: number) => `Back to HQ in ${seconds}s…`,
+      hiddenDeckBanner: (hiddenCount: number) =>
+        hiddenCount <= 1 ? "1 hidden type on manifest" : `${hiddenCount} hidden types`,
+      nextStopLevel: (n: number) => `Next: L${n}`,
+      escapeOrBackdropHint: "Esc / backdrop: shrink",
+      backToHqCountdown: (seconds: number) => `HQ in ${seconds}s`,
     },
     energy: {
       kicker: "Energy",

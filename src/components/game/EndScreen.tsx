@@ -20,6 +20,7 @@ import {
   LEVELS,
   starsFromScore,
 } from "@/src/lib/levels";
+import { getSessionCellScores } from "@/src/lib/session-scoring";
 import { estimateMaxScore } from "@/src/lib/solver";
 import { useAppStrings } from "@/src/lib/i18n/useAppStrings";
 import { copyShareToClipboard } from "@/src/lib/ui-helpers";
@@ -28,45 +29,30 @@ import { useEmpireStore } from "@/src/store/useEmpireStore";
 import { useLevelRunStore } from "@/src/store/useLevelRunStore";
 import { useProgressStore } from "@/src/store/useProgressStore";
 
-const starContainer = {
-  hidden: { opacity: 0 },
-  show: {
-    opacity: 1,
-    transition: { staggerChildren: 0.2, delayChildren: 0.1 },
-  },
-};
-
-const starItemDim = {
-  hidden: { scale: 0.35, opacity: 0, rotate: -12 },
-  show: {
-    scale: 1,
-    opacity: 1,
-    rotate: 0,
-    transition: { type: "spring" as const, stiffness: 380, damping: 22 },
-  },
-};
-
-const starItemFilled = {
-  hidden: { scale: 0, opacity: 0, rotate: -42 },
-  show: {
-    scale: [0, 1.18, 1],
-    opacity: 1,
-    rotate: [0, -18, 14, -9, 6, 0],
-    transition: {
-      scale: { type: "spring" as const, stiffness: 440, damping: 13 },
-      opacity: { duration: 0.2 },
-      rotate: { duration: 0.58, ease: [0.33, 1.4, 0.64, 1] as const },
-    },
-  },
-};
-
 const VICTORY_CONFETTI_GOLD = ["#FFD700", "#FFA500", "#FFEC8B", "#E6AC00", "#FFC107"];
 
 /** Délai de la barre « retour QG » avant navigation auto vers `/map`. */
 const AUTO_MAP_REDIRECT_SEC = 15;
 
 const thumbZone =
-  "shrink-0 space-y-3 border-t border-pp-border bg-pp-surface px-4 py-4 pb-[max(1rem,env(safe-area-inset-bottom))]";
+  "shrink-0 space-y-2 border-t border-pp-border bg-pp-surface px-4 pt-2 pb-[max(1rem,env(safe-area-inset-bottom))]";
+
+function EndScreenHeatmapOverlay({ scores }: { scores: readonly number[] }) {
+  return (
+    <div className="pointer-events-none absolute inset-0 z-[2] p-3">
+      <div className="grid h-full w-full grid-cols-4 grid-rows-4 gap-1.5 sm:gap-2">
+        {scores.map((cellScore, i) => (
+          <div
+            key={i}
+            className="flex min-h-0 min-w-0 aspect-square items-center justify-center text-center text-base font-bold tabular-nums leading-none text-white sm:text-lg"
+          >
+            {cellScore > 0 ? `+${cellScore}` : `${cellScore}`}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
 
 type EndScreenProps = {
   onShareFeedback: (message: string) => void;
@@ -202,6 +188,11 @@ export function EndScreen({ onShareFeedback }: EndScreenProps) {
     });
   }, [levelDef, mineEmpireBonus]);
 
+  const sessionCellScores = useMemo(() => {
+    if (grid.length !== 16) return Array.from({ length: 16 }, () => 0);
+    return getSessionCellScores(grid, frozenCellIndices, mineEmpireBonus);
+  }, [grid, frozenCellIndices, mineEmpireBonus]);
+
   if (status !== "finished" || levelId < 1) return null;
 
   const earnedStars = calculateStars(score, levelId, grid);
@@ -232,7 +223,7 @@ export function EndScreen({ onShareFeedback }: EndScreenProps) {
       ? t.endScreen.mandateFailedMissing(mandateDetailFragments.join(" · "))
       : null;
   const isOptimalYield = maxScoreEstimate > 0 && score >= maxScoreEstimate;
-  const coinsEarnedThisRun = earnedStars > 1 ? earnedStars * 10 : 0;
+  const earnedCoins = earnedStars > 1 ? earnedStars * 10 : 0;
 
   const nextId = levelId + 1;
   const hasNextLevel = LEVELS.some((l) => l.id === nextId);
@@ -323,63 +314,67 @@ export function EndScreen({ onShareFeedback }: EndScreenProps) {
           <X className="size-5" strokeWidth={2} />
         </button>
 
-        <div className="pp-allow-select min-h-0 flex-1 overflow-y-auto overscroll-y-contain px-5 pb-16 pt-8">
+        <div className="pp-allow-select min-h-0 flex-1 overflow-y-auto overscroll-y-contain px-5 pb-0 pt-2">
           <p className="pr-14 font-mono text-[10px] uppercase tracking-[0.35em] text-pp-text-dim">
             Niveau {levelId} · terminé
           </p>
-          <h2 id="end-title" className="mt-2 text-xl font-bold tracking-tight text-pp-text">
+          <h2 id="end-title" className="mt-1 text-xl font-bold tracking-tight text-pp-text">
             Récompenses
           </h2>
 
           <div
-            className="pointer-events-none mx-auto mt-4 max-w-[min(100%,22rem)] origin-top scale-[0.75]"
-            aria-hidden
-          >
-            <Grid />
-          </div>
-
-          <motion.div
-            className="mt-5 flex justify-center gap-4"
-            variants={starContainer}
-            initial="hidden"
-            animate="show"
-            role="list"
+            className="my-1 flex flex-col items-center"
+            role="img"
             aria-label={
               earnedStars === 0
                 ? "Aucune étoile sur 3"
                 : `${earnedStars} étoile${earnedStars > 1 ? "s" : ""} sur 3`
             }
           >
-            {[0, 1, 2].map((index) => {
-              const filled = index < earnedStars;
-              return (
-                <motion.div
+            <div className="flex justify-center gap-1">
+              {[0, 1, 2].map((index) => (
+                <Star
                   key={index}
-                  variants={filled ? starItemFilled : starItemDim}
-                  role="listitem"
-                >
-                  <Star
-                    className={`size-[clamp(3rem,14vw,4.25rem)] drop-shadow-md ${
-                      filled
-                        ? "fill-amber-400 text-amber-600"
-                        : "fill-slate-200/80 text-slate-400"
-                    }`}
-                    strokeWidth={filled ? 1.25 : 1.5}
-                    aria-hidden
-                  />
-                </motion.div>
-              );
-            })}
-          </motion.div>
+                  className={
+                    index < earnedStars
+                      ? "size-8 fill-amber-400 text-amber-500"
+                      : "size-8 text-slate-700"
+                  }
+                  strokeWidth={2}
+                  aria-hidden
+                />
+              ))}
+            </div>
+          </div>
+          <div className="mt-1 mb-3 flex items-center justify-center gap-6">
+            <p className="text-3xl font-black">
+              {score} <span className="text-lg text-slate-400">pts</span>
+            </p>
+            {earnedCoins > 0 && (
+              <p className="text-2xl font-black text-amber-400">+{earnedCoins} 💰</p>
+            )}
+          </div>
+
+          <div
+            className="pointer-events-none relative mx-auto mt-2 max-w-[min(100%,22rem)] origin-top scale-[0.75]"
+            aria-hidden
+          >
+            <Grid
+              staticGrid={grid}
+              staticFrozenCellIndices={frozenCellIndices}
+              minimalMode
+            />
+            <EndScreenHeatmapOverlay scores={sessionCellScores} />
+          </div>
 
           {isOptimalYield ? (
             <motion.div
               initial={{ opacity: 0, scale: 0.92, y: 12 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               transition={{ type: "spring", stiffness: 380, damping: 22, delay: 0.35 }}
-              className="mt-6 flex justify-center px-1"
+              className="mt-3 flex justify-center px-1"
             >
-              <div className="relative w-full max-w-md overflow-hidden rounded-2xl border-2 border-amber-400/70 bg-gradient-to-r from-amber-600/95 via-yellow-500/90 to-amber-500/95 px-4 py-3 text-center shadow-[0_0_32px_rgb(251_191_36/0.45)]">
+              <div className="relative w-full max-w-md overflow-hidden rounded-2xl border-2 border-amber-400/70 bg-gradient-to-r from-amber-600/95 via-yellow-500/90 to-amber-500/95 px-3 py-2 text-center shadow-[0_0_32px_rgb(251_191_36/0.45)]">
                 <motion.div
                   className="pointer-events-none absolute inset-0 bg-gradient-to-t from-white/25 to-transparent"
                   animate={{ opacity: [0.35, 0.65, 0.35] }}
@@ -392,20 +387,9 @@ export function EndScreen({ onShareFeedback }: EndScreenProps) {
             </motion.div>
           ) : null}
 
-          {earnedStars > 1 ? (
-            <motion.p
-              className="mt-5 text-center font-mono text-lg font-bold tabular-nums text-amber-200"
-              initial={{ opacity: 0, y: 22 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ type: "spring", stiffness: 420, damping: 24, delay: 0.28 }}
-            >
-              {t.endScreen.coinsEarned(coinsEarnedThisRun)}
-            </motion.p>
-          ) : null}
-
           {earnedStars <= 1 ? (
             <div
-              className="mt-6 flex flex-col items-center gap-1.5 rounded-xl border border-rose-900/50 bg-gradient-to-b from-rose-950/50 to-slate-950/40 px-4 py-3 text-center shadow-inner"
+              className="mt-3 flex flex-col items-center gap-1 rounded-xl border border-rose-900/50 bg-gradient-to-b from-rose-950/50 to-slate-950/40 px-3 py-2 text-center shadow-inner"
               role="status"
             >
               <span className="text-2xl leading-none" aria-hidden>
@@ -431,22 +415,17 @@ export function EndScreen({ onShareFeedback }: EndScreenProps) {
             </div>
           ) : null}
 
-          <p className="mt-8 text-center font-mono text-sm text-pp-text-muted">
-            Score obtenu :{" "}
-            <span className="whitespace-nowrap font-semibold tabular-nums text-pp-text">{score}</span>
-          </p>
-
           {nextUnlocked ? (
-            <p className="mt-3 text-center font-mono text-[10px] text-pp-text-dim">
+            <p className="mt-2 text-center font-mono text-[10px] text-pp-text-dim">
               {t.endScreen.nextStopLevel(nextId)}
             </p>
           ) : (
-            <p className="mt-3 text-center font-mono text-[10px] text-pp-text-dim">
+            <p className="mt-2 text-center font-mono text-[10px] text-pp-text-dim">
               {t.nav.backToMap}
             </p>
           )}
 
-          <p className="mt-6 text-center font-mono text-[10px] leading-relaxed text-pp-text-dim">
+          <p className="mt-2 text-center font-mono text-[10px] leading-relaxed text-pp-text-dim">
             <Link
               href="/map"
               className="text-pp-accent underline-offset-2 hover:underline"
@@ -462,8 +441,8 @@ export function EndScreen({ onShareFeedback }: EndScreenProps) {
           </p>
 
           {earnedStars > 0 && showVictoryExitBar ? (
-            <div className="mt-5 px-1">
-              <p className="mb-2 text-center font-mono text-[10px] text-pp-text-muted">
+            <div className="mt-2 px-1">
+              <p className="mb-1 text-center font-mono text-[10px] text-pp-text-muted">
                 {t.endScreen.backToHqCountdown(AUTO_MAP_REDIRECT_SEC)}
               </p>
               <div className="h-1.5 w-full overflow-hidden rounded-full bg-pp-border">
@@ -484,7 +463,7 @@ export function EndScreen({ onShareFeedback }: EndScreenProps) {
         </div>
 
         <div className={thumbZone}>
-          <div className="flex flex-col gap-3">
+          <div className="flex flex-col gap-2">
             <motion.button
               type="button"
               whileTap={{ scale: 0.92 }}

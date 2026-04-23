@@ -50,6 +50,8 @@ export type CellProps = {
   demolishFlashNonce?: number;
   /** Boss Contrôle fiscal : contribution forcée à 0. */
   fiscalFrozen?: boolean;
+  /** Bilan / heatmap : couleurs uniquement, sans emojis ni gel. */
+  minimalMode?: boolean;
 };
 
 export function Cell({
@@ -58,6 +60,7 @@ export function Cell({
   demolitionTarget,
   demolishFlashNonce = 0,
   fiscalFrozen = false,
+  minimalMode = false,
 }: CellProps) {
   const { building, isPlayable, terrainType } = cell;
 
@@ -68,9 +71,11 @@ export function Cell({
         className={`${baseTileClasses} ${o.className} cursor-not-allowed opacity-95`}
         aria-label={`${o.label} — case ${cell.index + 1}`}
       >
-        <span aria-hidden className="drop-shadow-sm">
-          {o.emoji}
-        </span>
+        {!minimalMode ? (
+          <span aria-hidden className="drop-shadow-sm">
+            {o.emoji}
+          </span>
+        ) : null}
       </div>
     );
   }
@@ -106,7 +111,9 @@ export function Cell({
         } ${hasFlash ? "ring-2 ring-rose-400/75 ring-offset-2 ring-offset-pp-bg" : ""}`}
         aria-label={`Case ${cell.index + 1}, vide`}
       >
-        <span className="text-xs font-mono uppercase tracking-widest text-pp-text-dim">+</span>
+        {!minimalMode ? (
+          <span className="text-xs font-mono uppercase tracking-widest text-pp-text-dim">+</span>
+        ) : null}
       </motion.button>
     );
   }
@@ -114,15 +121,16 @@ export function Cell({
   const theme = getBuildingTheme(building);
   const interactive = Boolean(onClick);
 
-  const freezeOverlay = fiscalFrozen ? (
-    <span
-      className="pointer-events-none absolute right-0.5 top-0.5 flex size-6 items-center justify-center rounded-md border border-sky-400/50 bg-slate-950/80 text-sm shadow-md backdrop-blur-sm"
-      title="Contrôle fiscal — 0 pt"
-      aria-hidden
-    >
-      🧊
-    </span>
-  ) : null;
+  const freezeOverlay =
+    !minimalMode && fiscalFrozen ? (
+      <span
+        className="pointer-events-none absolute right-0.5 top-0.5 flex size-6 items-center justify-center rounded-md border border-sky-400/50 bg-slate-950/80 text-sm shadow-md backdrop-blur-sm"
+        title="Contrôle fiscal — 0 pt"
+        aria-hidden
+      >
+        🧊
+      </span>
+    ) : null;
 
   if (interactive) {
     return (
@@ -139,9 +147,11 @@ export function Cell({
         aria-label={`Démolir ${building} — case ${cell.index + 1}`}
       >
         {freezeOverlay}
-        <span aria-hidden className="drop-shadow-sm">
-          {theme.emoji}
-        </span>
+        {!minimalMode ? (
+          <span aria-hidden className="drop-shadow-sm">
+            {theme.emoji}
+          </span>
+        ) : null}
       </motion.button>
     );
   }
@@ -158,9 +168,11 @@ export function Cell({
       aria-label={`Bâtiment ${building}`}
     >
       {freezeOverlay}
-      <span aria-hidden className="drop-shadow-sm">
-        {theme.emoji}
-      </span>
+      {!minimalMode ? (
+        <span aria-hidden className="drop-shadow-sm">
+          {theme.emoji}
+        </span>
+      ) : null}
     </motion.div>
   );
 }

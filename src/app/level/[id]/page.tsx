@@ -109,7 +109,23 @@ export default function LevelPage() {
       unsubProg();
       unsubEco();
     };
-  }, [id, levelValid, router, lives, t.map.starGateHint]);
+    /**
+     * Ne pas dépendre de `lives` ici : après une fin de partie (≤1★), `consumeLife`
+     * mettrait à jour les vies, relancerait `bump` et `enterLevel` à cause de
+     * `status === "finished"`, ce qui efface le bilan (score / étoiles) encore affiché.
+     */
+  }, [id, levelValid, router, t.map.starGateHint]);
+
+  /** Vies / recharge : à part de l’effet d’hydratation pour ne pas réinitialiser un run `finished`. */
+  useEffect(() => {
+    if (!persistReady || !levelValid) return;
+    useEconomyStore.getState().checkLifeRecharge();
+    if (useEconomyStore.getState().lives <= 0) {
+      setNoEnergyOpen(true);
+    } else {
+      setNoEnergyOpen(false);
+    }
+  }, [persistReady, levelValid, lives]);
 
   useEffect(() => {
     if (!persistReady) return;

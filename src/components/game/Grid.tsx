@@ -6,6 +6,7 @@ import { motion, type Variants } from "framer-motion";
 import { Cell } from "@/src/components/game/Cell";
 import { TutorialOverlay } from "@/src/components/game/TutorialOverlay";
 import { useLevelRunStore } from "@/src/store/useLevelRunStore";
+import type { Cell as CellModel } from "@/src/types/game";
 
 /** Tremblement : fusion méga-industrielle + faille sismique (`gridShakeNonce` côté store). */
 const gridShakeVariants: Variants = {
@@ -18,16 +19,35 @@ const gridShakeVariants: Variants = {
   },
 };
 
-export function Grid() {
-  const grid = useLevelRunStore((s) => s.grid);
+export type GridProps = {
+  /** Grille figée (ex. bilan) — prioritaire sur le store si 16 cases. */
+  staticGrid?: CellModel[] | null;
+  staticFrozenCellIndices?: readonly number[] | null;
+  /** Couleurs de cases sans emojis (ex. bilan + heatmap). */
+  minimalMode?: boolean;
+};
+
+export function Grid({ staticGrid, staticFrozenCellIndices, minimalMode = false }: GridProps = {}) {
+  const storeGrid = useLevelRunStore((s) => s.grid);
+  const grid =
+    Array.isArray(staticGrid) && staticGrid.length === 16 ? staticGrid : storeGrid;
   const status = useLevelRunStore((s) => s.status);
   const activeBooster = useLevelRunStore((s) => s.activeBooster);
   const demolishFlash = useLevelRunStore((s) => s.demolishFlash);
   const placeBuilding = useLevelRunStore((s) => s.placeBuilding);
   const gridShakeNonce = useLevelRunStore((s) => s.gridShakeNonce);
-  const frozenCellIndices = useLevelRunStore((s) => s.frozenCellIndices);
+  const storeFrozen = useLevelRunStore((s) => s.frozenCellIndices);
+  const frozenCellIndices =
+    Array.isArray(staticGrid) &&
+    staticGrid.length === 16 &&
+    Array.isArray(staticFrozenCellIndices)
+      ? staticFrozenCellIndices
+      : storeFrozen;
 
-  const demolitionMode = status === "playing" && activeBooster === "demolition";
+  const demolitionMode =
+    !(Array.isArray(staticGrid) && staticGrid.length === 16) &&
+    status === "playing" &&
+    activeBooster === "demolition";
 
   const frozenSet = useMemo(() => new Set(frozenCellIndices), [frozenCellIndices]);
 
@@ -69,6 +89,7 @@ export function Grid() {
                 demolitionTarget={demolitionMode && cell.building !== null}
                 demolishFlashNonce={flashNonce}
                 fiscalFrozen={frozenSet.has(cell.index)}
+                minimalMode={minimalMode}
               />
             </div>
           );
