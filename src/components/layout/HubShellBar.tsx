@@ -1,6 +1,13 @@
 "use client";
 
-import { cloneElement, isValidElement, type ReactNode, useState } from "react";
+import {
+  cloneElement,
+  isValidElement,
+  type ComponentProps,
+  type ReactElement,
+  type ReactNode,
+  useState,
+} from "react";
 import { motion } from "framer-motion";
 import { Menu } from "lucide-react";
 
@@ -21,10 +28,12 @@ type HubShellBarProps = {
   showLives?: boolean;
 };
 
+type EconomyHeaderProps = ComponentProps<typeof EconomyHeader>;
+
 function injectEconomyHeaderShowLives(rightSlot: ReactNode, showLives: boolean): ReactNode {
   if (!isValidElement(rightSlot) || rightSlot.type !== EconomyHeader) return rightSlot;
-  const prev = rightSlot.props as { showLives?: boolean };
-  return cloneElement(rightSlot, {
+  const prev = rightSlot.props as EconomyHeaderProps;
+  return cloneElement(rightSlot as ReactElement<EconomyHeaderProps>, {
     showLives: prev.showLives ?? showLives,
   });
 }
