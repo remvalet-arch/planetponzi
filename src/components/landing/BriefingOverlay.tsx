@@ -11,7 +11,7 @@ import { useAppStrings } from "@/src/lib/i18n/useAppStrings";
 const tileRows = [
   {
     type: "Habitacle",
-    emoji: "🧑‍🚀",
+    emoji: "🏢",
     Icon: Building2,
     text: "Accueille vos colons : bonus quand il touche de l’eau ou de la verdure.",
     accent: "text-orange-300",
@@ -32,7 +32,7 @@ const tileRows = [
   },
   {
     type: "Mine",
-    emoji: "⬛",
+    emoji: "⛏️",
     Icon: Gem,
     text: "Ressource brute : haut risque / haute récompense selon le placement.",
     accent: "text-violet-300",

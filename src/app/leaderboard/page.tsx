@@ -140,16 +140,16 @@ export default function LeaderboardPage() {
               return (
                 <li
                   key={`${row.player_key}-${row.rank}`}
-                  className={`flex items-center gap-3 rounded-pp-lg px-3 py-3 font-mono text-sm transition-colors ${surface}${ringYou}`}
+                  className={`flex items-start gap-3 rounded-pp-lg px-3 py-3 font-mono text-sm transition-colors sm:items-center ${surface}${ringYou}`}
                 >
                   <span
-                    className={`w-8 shrink-0 text-center text-xs font-bold ${
+                    className={`mt-0.5 w-8 shrink-0 text-center text-xs font-bold sm:mt-0 ${
                       isYou ? "text-amber-200" : pl >= 5 ? "text-cyan-200" : pl >= 3 ? "text-amber-200" : "text-slate-500"
                     }`}
                   >
                     #{row.rank}
                   </span>
-                  <div className="min-w-0 flex-1 overflow-hidden">
+                  <div className="min-w-0 flex-1">
                     <div className={`flex min-w-0 items-center gap-2 font-semibold ${isYou ? "text-amber-50" : "text-slate-100"}`}>
                       {tierEmoji ? (
                         <span className="shrink-0 text-base leading-none" aria-hidden>
@@ -163,21 +163,32 @@ export default function LeaderboardPage() {
                         </span>
                       ) : null}
                     </div>
-                    <p className="whitespace-nowrap text-xs text-slate-400">
-                      {pl > 0 ? (
-                        <>
-                          <span className="font-semibold text-amber-200/90">{t.leaderboard.prestigeShort(pl)}</span>
-                          <span className="text-slate-600"> · </span>
-                        </>
-                      ) : null}
-                      <span className="inline-flex items-center gap-1">
-                        <ContractIcon count={1} size="sm" seal="gold" />
-                        {t.leaderboard.contractsInline(row.total_stars)}
-                      </span>
-                      <span className="text-slate-600"> · </span>
-                      {t.leaderboard.maxScoreLabel}{" "}
-                      {Number(row.max_score ?? 0).toLocaleString()}
-                    </p>
+                    <div className="mt-1.5 flex flex-col gap-1.5 font-mono text-[11px] leading-snug text-slate-400 sm:flex-row sm:flex-wrap sm:items-center sm:gap-x-2 sm:gap-y-0 sm:text-xs">
+                      <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1">
+                        {pl > 0 ? (
+                          <>
+                            <span className="shrink-0 font-semibold text-amber-200/90">
+                              {t.leaderboard.prestigeShort(pl)}
+                            </span>
+                            <span className="hidden text-slate-600 sm:inline" aria-hidden>
+                              ·
+                            </span>
+                          </>
+                        ) : null}
+                        <span className="inline-flex shrink-0 items-center gap-1">
+                          <ContractIcon count={1} size="sm" seal="gold" />
+                          {t.leaderboard.contractsInline(row.total_stars)}
+                        </span>
+                      </div>
+                      <div className="flex min-w-0 flex-wrap items-baseline gap-x-1.5 sm:shrink-0">
+                        <span className="max-w-[min(100%,14rem)] shrink leading-tight sm:max-w-none">
+                          {t.leaderboard.maxScoreLabel}
+                        </span>
+                        <span className="text-base font-bold tabular-nums tracking-tight text-slate-200 sm:text-sm">
+                          {Number(row.max_score ?? 0).toLocaleString()}
+                        </span>
+                      </div>
+                    </div>
                   </div>
                 </li>
               );

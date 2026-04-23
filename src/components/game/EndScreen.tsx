@@ -15,15 +15,14 @@ import { computePassiveModifiers } from "@/src/lib/empire-tower";
 import { hasPendingHubUnlock } from "@/src/lib/ceo-memos";
 import {
   calculateStars,
+  getDisplayedEstimatedMaxScoreForLevel,
   getLevelById,
   getMandateProgressRows,
-  getSolverLevelContext,
   getSpatialMandateFailures,
   LEVELS,
   starsFromScore,
 } from "@/src/lib/levels";
 import { getSessionCellScores } from "@/src/lib/session-scoring";
-import { estimateMaxScore } from "@/src/lib/solver";
 import { useAppStrings } from "@/src/lib/i18n/useAppStrings";
 import { copyShareToClipboard } from "@/src/lib/ui-helpers";
 import { useEconomyStore } from "@/src/store/useEconomyStore";
@@ -235,11 +234,7 @@ export function EndScreen({ onShareFeedback }: EndScreenProps) {
   const levelDef = useMemo(() => (levelId >= 1 ? getLevelById(levelId) : undefined), [levelId]);
   const maxScoreEstimate = useMemo(() => {
     if (!levelDef) return 0;
-    const deck = levelDef.deckChallengeLevel ?? 0;
-    return estimateMaxScore(levelDef.seed, deck, {
-      ...getSolverLevelContext(levelDef),
-      mineScoreBonusPerMine: mineEmpireBonus,
-    });
+    return getDisplayedEstimatedMaxScoreForLevel(levelDef, mineEmpireBonus);
   }, [levelDef, mineEmpireBonus]);
 
   const sessionCellScores = useMemo(() => {

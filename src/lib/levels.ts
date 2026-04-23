@@ -374,22 +374,60 @@ export function getSolverLevelContext(def: LevelDefinition): SolverLevelContext 
  *   (sauf 4 réservé). Saut de difficulté **par paliers d’ids**, pas par planetId seul.
  * - **Secteur (planetId)** : obstacles / chaos / mandats (`winCondition`, sismique niv.100) modulent le
  *   `solverCtx` → **maxScore varie par vague** ; certains secteurs appliquent encore **×1,2** sur les
- *   trois seuils (`isInflationStarSector`). Les planètes ne sont donc pas un simple « re-skin » : elles
- *   déforment la courbe via la géométrie de grille + règles.
+ *   trois seuils (`isInflationStarSector`). Le **plafond estimé** UI (`getDisplayedEstimatedMaxScoreForLevel`)
+ *   applique le même facteur pour rester aligné avec les contrats. Les planètes ne sont donc pas un simple
+ *   « re-skin » : elles déforment la courbe via la géométrie de grille + règles.
  * - **Synthèse** : la courbe globale 1→100 suit l’**enveloppe du solver** sous contraintes de plus en
  *   plus dures ; inspecter `LEVELS.map(l => l.stars)` ou lancer l’audit console en dev (`dev-playtest-tools`).
  */
-function dynamicStarThresholds(
-  cargoSeed: string,
-  deck: DeckChallengeLevel,
-  solverCtx: SolverLevelContext,
-): LevelStarThresholds {
-  const maxScore = estimateMaxScore(cargoSeed, deck, solverCtx);
-  let three = Math.floor(maxScore * 0.95);
-  let two = Math.floor(maxScore * 0.8);
-  const one = Math.max(15, Math.floor(maxScore * 0.65));
+/** Même facteur que `isInflationStarSector` sur les seuils d’étoiles. */
+const STAR_INFLATION_MULT = 1.2 as const;
+
+/** Seuils 1★ / 2★ / 3★ à partir du plafond glouton `greedyMax` (avant inflation secteur). */
+function starThresholdsFromGreedyMax(greedyMax: number): LevelStarThresholds {
+  let three = Math.floor(greedyMax * 0.95);
+  let two = Math.floor(greedyMax * 0.8);
+  const one = Math.max(15, Math.floor(greedyMax * 0.65));
   if (two <= one) two = one + 1;
   if (three <= two) three = two + 1;
+  return { one, two, three };
+}
+
+function applyInflationToStarThresholds(t: LevelStarThresholds): LevelStarThresholds {
+  return {
+    one: Math.ceil(t.one * STAR_INFLATION_MULT),
+    two: Math.ceil(t.two * STAR_INFLATION_MULT),
+    three: Math.ceil(t.three * STAR_INFLATION_MULT),
+  };
+}
+
+/**
+ * Plafond glouton affiché au joueur (mandat / bilan) : inclut ×1,2 si le secteur gonfle les contrats,
+ * pour rester cohérent avec `def.stars` générés dans `generateLevels`.
+ */
+export function getDisplayedEstimatedMaxScoreForLevel(
+  def: LevelDefinition,
+  mineScoreBonusPerMine?: number,
+): number {
+  const greedyMax = estimateMaxScore(def.seed, def.deckChallengeLevel ?? 0, {
+    ...getSolverLevelContext(def),
+    ...(mineScoreBonusPerMine !== undefined ? { mineScoreBonusPerMine } : {}),
+  });
+  if (!isInflationStarSector(def.id)) return greedyMax;
+  return Math.ceil(greedyMax * STAR_INFLATION_MULT);
+}
+
+/** Après inflation éventuelle : borne `three` au plafond affiché et rétablit 1 < 2 < 3. */
+function capThreeStarToDisplayedCeiling(
+  stars: LevelStarThresholds,
+  displayCeiling: number,
+): LevelStarThresholds {
+  let { one, two, three } = stars;
+  three = Math.min(three, displayCeiling);
+  if (three <= two) three = Math.min(displayCeiling, two + 1);
+  if (three <= two) two = Math.max(one + 1, three - 1);
+  if (two <= one) two = one + 1;
+  if (three <= two) three = Math.min(displayCeiling, two + 1);
   return { one, two, three };
 }
 
@@ -465,13 +503,12 @@ export function generateLevels(count: number): LevelDefinition[] {
     }
 
     const solverCtx = buildSolverContext(id, seed, obstacles, seismicRift, winCondition);
-    let stars = dynamicStarThresholds(seed, deckChallengeLevel, solverCtx);
+    const greedyMax = estimateMaxScore(seed, deckChallengeLevel, solverCtx);
+    let stars = starThresholdsFromGreedyMax(greedyMax);
     if (isInflationStarSector(id)) {
-      stars = {
-        one: Math.ceil(stars.one * 1.2),
-        two: Math.ceil(stars.two * 1.2),
-        three: Math.ceil(stars.three * 1.2),
-      };
+      const displayCeiling = Math.ceil(greedyMax * STAR_INFLATION_MULT);
+      stars = applyInflationToStarThresholds(stars);
+      stars = capThreeStarToDisplayedCeiling(stars, displayCeiling);
     }
 
     out.push({

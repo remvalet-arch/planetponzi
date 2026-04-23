@@ -417,6 +417,21 @@ export const strings = {
       shareCopy: (gameUrl: string) =>
         `Je viens de ruiner l'économie sur Planète Ponzi ! Battez ma valorisation : ${gameUrl}`,
     },
+    corruptionRoulette: {
+      solicitBoard: "Solliciter le Board",
+      solicitSubtitle: "Obtenir un plein de vies gratuit via les canaux officiels.",
+      rhAdClose: "Compris. Retour au travail.",
+      rhQuotes: [
+        "Rappel RH : Le sommeil est un vol de temps productif.",
+        "Rappel RH : Le syndicalisme nuit gravement à votre carrière.",
+        "Rappel RH : Votre famille ne vous paie pas, nous si. Respectez la hiérarchie.",
+      ],
+      bribeTitle: "Caisse Noire du Board",
+      bribeBody:
+        "Le Board refuse de diffuser des publicités de bas étage. Pour débloquer des fonds d'urgence, versez un pot-de-vin (soutien au développeur).",
+      bribeAction: "Graisser la patte (Buy Me A Coffee)",
+      bribeDecline: "Mendier des vies (Refuser)",
+    },
     rules: {
       title: "Règles",
       kicker: "Grille & valorisation",
@@ -879,6 +894,21 @@ export const strings = {
       shareTwitter: "Share on X",
       shareCopy: (gameUrl: string) =>
         `I just wrecked the economy on Planète Ponzi! Beat my valuation: ${gameUrl}`,
+    },
+    corruptionRoulette: {
+      solicitBoard: "Lobby the Board",
+      solicitSubtitle: "Get a free full life top-up through official channels.",
+      rhAdClose: "Understood. Back to work.",
+      rhQuotes: [
+        "HR reminder: Sleep is theft of productive time.",
+        "HR reminder: Unionizing is severely detrimental to your career.",
+        "HR reminder: Your family doesn't pay you—we do. Respect the chain of command.",
+      ],
+      bribeTitle: "Board slush fund",
+      bribeBody:
+        "The Board refuses to run low-rent ads. To unlock emergency funds, grease the wheels (support the developer).",
+      bribeAction: "Grease the palm (Buy Me a Coffee)",
+      bribeDecline: "Beg for lives (Decline)",
     },
     rules: {
       title: "Rules",

@@ -20,14 +20,14 @@ function SectionLabel({ id, children }: { id?: string; children: string }) {
 
 const ASSETS: { icon: string; name: string; short: string; detail: string }[] = [
   {
-    icon: "⬛",
+    icon: "⛏️",
     name: "Mine",
     short: "+3 M$",
     detail:
       "Cash pur. La pollution annule le score des Habitacles sur les cases voisines.",
   },
   {
-    icon: "🧑‍🚀",
+    icon: "🏢",
     name: "Habitacle",
     short: "+2 M$",
     detail: "Stable. 0 M$ si une Mine est sur une case adjacente (haut / bas / gauche / droite).",

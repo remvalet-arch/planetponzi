@@ -48,7 +48,7 @@ const VOID_OBSTACLE: BiomeObstacleSkin = {
 const classic: BiomeThemeDefinition = {
   buildings: {
     habitacle: {
-      emoji: "🧑‍🚀",
+      emoji: "🏢",
       color: brick({
         border: "border-orange-200/90",
         from: "from-amber-200",
@@ -81,7 +81,7 @@ const classic: BiomeThemeDefinition = {
       }),
     },
     mine: {
-      emoji: "⬛",
+      emoji: "⛏️",
       color: brick({
         border: "border-violet-200/90",
         from: "from-violet-300",
@@ -131,12 +131,12 @@ const space: BiomeThemeDefinition = {
         "border border-cyan-300/80 bg-gradient-to-b from-cyan-100 to-teal-600 text-teal-950 border-b-[6px] border-b-teal-900 shadow-[0_6px_0_rgba(13,148,136,0.3)]",
     },
     serre: {
-      emoji: "🍀",
+      emoji: "🦠",
       color:
         "border border-emerald-200/80 bg-gradient-to-b from-lime-100 to-emerald-600 text-emerald-950 border-b-[6px] border-b-emerald-900 shadow-[0_6px_0_rgba(5,150,105,0.28)]",
     },
     mine: {
-      emoji: "💎",
+      emoji: "☄️",
       color:
         "border border-violet-200/90 bg-gradient-to-b from-fuchsia-200 to-violet-800 text-violet-50 border-b-[6px] border-b-violet-950 shadow-[0_6px_0_rgba(91,33,182,0.35)]",
     },
@@ -175,17 +175,17 @@ const offshore: BiomeThemeDefinition = {
         "border border-amber-100/90 bg-gradient-to-b from-amber-50 to-teal-600 text-teal-950 border-b-[6px] border-b-teal-900 shadow-[0_6px_0_rgba(15,118,110,0.3)]",
     },
     eau: {
-      emoji: "🐠",
+      emoji: "🌊",
       color:
         "border border-sky-300/90 bg-gradient-to-b from-sky-100 to-blue-600 text-blue-950 border-b-[6px] border-b-blue-900 shadow-[0_6px_0_rgba(29,78,216,0.28)]",
     },
     serre: {
-      emoji: "🪸",
+      emoji: "🌴",
       color:
         "border border-rose-200/80 bg-gradient-to-b from-rose-100 to-pink-600 text-rose-950 border-b-[6px] border-b-rose-900 shadow-[0_6px_0_rgba(190,24,93,0.25)]",
     },
     mine: {
-      emoji: "⚓",
+      emoji: "🛢️",
       color:
         "border border-slate-300/90 bg-gradient-to-b from-slate-200 to-slate-700 text-slate-900 border-b-[6px] border-b-slate-900 shadow-[0_6px_0_rgba(30,41,59,0.35)]",
     },
@@ -219,7 +219,7 @@ const offshore: BiomeThemeDefinition = {
 const desert: BiomeThemeDefinition = {
   buildings: {
     habitacle: {
-      emoji: "🏜️",
+      emoji: "⛺",
       color:
         "border border-orange-200/80 bg-gradient-to-b from-yellow-100 to-orange-700 text-orange-950 border-b-[6px] border-b-orange-900 shadow-[0_6px_0_rgba(194,65,12,0.3)]",
     },
@@ -234,7 +234,7 @@ const desert: BiomeThemeDefinition = {
         "border border-lime-200/70 bg-gradient-to-b from-lime-100 to-green-700 text-green-950 border-b-[6px] border-b-green-900 shadow-[0_6px_0_rgba(21,128,61,0.28)]",
     },
     mine: {
-      emoji: "⛏️",
+      emoji: "🪨",
       color:
         "border border-stone-300/80 bg-gradient-to-b from-stone-200 to-stone-700 text-stone-900 border-b-[6px] border-b-stone-900 shadow-[0_6px_0_rgba(68,64,60,0.35)]",
     },
@@ -268,17 +268,17 @@ const desert: BiomeThemeDefinition = {
 const bubble: BiomeThemeDefinition = {
   buildings: {
     habitacle: {
-      emoji: "🦄",
+      emoji: "🏙️",
       color:
         "border border-fuchsia-200/90 bg-gradient-to-b from-pink-100 to-fuchsia-600 text-fuchsia-950 border-b-[6px] border-b-fuchsia-900 shadow-[0_6px_0_rgba(162,28,175,0.3)]",
     },
     eau: {
-      emoji: "💸",
+      emoji: "🫧",
       color:
         "border border-sky-200/90 bg-gradient-to-b from-sky-100 to-fuchsia-500 text-fuchsia-950 border-b-[6px] border-b-fuchsia-800 shadow-[0_6px_0_rgba(192,38,211,0.25)]",
     },
     serre: {
-      emoji: "🌸",
+      emoji: "🌷",
       color:
         "border border-pink-200/90 bg-gradient-to-b from-pink-50 to-rose-600 text-rose-950 border-b-[6px] border-b-rose-900 shadow-[0_6px_0_rgba(190,24,93,0.28)]",
     },
@@ -317,22 +317,22 @@ const bubble: BiomeThemeDefinition = {
 const fundraise: BiomeThemeDefinition = {
   buildings: {
     habitacle: {
-      emoji: "🏢",
+      emoji: "🏦",
       color:
         "border border-emerald-200/80 bg-gradient-to-b from-emerald-100 to-emerald-700 text-emerald-950 border-b-[6px] border-b-emerald-900 shadow-[0_6px_0_rgba(4,120,87,0.3)]",
     },
     eau: {
-      emoji: "💼",
+      emoji: "🥂",
       color:
         "border border-teal-200/80 bg-gradient-to-b from-teal-50 to-teal-600 text-teal-950 border-b-[6px] border-b-teal-900 shadow-[0_6px_0_rgba(15,118,110,0.28)]",
     },
     serre: {
-      emoji: "📊",
+      emoji: "🍇",
       color:
         "border border-lime-200/80 bg-gradient-to-b from-lime-50 to-lime-600 text-lime-950 border-b-[6px] border-b-lime-800 shadow-[0_6px_0_rgba(63,98,18,0.28)]",
     },
     mine: {
-      emoji: "🏦",
+      emoji: "💼",
       color:
         "border border-slate-300/90 bg-gradient-to-b from-slate-100 to-slate-700 text-slate-900 border-b-[6px] border-b-slate-900 shadow-[0_6px_0_rgba(51,65,85,0.35)]",
     },
@@ -371,17 +371,17 @@ const structured: BiomeThemeDefinition = {
         "border border-stone-300/90 bg-gradient-to-b from-stone-100 to-stone-600 text-stone-900 border-b-[6px] border-b-stone-800 shadow-[0_6px_0_rgba(68,64,60,0.35)]",
     },
     eau: {
-      emoji: "🔩",
+      emoji: "🧊",
       color:
         "border border-slate-300/90 bg-gradient-to-b from-slate-100 to-slate-600 text-slate-900 border-b-[6px] border-b-slate-800 shadow-[0_6px_0_rgba(51,65,85,0.3)]",
     },
     serre: {
-      emoji: "📐",
+      emoji: "🌾",
       color:
         "border border-zinc-300/80 bg-gradient-to-b from-zinc-100 to-zinc-600 text-zinc-900 border-b-[6px] border-b-zinc-800 shadow-[0_6px_0_rgba(63,63,70,0.28)]",
     },
     mine: {
-      emoji: "🏗️",
+      emoji: "🚜",
       color:
         "border border-orange-300/80 bg-gradient-to-b from-orange-100 to-orange-700 text-orange-950 border-b-[6px] border-b-orange-900 shadow-[0_6px_0_rgba(194,65,12,0.3)]",
     },
@@ -415,22 +415,22 @@ const structured: BiomeThemeDefinition = {
 const leverage: BiomeThemeDefinition = {
   buildings: {
     habitacle: {
-      emoji: "⚖️",
+      emoji: "🏛️",
       color:
         "border border-slate-200/90 bg-gradient-to-b from-slate-100 to-slate-700 text-slate-900 border-b-[6px] border-b-slate-900 shadow-[0_6px_0_rgba(30,41,59,0.35)]",
     },
     eau: {
-      emoji: "💧",
+      emoji: "☕",
       color:
         "border border-blue-200/90 bg-gradient-to-b from-blue-100 to-blue-700 text-blue-950 border-b-[6px] border-b-blue-900 shadow-[0_6px_0_rgba(29,78,216,0.28)]",
     },
     serre: {
-      emoji: "📎",
+      emoji: "🍋",
       color:
         "border border-cyan-200/80 bg-gradient-to-b from-cyan-50 to-cyan-600 text-cyan-950 border-b-[6px] border-b-cyan-800 shadow-[0_6px_0_rgba(14,116,144,0.28)]",
     },
     mine: {
-      emoji: "⚙️",
+      emoji: "🧲",
       color:
         "border border-indigo-200/90 bg-gradient-to-b from-indigo-100 to-indigo-800 text-indigo-50 border-b-[6px] border-b-indigo-950 shadow-[0_6px_0_rgba(55,48,163,0.35)]",
     },
@@ -464,22 +464,22 @@ const leverage: BiomeThemeDefinition = {
 const greyMarket: BiomeThemeDefinition = {
   buildings: {
     habitacle: {
-      emoji: "🕵️",
+      emoji: "🏚️",
       color:
         "border border-red-200/80 bg-gradient-to-b from-red-100 to-red-700 text-red-950 border-b-[6px] border-b-red-900 shadow-[0_6px_0_rgba(185,28,28,0.3)]",
     },
     eau: {
-      emoji: "🩸",
+      emoji: "🛢️",
       color:
         "border border-rose-200/80 bg-gradient-to-b from-rose-100 to-rose-700 text-rose-950 border-b-[6px] border-b-rose-900 shadow-[0_6px_0_rgba(190,18,60,0.28)]",
     },
     serre: {
-      emoji: "🌹",
+      emoji: "🍄",
       color:
         "border border-orange-200/80 bg-gradient-to-b from-orange-100 to-red-600 text-red-950 border-b-[6px] border-b-red-900 shadow-[0_6px_0_rgba(153,27,27,0.28)]",
     },
     mine: {
-      emoji: "💣",
+      emoji: "📦",
       color:
         "border border-stone-400/90 bg-gradient-to-b from-stone-200 to-stone-800 text-stone-100 border-b-[6px] border-b-stone-950 shadow-[0_6px_0_rgba(28,25,23,0.4)]",
     },
@@ -513,22 +513,22 @@ const greyMarket: BiomeThemeDefinition = {
 const voidExit: BiomeThemeDefinition = {
   buildings: {
     habitacle: {
-      emoji: "🌌",
+      emoji: "🛸",
       color:
         "border border-violet-300/80 bg-gradient-to-b from-violet-200 to-violet-900 text-violet-50 border-b-[6px] border-b-violet-950 shadow-[0_6px_0_rgba(91,33,182,0.4)]",
     },
     eau: {
-      emoji: "✨",
+      emoji: "🌪️",
       color:
         "border border-indigo-200/80 bg-gradient-to-b from-indigo-100 to-purple-800 text-indigo-50 border-b-[6px] border-b-purple-950 shadow-[0_6px_0_rgba(88,28,135,0.35)]",
     },
     serre: {
-      emoji: "🔮",
+      emoji: "🥀",
       color:
         "border border-fuchsia-200/80 bg-gradient-to-b from-fuchsia-100 to-purple-700 text-fuchsia-50 border-b-[6px] border-b-purple-900 shadow-[0_6px_0_rgba(126,34,206,0.3)]",
     },
     mine: {
-      emoji: "🕳️",
+      emoji: "💎",
       color:
         "border border-zinc-400/90 bg-gradient-to-b from-zinc-300 to-black text-zinc-100 border-b-[6px] border-b-black shadow-[0_6px_0_rgba(0,0,0,0.5)]",
     },

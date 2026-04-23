@@ -10,8 +10,7 @@ import { markRulesFirstVisitDone } from "@/src/components/ui/RulesModal";
 import { useAppStrings } from "@/src/lib/i18n/useAppStrings";
 import { computePassiveModifiers } from "@/src/lib/empire-tower";
 import { isFiscalBossLevel } from "@/src/lib/level-run-engine";
-import { getLevelById, getSolverLevelContext } from "@/src/lib/levels";
-import { estimateMaxScore } from "@/src/lib/solver";
+import { getDisplayedEstimatedMaxScoreForLevel, getLevelById } from "@/src/lib/levels";
 import { markTutorialCompleted } from "@/src/lib/onboarding-flags";
 import { useEmpireStore } from "@/src/store/useEmpireStore";
 import { useLevelRunStore } from "@/src/store/useLevelRunStore";
@@ -42,10 +41,7 @@ export function GameEntryFlow({ open }: GameEntryFlowProps) {
 
   const maxEstimated = useMemo(() => {
     if (!def) return null;
-    return estimateMaxScore(def.seed, def.deckChallengeLevel ?? 0, {
-      ...getSolverLevelContext(def),
-      mineScoreBonusPerMine: mineEmpireBonus,
-    });
+    return getDisplayedEstimatedMaxScoreForLevel(def, mineEmpireBonus);
   }, [def, mineEmpireBonus]);
 
   const specialDirectives = useMemo(() => {

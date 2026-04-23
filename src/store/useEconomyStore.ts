@@ -78,6 +78,10 @@ export type EconomyStore = {
    * @returns Pièces ajoutées (0 si rien à créditer).
    */
   applyOfflinePassiveIncome: (ratePerMinute: number) => number;
+
+  /** Nombre de passages « Solliciter le Board » (roulette corruption / fausse pub). */
+  adWatchCount: number;
+  incrementAdWatchCount: () => void;
 };
 
 export const useEconomyStore = create<EconomyStore>()(
@@ -89,6 +93,12 @@ export const useEconomyStore = create<EconomyStore>()(
       lastBonusDate: null,
       lastTickTimestamp: null,
       passiveIncomePop: null,
+      adWatchCount: 0,
+
+      incrementAdWatchCount: () =>
+        set((s) => ({
+          adWatchCount: (typeof s.adWatchCount === "number" && Number.isFinite(s.adWatchCount) ? s.adWatchCount : 0) + 1,
+        })),
 
       clearPassiveIncomePop: () => set({ passiveIncomePop: null }),
 
@@ -227,7 +237,7 @@ export const useEconomyStore = create<EconomyStore>()(
     }),
     {
       name: STORAGE_KEY,
-      version: 4,
+      version: 5,
       storage: persistLocalStorage,
       partialize: (state) => ({
         coins: state.coins,
@@ -235,6 +245,7 @@ export const useEconomyStore = create<EconomyStore>()(
         lastLifeRechargeTime: state.lastLifeRechargeTime,
         lastBonusDate: state.lastBonusDate,
         lastTickTimestamp: state.lastTickTimestamp,
+        adWatchCount: state.adWatchCount,
       }),
       migrate: (persisted, fromVersion) => {
         const base = (persisted ?? {}) as Record<string, unknown>;
@@ -250,6 +261,10 @@ export const useEconomyStore = create<EconomyStore>()(
           typeof base.lastTickTimestamp === "number" && Number.isFinite(base.lastTickTimestamp)
             ? base.lastTickTimestamp
             : null;
+        const migratedAdWatch =
+          typeof base.adWatchCount === "number" && Number.isFinite(base.adWatchCount)
+            ? Math.max(0, Math.floor(base.adWatchCount))
+            : 0;
         return {
           coins: normalizeCoins(base.coins),
           lives,
@@ -259,6 +274,7 @@ export const useEconomyStore = create<EconomyStore>()(
               : null,
           lastBonusDate,
           lastTickTimestamp,
+          adWatchCount: fromVersion < 5 ? 0 : migratedAdWatch,
         };
       },
       onRehydrateStorage: () => (_finished, error) => {

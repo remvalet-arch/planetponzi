@@ -2,7 +2,10 @@
 
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { motion } from "framer-motion";
 
+import { BribeDeveloperModal } from "@/src/components/game/BribeDeveloperModal";
+import { MockCorporateAdModal } from "@/src/components/game/MockCorporateAdModal";
 import { BottomSheetShell } from "@/src/components/ui/BottomSheetShell";
 import { WEB_SHARE_TITLE } from "@/src/lib/share-branding";
 import { useAppStrings } from "@/src/lib/i18n/useAppStrings";
@@ -41,10 +44,20 @@ export function NoEnergyModal({ open, onClose }: NoEnergyModalProps) {
   const { t } = useAppStrings();
   const addLives = useEconomyStore((s) => s.addLives);
   const [usedToday, setUsedToday] = useState(() => hasClaimedShareLifeToday());
+  const [mockAdOpen, setMockAdOpen] = useState(false);
+  const [bribeOpen, setBribeOpen] = useState(false);
+  const [mockQuoteIndex, setMockQuoteIndex] = useState(0);
 
   useEffect(() => {
     if (!open) return;
     queueMicrotask(() => setUsedToday(hasClaimedShareLifeToday()));
+  }, [open]);
+
+  useEffect(() => {
+    if (!open) {
+      setMockAdOpen(false);
+      setBribeOpen(false);
+    }
   }, [open]);
 
   const gameUrl = useMemo(() => {
@@ -97,6 +110,27 @@ export function NoEnergyModal({ open, onClose }: NoEnergyModalProps) {
     grantAndClose();
   }, [grantAndClose, openTwitterIntent, usedToday]);
 
+  const handleRouletteSettled = useCallback(() => {
+    useEconomyStore.getState().refillLives();
+    useEconomyStore.getState().incrementAdWatchCount();
+    setMockAdOpen(false);
+    setBribeOpen(false);
+    onClose();
+  }, [onClose]);
+
+  const handleSolicitBoard = useCallback(() => {
+    const c = useEconomyStore.getState().adWatchCount;
+    const quotes = t.corruptionRoulette.rhQuotes;
+    if ((c + 1) % 5 === 0) {
+      setBribeOpen(true);
+      return;
+    }
+    setMockQuoteIndex(Math.floor(Math.random() * quotes.length));
+    setMockAdOpen(true);
+  }, [t]);
+
+  const mockQuote = t.corruptionRoulette.rhQuotes[mockQuoteIndex] ?? t.corruptionRoulette.rhQuotes[0];
+
   const footer = (
     <div className="pp-modal-footer flex flex-col gap-2 border-rose-500/20 bg-slate-950/95">
       <Link
@@ -106,6 +140,18 @@ export function NoEnergyModal({ open, onClose }: NoEnergyModalProps) {
       >
         {t.nav.shop}
       </Link>
+      <div className="flex flex-col gap-1.5 rounded-2xl border border-white/10 bg-slate-900/40 p-3 ring-1 ring-white/5 backdrop-blur-md">
+        <p className="text-center font-sans text-[11px] leading-snug text-slate-400">{t.corruptionRoulette.solicitSubtitle}</p>
+        <motion.button
+          type="button"
+          whileTap={{ scale: 0.97 }}
+          onClick={handleSolicitBoard}
+          className="pp-tap-bounce relative flex min-h-12 w-full flex-col items-center justify-center overflow-hidden rounded-xl border border-rose-500/35 bg-gradient-to-r from-rose-700/95 via-violet-800/95 to-amber-700/90 px-4 py-2.5 font-sans text-sm font-bold tracking-tight text-white shadow-[0_0_28px_rgb(244_63_94/0.25)] transition-[filter] hover:brightness-110 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-rose-300/50"
+        >
+          <span className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/25 to-transparent" />
+          <span className="relative">{t.corruptionRoulette.solicitBoard}</span>
+        </motion.button>
+      </div>
       <button
         type="button"
         disabled={usedToday}
@@ -152,6 +198,20 @@ export function NoEnergyModal({ open, onClose }: NoEnergyModalProps) {
           ) : null}
         </div>
       </div>
+      <MockCorporateAdModal
+        open={mockAdOpen}
+        quote={mockQuote}
+        closeLabel={t.corruptionRoulette.rhAdClose}
+        onSettled={handleRouletteSettled}
+      />
+      <BribeDeveloperModal
+        open={bribeOpen}
+        title={t.corruptionRoulette.bribeTitle}
+        body={t.corruptionRoulette.bribeBody}
+        bribeLabel={t.corruptionRoulette.bribeAction}
+        declineLabel={t.corruptionRoulette.bribeDecline}
+        onSettled={handleRouletteSettled}
+      />
     </BottomSheetShell>
   );
 }
