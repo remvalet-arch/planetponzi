@@ -238,6 +238,7 @@ export const strings = {
       coinsLabel: "Vos Ponzi Coins :",
       coinsUnit: "pièces",
       priceCoins: (n: number) => `${n} pièces`,
+      buy: "Acheter",
       comingSoon: "Bientôt",
       comingSoonEllipsis: "…",
       sectionBlackMarket: "Marché Noir (Boosters)",
