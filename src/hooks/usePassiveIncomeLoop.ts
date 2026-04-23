@@ -12,7 +12,8 @@ const MINUTE_MS = 60_000;
  * Attend la réhydratation economy + empire avant d’armer l’intervalle.
  */
 export function usePassiveIncomeLoop() {
-  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  /** DOM `window.setInterval` → `number` ; évite le conflit avec `NodeJS.Timeout` côté `@types/node`. */
+  const intervalRef = useRef<ReturnType<typeof window.setInterval> | null>(null);
 
   useEffect(() => {
     const clearTick = () => {
