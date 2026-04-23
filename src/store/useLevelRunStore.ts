@@ -241,7 +241,7 @@ function mergePersistedState(persisted: unknown, current: LevelRunStore): LevelR
       )
     : [];
 
-  const baseScore = calculateSessionGridScore(grid, frozenCellIndices);
+  const baseScore = calculateSessionGridScore(grid, frozenCellIndices, undefined, levelId);
   const rawScore = Math.round(baseScore * getDeckScoreMultiplier(deckChallengeLevel));
   const score = scoreWithPrestige(rawScore);
 
@@ -348,7 +348,7 @@ export const useLevelRunStore = create<LevelRunStore>()(
         const s = get();
         if (s.status !== "ready") return;
         if (s.deckChallengeLockedSeed === s.seed) return;
-        const base = calculateSessionGridScore(s.grid, s.frozenCellIndices);
+        const base = calculateSessionGridScore(s.grid, s.frozenCellIndices, undefined, s.levelId);
         const raw = Math.round(base * getDeckScoreMultiplier(s.deckChallengeLevel));
         set({
           deckChallengeLockedSeed: s.seed,
@@ -444,6 +444,7 @@ export const useLevelRunStore = create<LevelRunStore>()(
             state.frozenCellIndices,
             mult,
             mineScoreBonusPerMine,
+            state.levelId,
           );
           const nextScore = scoreWithPrestige(rawScore);
           const nonce = state.demolishNonce + 1;
@@ -496,6 +497,7 @@ export const useLevelRunStore = create<LevelRunStore>()(
           triggerOut.nextFrozenCellIndices,
           mult,
           mineScoreBonusPerMine,
+          state.levelId,
         );
         const nextScore = scoreWithPrestige(rawScore);
         const spyRem =

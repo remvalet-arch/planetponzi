@@ -3,6 +3,7 @@
 import { BottomSheetShell } from "@/src/components/ui/BottomSheetShell";
 import { BLACK_MARKET_TILE_COST } from "@/src/lib/black-market";
 import { playErrorBuzzer } from "@/src/lib/game-sounds";
+import { getLevelById } from "@/src/lib/levels";
 import { getBuildingTheme } from "@/src/lib/ui-helpers";
 import type { BuildingType } from "@/src/types/game";
 import { useEconomyStore } from "@/src/store/useEconomyStore";
@@ -28,7 +29,9 @@ type BlackMarketModalProps = {
 
 export function BlackMarketModal({ open, onClose, copy, onToast }: BlackMarketModalProps) {
   const coins = useEconomyStore((s) => s.coins);
+  const levelId = useLevelRunStore((s) => s.levelId);
   const purchaseBlackMarketTile = useLevelRunStore((s) => s.purchaseBlackMarketTile);
+  const planetId = levelId >= 1 ? (getLevelById(levelId)?.planetId ?? 0) : 0;
 
   const handlePick = (t: BuildingType) => {
     if (useEconomyStore.getState().coins < BLACK_MARKET_TILE_COST) {
@@ -89,19 +92,19 @@ export function BlackMarketModal({ open, onClose, copy, onToast }: BlackMarketMo
       </div>
 
       <div className="pp-modal-scroll grid grid-cols-2 gap-2.5 sm:grid-cols-4">
-        {ALL_TYPES.map((t) => {
-          const th = getBuildingTheme(t);
+        {ALL_TYPES.map((bt) => {
+          const th = getBuildingTheme(bt, planetId);
           return (
             <button
-              key={t}
+              key={bt}
               type="button"
-              onClick={() => handlePick(t)}
+              onClick={() => handlePick(bt)}
               className="flex w-full flex-col items-center gap-1.5 rounded-xl border border-white/10 bg-white/5 p-3 text-center transition hover:border-emerald-400/45 hover:bg-emerald-500/10"
             >
               <span className={`flex size-12 items-center justify-center rounded-lg text-2xl ${th.color}`}>
                 <span aria-hidden>{th.emoji}</span>
               </span>
-              <span className="font-mono text-[10px] uppercase tracking-wider text-slate-400">{t}</span>
+              <span className="font-mono text-[10px] uppercase tracking-wider text-slate-400">{bt}</span>
               <span className="whitespace-normal break-words text-center text-[11px] font-semibold leading-tight text-emerald-300/95">
                 {copy.buy}
               </span>

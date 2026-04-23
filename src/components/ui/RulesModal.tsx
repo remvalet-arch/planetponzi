@@ -5,6 +5,7 @@ import { X } from "lucide-react";
 
 import { BottomSheetShell } from "@/src/components/ui/BottomSheetShell";
 import { RulesSummaryBody } from "@/src/components/ui/RulesSummaryBody";
+import { useAppStrings } from "@/src/lib/i18n/useAppStrings";
 
 const FIRST_VISIT_KEY = "planet-ponzi-first-visit";
 
@@ -24,6 +25,8 @@ type RulesModalProps = {
 };
 
 export function RulesModal({ open, onClose }: RulesModalProps) {
+  const { t } = useAppStrings();
+
   useEffect(() => {
     if (!open) return;
     const onKey = (e: KeyboardEvent) => {
@@ -42,15 +45,15 @@ export function RulesModal({ open, onClose }: RulesModalProps) {
     >
       <div className="pp-modal-header">
         <div className="min-w-0">
-          <p className="pp-kicker">Règles</p>
+          <p className="pp-kicker">{t.rules.title}</p>
           <h2
             id="rules-modal-title"
             className="mt-1 font-mono text-base font-bold tracking-tight text-white"
           >
-            Grille & score
+            {t.rules.kicker}
           </h2>
         </div>
-        <button type="button" onClick={onClose} className="pp-btn-icon" aria-label="Fermer">
+        <button type="button" onClick={onClose} className="pp-btn-icon" aria-label={t.rules.modalCloseAria}>
           <X className="size-5" strokeWidth={2} />
         </button>
       </div>

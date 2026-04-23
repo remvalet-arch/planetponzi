@@ -5,6 +5,9 @@ import { motion, type Variants } from "framer-motion";
 
 import { Cell } from "@/src/components/game/Cell";
 import { TutorialOverlay } from "@/src/components/game/TutorialOverlay";
+import { getBiomeTheme } from "@/src/lib/game/biomes";
+import { getLevelById } from "@/src/lib/levels";
+import { useAppStrings } from "@/src/lib/i18n/useAppStrings";
 import { useLevelRunStore } from "@/src/store/useLevelRunStore";
 import type { Cell as CellModel } from "@/src/types/game";
 
@@ -20,6 +23,8 @@ const gridShakeVariants: Variants = {
 };
 
 export type GridProps = {
+  /** Secteur (0–9). Si omis, dérivé du niveau courant dans le store. */
+  planetId?: number;
   /** Grille figée (ex. bilan) — prioritaire sur le store si 16 cases. */
   staticGrid?: CellModel[] | null;
   staticFrozenCellIndices?: readonly number[] | null;
@@ -27,11 +32,18 @@ export type GridProps = {
   minimalMode?: boolean;
 };
 
-export function Grid({ staticGrid, staticFrozenCellIndices, minimalMode = false }: GridProps = {}) {
+export function Grid({
+  planetId: planetIdProp,
+  staticGrid,
+  staticFrozenCellIndices,
+  minimalMode = false,
+}: GridProps = {}) {
+  const { t } = useAppStrings();
   const storeGrid = useLevelRunStore((s) => s.grid);
   const grid =
     Array.isArray(staticGrid) && staticGrid.length === 16 ? staticGrid : storeGrid;
   const status = useLevelRunStore((s) => s.status);
+  const levelId = useLevelRunStore((s) => s.levelId);
   const activeBooster = useLevelRunStore((s) => s.activeBooster);
   const demolishFlash = useLevelRunStore((s) => s.demolishFlash);
   const placeBuilding = useLevelRunStore((s) => s.placeBuilding);
@@ -44,12 +56,22 @@ export function Grid({ staticGrid, staticFrozenCellIndices, minimalMode = false 
       ? staticFrozenCellIndices
       : storeFrozen;
 
+  const planetId = useMemo(() => {
+    if (planetIdProp != null) return planetIdProp;
+    const def = levelId >= 1 ? getLevelById(levelId) : undefined;
+    return def?.planetId ?? 0;
+  }, [planetIdProp, levelId]);
+
+  const biome = useMemo(() => getBiomeTheme(planetId), [planetId]);
+
   const demolitionMode =
     !(Array.isArray(staticGrid) && staticGrid.length === 16) &&
     status === "playing" &&
     activeBooster === "demolition";
 
   const frozenSet = useMemo(() => new Set(frozenCellIndices), [frozenCellIndices]);
+
+  const gridAria = demolitionMode ? t.grid.ariaGridDemolition : t.grid.ariaGrid;
 
   return (
     <div
@@ -59,14 +81,14 @@ export function Grid({ staticGrid, staticFrozenCellIndices, minimalMode = false 
           : ""
       }`}
       role="grid"
-      aria-label={demolitionMode ? "Grille — mode démolition" : "Grille de placement 4 par 4"}
+      aria-label={gridAria}
     >
       <motion.div
         key={gridShakeNonce}
         variants={gridShakeVariants}
         initial={gridShakeNonce > 0 ? "shake" : false}
         animate={gridShakeNonce > 0 ? "shake" : "idle"}
-        className="relative grid min-h-0 min-w-0 flex-1 grid-cols-4 grid-rows-4 gap-1.5 sm:gap-2"
+        className={`relative grid min-h-0 min-w-0 flex-1 grid-cols-4 grid-rows-4 gap-1.5 sm:gap-2 ${biome.gridBackground}`}
       >
         {grid.map((cell) => {
           const canPlace =
@@ -85,6 +107,7 @@ export function Grid({ staticGrid, staticFrozenCellIndices, minimalMode = false 
             <div key={cell.index} role="gridcell" className="min-w-0">
               <Cell
                 cell={cell}
+                planetId={planetId}
                 onClick={onClick}
                 demolitionTarget={demolitionMode && cell.building !== null}
                 demolishFlashNonce={flashNonce}

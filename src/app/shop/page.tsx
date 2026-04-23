@@ -167,6 +167,7 @@ export default function ShopPage() {
                   title={meta.title}
                   description={meta.description}
                   price={meta.price}
+                  priceLabel={t.shop.priceCoins(meta.price)}
                   icon={p.icon}
                   buyLabel={t.shop.buy}
                   onBuy={meta.onBuy}
@@ -193,6 +194,7 @@ export default function ShopPage() {
               isComingSoon
               omitPrice
               soonLabel={t.shop.comingSoon}
+              soonEllipsis={t.shop.comingSoonEllipsis}
             />
             <ShopProductCard
               title={t.shop.teaserThemeTitle}
@@ -206,6 +208,7 @@ export default function ShopPage() {
               isComingSoon
               omitPrice
               soonLabel={t.shop.comingSoon}
+              soonEllipsis={t.shop.comingSoonEllipsis}
             />
           </div>
         </section>
@@ -225,6 +228,7 @@ export default function ShopPage() {
               isComingSoon
               omitPrice
               soonLabel={t.shop.comingSoon}
+              soonEllipsis={t.shop.comingSoonEllipsis}
             />
           </div>
         </section>

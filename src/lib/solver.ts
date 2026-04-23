@@ -57,8 +57,11 @@ function sessionRoiScore(
   mult: number,
   frozenCellIndices: readonly number[],
   mineScoreBonusPerMine: number,
+  levelId: number,
 ): number {
-  return Math.round(calculateSessionGridScore(grid, frozenCellIndices, mineScoreBonusPerMine) * mult);
+  return Math.round(
+    calculateSessionGridScore(grid, frozenCellIndices, mineScoreBonusPerMine, levelId) * mult,
+  );
 }
 
 function hasIsolatedRuleFor(wc: WinCondition | undefined, building: BuildingType): boolean {
@@ -138,7 +141,7 @@ function greedyPlaythrough(
     for (const idx of playCandidates) {
       const trial = cloneGrid(grid);
       trial[idx] = { ...trial[idx]!, building };
-      const base = sessionRoiScore(trial, mult, frozenArr(), mineBonus);
+      const base = sessionRoiScore(trial, mult, frozenArr(), mineBonus, levelId);
       const h = alignedPlacementHeuristic(trial, building, wc);
       const s = base + h + tieNoise(idx) * 0.001;
       if (s > best) {
@@ -155,7 +158,7 @@ function greedyPlaythrough(
       newTurn <= placementCount &&
       newTurn % 4 === 0
     ) {
-      const pick = pickFiscalFreezeTarget(grid, frozenArr(), mineBonus);
+      const pick = pickFiscalFreezeTarget(grid, frozenArr(), mineBonus, levelId);
       if (pick != null && !frozen.has(pick)) {
         frozen.add(pick);
       }
@@ -170,7 +173,7 @@ function greedyPlaythrough(
     }
   }
 
-  let score = sessionRoiScore(grid, mult, Array.from(frozen), mineBonus);
+  let score = sessionRoiScore(grid, mult, Array.from(frozen), mineBonus, levelId);
   if (!alignedSpatialSatisfied(grid, wc)) {
     score = Math.floor(score * 0.8);
   }

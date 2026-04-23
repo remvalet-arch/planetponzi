@@ -51,7 +51,7 @@ export function GameEntryFlow({ open }: GameEntryFlowProps) {
     if (!def) return [];
     const lines: string[] = [];
     const wc = def.winCondition;
-    const b = t.mandate.buildings;
+    const b = t.biomes[def.planetId];
     if (wc) {
       if (typeof wc.minHabitacle === "number") {
         lines.push(t.entryFlow.directiveMandateMin({ count: wc.minHabitacle, label: b.habitacle }));

@@ -1,5 +1,5 @@
 /** Paliers narration CEO sur la carte (nouveau secteur / acte). */
-export const CEO_STORY_MILESTONES = [1, 21, 41, 61, 81] as const;
+export const CEO_STORY_MILESTONES = [1, 11, 21, 41, 61, 81] as const;
 
 export type CeoStoryMilestone = (typeof CEO_STORY_MILESTONES)[number];
 
@@ -37,12 +37,20 @@ export function markCeoMemoSeen(levelId: number): void {
   }
 }
 
-/** Premier palier atteint (niveau débloqué ≥ palier) pas encore lu. */
+/**
+ * Premier palier atteint (niveau débloqué ≥ palier) pas encore lu.
+ * — Le mémo #1 (Acte I) n’est plus proposé si le joueur a déjà dépassé le secteur 1 (max > 10),
+ *   pour éviter d’afficher la Ceinture des Startups après la Nébuleuse.
+ * — Le mémo #11 correspond à l’entrée en secteur 2 (niveaux 11–20).
+ */
 export function getPendingCeoStoryMilestone(unlockedLevels: readonly number[]): number | null {
   const seen = readSeenCeoMemos();
   const maxU = unlockedLevels.length ? Math.max(...unlockedLevels) : 1;
   for (const m of CEO_STORY_MILESTONES) {
     if (m > maxU) break;
+    if (m === 1 && maxU > 10 && !seen.has(1)) {
+      continue;
+    }
     if (!seen.has(m)) return m;
   }
   return null;

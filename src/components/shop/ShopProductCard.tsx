@@ -42,6 +42,8 @@ export type ShopProductCardProps = {
   title: string;
   description: string;
   price: number;
+  /** Ligne prix i18n (ex. t.shop.priceCoins(price)). */
+  priceLabel?: string;
   icon: ReactNode;
   buyLabel: string;
   onBuy: () => void;
@@ -53,12 +55,15 @@ export type ShopProductCardProps = {
   omitPrice?: boolean;
   /** Libellé bouton teaser (ex. t.shop.comingSoon). */
   soonLabel?: string;
+  /** Si `soonLabel` absent en teaser (ex. t.shop.comingSoonEllipsis). */
+  soonEllipsis?: string;
 };
 
 export function ShopProductCard({
   title,
   description,
   price,
+  priceLabel,
   icon,
   buyLabel,
   onBuy,
@@ -67,6 +72,7 @@ export function ShopProductCard({
   isComingSoon = false,
   omitPrice = false,
   soonLabel,
+  soonEllipsis,
 }: ShopProductCardProps) {
   const a = accentMap[accent];
   const cardClass = isComingSoon ? comingSoonCard : a.card;
@@ -90,7 +96,9 @@ export function ShopProductCard({
           <h2 className="font-mono text-sm font-bold tracking-tight text-slate-100">{title}</h2>
           <p className="mt-1 font-mono text-xs leading-relaxed text-slate-400">{description}</p>
           {!omitPrice ? (
-            <p className="mt-2 font-mono text-xs font-semibold text-amber-400">{price} coins</p>
+            <p className="mt-2 font-mono text-xs font-semibold text-amber-400">
+              {priceLabel ?? String(price)}
+            </p>
           ) : null}
         </div>
       </div>
@@ -105,7 +113,7 @@ export function ShopProductCard({
             : `mt-4 flex w-full min-h-11 items-center justify-center rounded-pp-lg border px-3 font-mono text-xs font-bold uppercase tracking-wide transition-[filter,opacity] hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-45 ${a.button}`
         }
       >
-        {isComingSoon ? (soonLabel ?? "…") : buyLabel}
+        {isComingSoon ? (soonLabel ?? soonEllipsis ?? "…") : buyLabel}
       </motion.button>
     </article>
   );

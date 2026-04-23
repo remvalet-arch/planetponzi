@@ -49,6 +49,7 @@ export function normalizePersistedCell(raw: unknown, index: number): Cell {
     o?.terrainType === "lake" ||
     o?.terrainType === "mountain" ||
     o?.terrainType === "toxic" ||
+    o?.terrainType === "void" ||
     o?.terrainType === "normal"
       ? o.terrainType
       : "normal";

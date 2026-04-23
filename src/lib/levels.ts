@@ -1,5 +1,11 @@
 import { hasMinAligned, isIsolatedForBuilding, maxAlignedRunLength } from "@/src/lib/grid-topology";
 import { getPlacementLengthFromObstacles } from "@/src/lib/grid-terrain";
+import { fnv1a32 } from "@/src/lib/rng";
+import {
+  chaosGameplayForLevel,
+  isInflationStarSector,
+  isSiliconMineQuotaLevel,
+} from "@/src/lib/sector-rules";
 import { estimateMaxScore, type SolverLevelContext } from "@/src/lib/solver";
 import type {
   BuildingType,
@@ -7,6 +13,7 @@ import type {
   DeckChallengeLevel,
   ObstacleSpec,
   SpatialWinRule,
+  TerrainType,
   WinCondition,
 } from "@/src/types/game";
 
@@ -292,6 +299,46 @@ export type LevelDefinition = {
 /** Nombre de niveaux Saga générés (carte + progression). */
 export const LEVEL_COUNT = 100;
 
+const CENTER_VOID_OBSTACLES: ObstacleSpec[] = [
+  { index: 5, terrain: "void" },
+  { index: 6, terrain: "void" },
+  { index: 9, terrain: "void" },
+  { index: 10, terrain: "void" },
+];
+
+type ObstacleTerrain = Exclude<TerrainType, "normal">;
+
+function obstacleSpecToEntry(spec: ObstacleSpec): { index: number; terrain: ObstacleTerrain } {
+  if (typeof spec === "number") return { index: spec, terrain: "lake" };
+  return { index: spec.index, terrain: spec.terrain };
+}
+
+function mergeObstacleSpecs(
+  base: readonly ObstacleSpec[] | undefined,
+  extra: readonly ObstacleSpec[],
+): ObstacleSpec[] | undefined {
+  const m = new Map<number, ObstacleTerrain>();
+  for (const spec of base ?? []) {
+    const { index, terrain } = obstacleSpecToEntry(spec);
+    if (index >= 0 && index < 16) m.set(index, terrain);
+  }
+  for (const spec of extra) {
+    const { index, terrain } = obstacleSpecToEntry(spec);
+    if (index >= 0 && index < 16) m.set(index, terrain);
+  }
+  if (m.size === 0) return undefined;
+  return [...m.entries()].map(([index, terrain]) => ({ index, terrain }));
+}
+
+function pickTwoDistinctGridIndices(levelId: number, salt: string): [number, number] {
+  const a = fnv1a32(`pp-void|${levelId}|${salt}|a`) % 16;
+  let b = fnv1a32(`pp-void|${levelId}|${salt}|b`) % 16;
+  if (b === a) {
+    b = (b + 1 + (fnv1a32(`pp-void|${levelId}|${salt}|c`) % 15)) % 16;
+  }
+  return [a, b];
+}
+
 function buildSolverContext(
   levelId: number,
   seed: string,
@@ -356,7 +403,7 @@ export function generateLevels(count: number): LevelDefinition[] {
     const seed = `pp-lvl-${String(id).padStart(4, "0")}-v1`;
     const deckChallengeLevel = deckChallengeForLevel(id);
     /** Niveau 100 : mandat VIP (obstacles variés) + Faille sismique au 8ᵉ tour. */
-    const obstacles: ObstacleSpec[] | undefined =
+    let obstacles: ObstacleSpec[] | undefined =
       id === 100
         ? [
             { index: 5, terrain: "mountain" },
@@ -371,12 +418,50 @@ export function generateLevels(count: number): LevelDefinition[] {
       winCondition = { spatialRules: [{ kind: "aligned", building: "serre", minCount: 3 }] };
     else if (id === 17) winCondition = { spatialRules: [{ kind: "isolated", building: "mine" }] };
 
+    const chaos = chaosGameplayForLevel(id);
+
+    if (planetId === 8 && id !== 100) {
+      obstacles = mergeObstacleSpecs(obstacles, CENTER_VOID_OBSTACLES);
+    }
+
+    if (planetId === 1 && id !== 100 && !obstacles?.length) {
+      const [a, b] = pickTwoDistinctGridIndices(id, seed);
+      obstacles = [
+        { index: a, terrain: "void" },
+        { index: b, terrain: "void" },
+      ];
+    }
+
+    if (chaos?.centerVoidObstacles) {
+      obstacles = mergeObstacleSpecs(obstacles, CENTER_VOID_OBSTACLES);
+    }
+    if (chaos?.extraVoidPair) {
+      const [a, b] = pickTwoDistinctGridIndices(id, `${seed}|chaos-pair`);
+      obstacles = mergeObstacleSpecs(obstacles, [
+        { index: a, terrain: "void" },
+        { index: b, terrain: "void" },
+      ]);
+    }
+
+    if (isSiliconMineQuotaLevel(id)) {
+      winCondition = { ...winCondition, minMine: Math.max(4, winCondition?.minMine ?? 0) };
+    }
+
     const solverCtx = buildSolverContext(id, seed, obstacles, seismicRift, winCondition);
+    let stars = dynamicStarThresholds(seed, deckChallengeLevel, solverCtx);
+    if (isInflationStarSector(id)) {
+      stars = {
+        one: Math.ceil(stars.one * 1.2),
+        two: Math.ceil(stars.two * 1.2),
+        three: Math.ceil(stars.three * 1.2),
+      };
+    }
+
     out.push({
       id,
       planetId,
       seed,
-      stars: dynamicStarThresholds(seed, deckChallengeLevel, solverCtx),
+      stars,
       deckChallengeLevel,
       position: { x, y },
       obstacles,

@@ -1,4 +1,5 @@
 import type { BuildingType, Cell, DeckChallengeLevel } from "@/src/types/game";
+import { getBiomeBuildingSkin } from "@/src/lib/game/biomes";
 import { formatMultiplierFr } from "@/src/lib/difficulty";
 import { getMineScoreBonusPerMine } from "@/src/lib/empire-tower";
 import { calculateStars } from "@/src/lib/levels";
@@ -11,32 +12,8 @@ export type BuildingTheme = {
   color: string;
 };
 
-/** Tuiles type « briques » : dégradé + bord bas épais + ombre portée (effet 3D). */
-const THEMES: Record<BuildingType, BuildingTheme> = {
-  habitacle: {
-    emoji: "🧑‍🚀",
-    color:
-      "border border-orange-200/90 bg-gradient-to-b from-amber-200 to-orange-500 text-orange-950 border-b-[6px] border-b-orange-800 shadow-[0_6px_0_rgba(194,65,12,0.28)]",
-  },
-  eau: {
-    emoji: "💧",
-    color:
-      "border border-sky-200/90 bg-gradient-to-b from-sky-200 to-cyan-500 text-cyan-950 border-b-[6px] border-b-cyan-800 shadow-[0_6px_0_rgba(8,145,178,0.28)]",
-  },
-  serre: {
-    emoji: "🌱",
-    color:
-      "border border-lime-200/90 bg-gradient-to-b from-lime-200 to-green-600 text-green-950 border-b-[6px] border-b-green-800 shadow-[0_6px_0_rgba(21,128,61,0.28)]",
-  },
-  mine: {
-    emoji: "⬛",
-    color:
-      "border border-violet-200/90 bg-gradient-to-b from-violet-300 to-violet-700 text-violet-50 border-b-[6px] border-b-violet-950 shadow-[0_6px_0_rgba(91,33,182,0.28)]",
-  },
-};
-
-export function getBuildingTheme(type: BuildingType): BuildingTheme {
-  return THEMES[type];
+export function getBuildingTheme(type: BuildingType, planetId = 0): BuildingTheme {
+  return getBiomeBuildingSkin(planetId, type);
 }
 
 /** Base URL pour le texte copié (alignée sur `NEXT_PUBLIC_SITE_URL` / metadata). */
@@ -88,6 +65,7 @@ export function generateShareContent(
     grid,
     meta?.frozenCellIndices ?? [],
     getMineScoreBonusPerMine(),
+    meta?.levelId ?? 0,
   );
   const rows: string[] = [];
   for (let r = 0; r < 4; r++) {

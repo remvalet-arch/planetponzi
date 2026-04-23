@@ -40,7 +40,7 @@ export type EmpireFloorDef = {
 /** Dernier étage achetable : débloque « Déposer le bilan » (prestige). */
 export const EMPIRE_HELIPORT_FLOOR_ID = "heliport-prive";
 
-/** Paliers minage (ordre 2 → 7, après Open Space). Migration / logique métier. */
+/** Paliers revenu passif (minage) — ids stables pour migrations. */
 export const EMPIRE_MINING_FLOOR_IDS = [
   "botnet-etudiant",
   "ferme-offshore",
@@ -50,6 +50,10 @@ export const EMPIRE_MINING_FLOOR_IDS = [
   "siphonage-orbital",
 ] as const;
 
+/**
+ * Ordre alterné Revenu (R) / Utilitaire (U) après le garage.
+ * Courbe de coût progressive jusqu’au sommet corporate.
+ */
 export const EMPIRE_FLOORS: EmpireFloorDef[] = [
   {
     id: "garage-miteux",
@@ -61,21 +65,21 @@ export const EMPIRE_FLOORS: EmpireFloorDef[] = [
     defaultUnlocked: true,
   },
   {
-    id: "open-space-toxique",
-    order: 1,
-    name: "L'Open Space Toxique",
-    description: "Open bar, open burn-out. La productivité en open source (de vos nerfs).",
-    emoji: "📎",
-    cost: 500,
-  },
-  {
     id: "botnet-etudiant",
-    order: 2,
+    order: 1,
     name: "Botnet Étudiant",
     description: "Infecte les PC du campus. Un début modeste mais illégal.",
     emoji: "💻",
-    cost: 1000,
+    cost: 1_000,
     effects: { passiveIncomePerMinute: 1 },
+  },
+  {
+    id: "open-space-toxique",
+    order: 2,
+    name: "L'Open Space Toxique",
+    description: "Open bar, open burn-out. La productivité en open source (de vos nerfs).",
+    emoji: "📎",
+    cost: 3_000,
   },
   {
     id: "ferme-offshore",
@@ -83,71 +87,71 @@ export const EMPIRE_FLOORS: EmpireFloorDef[] = [
     name: "Ferme de Minage Offshore",
     description: "Entrepôt climatisé en Islande. Le froid, c'est du profit.",
     emoji: "🧊",
-    cost: 4000,
+    cost: 8_000,
     effects: { passiveIncomePerMinute: 5 },
   },
   {
-    id: "detournement-serveurs",
+    id: "etage-direction",
     order: 4,
+    name: "L'Étage de Direction",
+    description: "Le comité exécutif accélère les cycles : recharges vie 20 min → 15 min.",
+    emoji: "🪑",
+    cost: 15_000,
+    effects: { fasterLifeRecharge: true },
+  },
+  {
+    id: "detournement-serveurs",
+    order: 5,
     name: "Détournement Public",
     description: "Piratage des serveurs de la mairie. La fibre au service du crime.",
     emoji: "🌐",
-    cost: 15000,
+    cost: 40_000,
     effects: { passiveIncomePerMinute: 20 },
   },
   {
+    id: "serveurs-offshore",
+    order: 6,
+    name: "Serveurs Offshore",
+    description: "Latence minimale, éthique maximale… négative. (+1 pt par mine — effet Sprint 3.)",
+    emoji: "🖥️",
+    cost: 75_000,
+    effects: { mineScoreBonusPerMine: 1 },
+  },
+  {
     id: "trading-haute-frequence",
-    order: 5,
+    order: 7,
     name: "Trading Haute Fréquence",
     description: "Algorithmes prédictifs agressifs. L'argent n'attend pas.",
     emoji: "⚡",
-    cost: 50000,
+    cost: 150_000,
     effects: { passiveIncomePerMinute: 75 },
   },
   {
+    id: EMPIRE_HELIPORT_FLOOR_ID,
+    order: 8,
+    name: "L'Héliport Privé",
+    description: "Rooftop deal. +1 vie max pour négocier depuis les nuages.",
+    emoji: "🚁",
+    cost: 300_000,
+    effects: { livesMaxBonus: 1 },
+  },
+  {
     id: "calculateur-quantique",
-    order: 6,
+    order: 9,
     name: "Calculateur Quantique",
     description: "Brise les clés de chiffrement et les espoirs des épargnants.",
     emoji: "⚛️",
-    cost: 200000,
+    cost: 600_000,
     effects: { passiveIncomePerMinute: 250 },
   },
   {
     id: "siphonage-orbital",
-    order: 7,
+    order: 10,
     name: "Siphonage Orbital",
     description: "Satellites pirates en réseau. Le monde entier est votre distributeur.",
     emoji: "🛰️",
-    cost: 750000,
+    cost: 1_500_000,
     effects: { passiveIncomePerMinute: 1000 },
-  },
-  {
-    id: "etage-direction",
-    order: 8,
-    name: "L'Étage de Direction",
-    description: "Le comité exécutif accélère les cycles : recharges vie 20 min → 15 min.",
-    emoji: "🪑",
-    cost: 2000,
-    effects: { fasterLifeRecharge: true },
-  },
-  {
-    id: "serveurs-offshore",
-    order: 9,
-    name: "Serveurs Offshore",
-    description: "Latence minimale, éthique maximale… négative. (+1 pt par mine — effet Sprint 3.)",
-    emoji: "🖥️",
-    cost: 5000,
-    effects: { mineScoreBonusPerMine: 1 },
-  },
-  {
-    id: EMPIRE_HELIPORT_FLOOR_ID,
-    order: 10,
-    name: "L'Héliport Privé",
-    description: "Rooftop deal. +1 vie max pour négocier depuis les nuages.",
-    emoji: "🚁",
-    cost: 15000,
-    effects: { livesMaxBonus: 1 },
   },
   {
     id: "skydeck-yield",
@@ -156,7 +160,7 @@ export const EMPIRE_FLOORS: EmpireFloorDef[] = [
     description:
       "Terrasse vitrée où l'on respire le CO₂ des autres. Une vie de plus s'achète comme une option sur votre prochain burn-out.",
     emoji: "🌇",
-    cost: 25000,
+    cost: 2_200_000,
     effects: { livesMaxBonus: 1 },
   },
   {
@@ -166,7 +170,7 @@ export const EMPIRE_FLOORS: EmpireFloorDef[] = [
     description:
       "Chaque mine rapporte plus, car la notation, c'est de la confiance... et la confiance se monnaie.",
     emoji: "🏗️",
-    cost: 50000,
+    cost: 3_500_000,
     effects: { mineScoreBonusPerMine: 1 },
   },
   {
@@ -176,7 +180,7 @@ export const EMPIRE_FLOORS: EmpireFloorDef[] = [
     description:
       "Fontaine à kombucha et +1 vie max : le bien-être n'est pas un droit, c'est un lock-in productif.",
     emoji: "🧘",
-    cost: 100000,
+    cost: 5_500_000,
     effects: { livesMaxBonus: 1 },
   },
   {
@@ -185,7 +189,7 @@ export const EMPIRE_FLOORS: EmpireFloorDef[] = [
     name: "War Room du Narratif",
     description: "Table ovale et vérité ajustable. Les mines deviennent une story : +2 pts / mine.",
     emoji: "📡",
-    cost: 225000,
+    cost: 8_500_000,
     effects: { mineScoreBonusPerMine: 2 },
   },
   {
@@ -195,7 +199,7 @@ export const EMPIRE_FLOORS: EmpireFloorDef[] = [
     description:
       "Satellite corporate. Visibilité planétaire, moralité nulle. Package exécutif : +1 vie max et +1 pt / mine.",
     emoji: "🛰️",
-    cost: 500000,
+    cost: 14_000_000,
     effects: { livesMaxBonus: 1, mineScoreBonusPerMine: 1 },
   },
 ];

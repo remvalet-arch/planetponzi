@@ -67,7 +67,7 @@ export const useEmpireStore = create<EmpireStore>()(
     }),
     {
       name: STORAGE_KEY,
-      version: 3,
+      version: 4,
       storage: persistLocalStorage,
       partialize: (state) => ({ unlockedNodes: state.unlockedNodes }),
       migrate: (persisted, fromVersion) => {
@@ -91,6 +91,13 @@ export const useEmpireStore = create<EmpireStore>()(
           for (const id of EMPIRE_MINING_FLOOR_IDS) {
             merged[id] = true;
           }
+        }
+        /**
+         * v4 : nouvel ordre (Botnet avant Open Space) — si l’open space était pris sans botnet
+         * (ancien arbre), on accorde le palier Botnet pour éviter un blocage de prérequis.
+         */
+        if (fromVersion < 4 && merged["open-space-toxique"] && !merged["botnet-etudiant"]) {
+          merged["botnet-etudiant"] = true;
         }
         return { unlockedNodes: merged };
       },

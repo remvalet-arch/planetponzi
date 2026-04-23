@@ -207,8 +207,8 @@ export function EndScreen({ onShareFeedback }: EndScreenProps) {
 
   const sessionCellScores = useMemo(() => {
     if (grid.length !== 16) return Array.from({ length: 16 }, () => 0);
-    return getSessionCellScores(grid, frozenCellIndices, mineEmpireBonus);
-  }, [grid, frozenCellIndices, mineEmpireBonus]);
+    return getSessionCellScores(grid, frozenCellIndices, mineEmpireBonus, levelId);
+  }, [grid, frozenCellIndices, mineEmpireBonus, levelId]);
 
   if (status !== "finished" || levelId < 1) return null;
 
@@ -221,7 +221,7 @@ export function EndScreen({ onShareFeedback }: EndScreenProps) {
       ? getMandateProgressRows(grid, levelDef.winCondition)
           .filter((r) => r.current < r.required)
           .map((r) => {
-            const b = t.mandate.buildings;
+            const b = t.biomes[levelDef!.planetId];
             const label = r.building === "serre" && r.displayAsForests ? b.forests : b[r.building];
             return t.endScreen.mandateFailedFragment(label, r.current, r.required);
           })
@@ -229,7 +229,7 @@ export function EndScreen({ onShareFeedback }: EndScreenProps) {
   const spatialFailFragments =
     mandateBreach && levelDef?.winCondition
       ? getSpatialMandateFailures(grid, levelDef.winCondition).map((f) => {
-          const b = t.mandate.buildings;
+          const b = t.biomes[levelDef!.planetId];
           if (f.kind === "isolated") return t.endScreen.mandateSpatialIsolatedFail(b[f.building]);
           return t.endScreen.mandateSpatialAlignedFail(b[f.building], f.currentRun, f.required);
         })
@@ -420,6 +420,7 @@ export function EndScreen({ onShareFeedback }: EndScreenProps) {
             aria-hidden
           >
             <Grid
+              planetId={levelDef?.planetId ?? 0}
               staticGrid={grid}
               staticFrozenCellIndices={frozenCellIndices}
               minimalMode

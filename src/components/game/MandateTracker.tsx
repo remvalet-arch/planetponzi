@@ -53,7 +53,7 @@ export function MandateTracker() {
     >
       {countRows.map((row, i) => {
         const ok = row.current >= row.required;
-        const label = rowLabel(row, t.mandate.buildings);
+        const label = rowLabel(row, t.biomes[def?.planetId ?? 0]);
         const line = t.mandate.trackerLine(label, row.current, row.required);
         return (
           <span
@@ -68,7 +68,7 @@ export function MandateTracker() {
         );
       })}
       {spatialRows.map((row, i) => {
-        const label = spatialLabel(row, t.mandate.buildings);
+        const label = spatialLabel(row, t.biomes[def?.planetId ?? 0]);
         if (row.kind === "isolated") {
           const line = row.ok ? t.mandate.trackerIsolatedOk(label) : t.mandate.trackerIsolatedBad(label);
           return (

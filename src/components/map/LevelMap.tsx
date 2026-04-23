@@ -13,6 +13,7 @@ import {
   getMapCurrentLevel,
   LEVELS,
   PLANETS,
+  planetIdForLevel,
   type PlanetDefinition,
 } from "@/src/lib/levels";
 import { toRomanSector } from "@/src/lib/roman";
@@ -123,7 +124,7 @@ function buildMapLayout(
 
   for (let id = maxId; id >= minId; id--) {
     if (id === maxId) {
-      const planetIdx = Math.min(9, Math.floor((maxId - 1) / 10));
+      const planetIdx = planetIdForLevel(maxId);
       const planet = PLANETS[planetIdx];
       if (planet) {
         const copy = getBannerCopy(planet);
@@ -135,7 +136,7 @@ function buildMapLayout(
       }
       y += BANNER_GAP_PX;
     } else if (id % 10 === 0) {
-      const planetIdx = Math.min(9, Math.max(0, id / 10 - 1));
+      const planetIdx = planetIdForLevel(id);
       const planet = PLANETS[planetIdx];
       if (planet) {
         const copy = getBannerCopy(planet);

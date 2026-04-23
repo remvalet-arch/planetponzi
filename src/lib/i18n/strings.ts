@@ -5,6 +5,8 @@
  * Usage : import { strings } from '@/src/lib/i18n/strings'; strings.fr.rules.title
  */
 
+import { BIOME_ROWS_EN, BIOME_ROWS_FR } from "@/src/lib/i18n/biome-copy";
+
 export type Locale = "fr" | "en";
 
 export type PlanetStrings = {
@@ -35,12 +37,38 @@ export const strings = {
       sectorFirst: "Secteur {{roman}}",
       sectorEnter: "Vous entrez dans le Secteur {{roman}}",
       loadingProgress: "Chargement de la progression…",
+      passiveYieldChip: (n: number) => `+${n} 💰 / MIN`,
+      sectorHudLine: (roman: string, planetName: string) => `Secteur ${roman} — ${planetName}`,
+      sectorProgress: (roman: string, done: number, total: number) =>
+        `Secteur ${roman} : ${done}/${total} marchés conquis`,
+      headerStarsCompact: (n: number) => `${n} étoiles`,
       starGateHint:
         "Accumulez plus d'étoiles dans ce secteur pour affronter le Boss !",
       starGateBadge: (n: number, cap: number) => `⭐ ${n} / ${cap}`,
+      offlinePassiveToast: (gain: number) =>
+        `Vos serveurs ont généré +${gain} 💰 en votre absence !`,
     },
+    economy: {
+      offlineGain: (gain: number) =>
+        `Vos serveurs ont généré +${gain} 💰 en votre absence`,
+    },
+    grid: {
+      cellEmpty: (n: number) => `Case ${n}, vide`,
+      cellObstacle: (n: number, obstacleName: string) => `${obstacleName} — case ${n}`,
+      cellBuilding: (name: string) => `Bâtiment ${name}`,
+      cellDemolish: (name: string, n: number) => `Démolir ${name} — case ${n}`,
+      fiscalFreezeTitle: "Contrôle fiscal — 0 pt sur cette case",
+      ariaGrid: "Grille de placement quatre par quatre",
+      ariaGridDemolition: "Grille — mode démolition",
+    },
+    biomes: BIOME_ROWS_FR,
     manifest: {
       deckTypesHidden: (n: number) => (n <= 1 ? "1 type masqué" : `${n} types masqués`),
+      nextTilesLabel: "Suivants",
+      spyNextTilesLabel: "Espion · 4 tuiles",
+      hiddenNextTilesHint: "Comptes masqués",
+      manifestHeader: (levelId: number, seed: string) =>
+        `Cargaison · Niveau ${levelId} · ${seed}`,
     },
     installPwa: {
       bannerText: "Téléchargez Planet Ponzi pour jouer hors-ligne ! 🚀",
@@ -155,6 +183,22 @@ export const strings = {
     empirePage: {
       title: "Tour Ponzi",
       subtitle: "Investissez vos Ponzi Coins pour grimper la hiérarchie.",
+      globalYieldBanner: (n: number) =>
+        `RENDEMENT GLOBAL ACTUEL : +${n} 💰 / MINUTE`,
+      yieldBadge: (n: number) => `RENDEMENT : +${n} 💰 / MIN`,
+      effectBadgePrefix: "EFFET :",
+      effectFasterRecharge: "Recharge des vies 20 min → 15 min",
+      effectMineBonus: (n: number) => `+${n} pt scoring / mine`,
+      effectLivesMax: (n: number) => `+${n} vie max`,
+      effectLivesAndMine: (lives: number, minePts: number) =>
+        `+${lives} vie max · +${minePts} pt / mine`,
+      amortizedHours: (hours: number) => {
+        if (!Number.isFinite(hours) || hours <= 0) return "";
+        if (hours < 1 / 60) return "Amorti < 1 min";
+        if (hours < 1) return `Amorti en ${Math.max(1, Math.round(hours * 60))} min`;
+        if (hours < 48) return `Amorti en ${hours.toFixed(1)} h`;
+        return `Amorti en ${(hours / 24).toFixed(1)} j`;
+      },
       purchased: "Acquis",
       locked: "Verrouillé",
       buyFor: "Acheter",
@@ -183,8 +227,10 @@ export const strings = {
     },
     shop: {
       coinsLabel: "Vos Ponzi Coins :",
-      buy: "Acheter",
+      coinsUnit: "pièces",
+      priceCoins: (n: number) => `${n} pièces`,
       comingSoon: "Bientôt",
+      comingSoonEllipsis: "…",
       sectionBlackMarket: "Marché Noir (Boosters)",
       sectionPrestige: "Boutique Prestige (Cosmétiques)",
       sectionFunds: "Fonds d’Investissement",
@@ -225,10 +271,15 @@ export const strings = {
           quote:
             "Si vous lisez ceci, vous avez survécu au onboarding. Félicitations : vous êtes officiellement toxique pour le climat moral de l’open space.",
         },
-        "21": {
+        "11": {
           kicker: "Acte II — Nébuleuse de l’Endettement",
           quote:
             "Les taux montent, les promesses aussi. Un bon CEO ne paie jamais en cash — il paie en narratif. Continuez à empiler les actifs, pas les excuses.",
+        },
+        "21": {
+          kicker: "Acte III — Archipel des Offshore",
+          quote:
+            "Premières contraintes de deck, capitaux flottants : le marché devient liquide, opaque, et surtout… facturable. Naviguez entre les îlots réglementaires.",
         },
         "41": {
           kicker: "Acte III — Gisement de Bulles",
@@ -307,6 +358,10 @@ export const strings = {
     rules: {
       title: "Règles",
       kicker: "Grille & score",
+      modalCloseAria: "Fermer les règles",
+      inductionKicker: "Manuel d’induction",
+      inductionTitle: "Directives du Board",
+      fiscalStampLabel: "GELÉ",
       megaStructureTitle: "Méga-structures (fusion 2×2)",
       megaStructureBody:
         "Formez un carré 2×2 avec le même type de bâtiment (ex. : 4 Mines) pour créer une Méga-Structure qui rapporte énormément de points.",
@@ -316,6 +371,37 @@ export const strings = {
       fiscalFreezeTutorialBody:
         "Le Fisc vient de geler votre case la plus rentable : elle comptera pour 0 M$ au bilan final. Sur ce mandat Boss, le gel se répète tous les 4 tours — anticipez pour limiter l’impact.",
       fiscalFreezeTutorialCta: "J'ai compris",
+      directive1Label: "Directive n°1 — Synergie de groupe",
+      directive1Body:
+        "Alignez quatre bâtiments identiques en carré 2×2 pour déclencher une fusion méga-structure : le bilan comptabilise un bonus massif à la place des quatre cases séparées.",
+      directive2Label: "Directive n°2 — Optimisation fiscale",
+      directive2Body:
+        "Sur les mandats Boss (tous les 10 niveaux), le fisc fige périodiquement votre case la plus rentable : elle tombe à 0 M$ au bilan. Anticipez la cadence des gels.",
+      directive3Label: "Directive n°3 — Marchés sectoriels",
+      directive3Body:
+        "Chaque tranche de 10 niveaux change de secteur : matière noire (cases bloquées), austérité (eau amplifiée, mines pénalisées), flux tendus (bonus d’alignement), quotas, chaos… Lisez le briefing avant d’engager le capital.",
+      summaryPartyTitle: "Partie",
+      summaryPartyFixedOrder: "ordre fixe",
+      summaryPartyNeighbors: "voisins",
+      summaryPartyNoDiag: "pas diag.",
+      summaryRoiTitle: "ROI affiché",
+      summaryRoiFormulaLeft: "Σ cases",
+      summaryRoiFormulaMode: "mode",
+      summaryRoiFormulaResult: "arrondi",
+      summaryPerCellTitle: "M$ par case",
+      summaryMineBase: "+3 M$",
+      summarySerreHint:
+        "Serre : 1 M$ de base + bonus voisins · Eau : 0 si aucun voisin éligible",
+      summaryChip4x4: "4×4",
+      summaryChipOrth: "⊥",
+      summaryLabelMine: "Mine",
+      summaryLabelHabitacle: "Habitacle",
+      summaryLabelSerre: "Serre",
+      summaryLabelWater: "Eau",
+      summaryLabelSerreNeighbor: "Serre voisine",
+      summaryFormulaIsolation: "0 M$",
+      summaryFormulaSerreResult: "1 + n M$",
+      summaryFormulaWaterNeighbor: "+2 M$ / voisin",
     },
     tutorial: {
       level1PlaceMine: "Placez l'usine ici",
@@ -358,11 +444,37 @@ export const strings = {
       sectorFirst: "Sector {{roman}}",
       sectorEnter: "You are entering Sector {{roman}}",
       loadingProgress: "Loading progress…",
+      passiveYieldChip: (n: number) => `+${n} 💰 / MIN`,
+      sectorHudLine: (roman: string, planetName: string) => `Sector ${roman} — ${planetName}`,
+      sectorProgress: (roman: string, done: number, total: number) =>
+        `Sector ${roman}: ${done}/${total} markets secured`,
+      headerStarsCompact: (n: number) => `${n} stars`,
       starGateHint: "Earn more stars in this sector to challenge the Boss!",
       starGateBadge: (n: number, cap: number) => `⭐ ${n} / ${cap}`,
+      offlinePassiveToast: (gain: number) =>
+        `Your rigs minted +${gain} 💰 while you were away!`,
     },
+    economy: {
+      offlineGain: (gain: number) =>
+        `Your rigs minted +${gain} 💰 while you were away`,
+    },
+    grid: {
+      cellEmpty: (n: number) => `Cell ${n}, empty`,
+      cellObstacle: (n: number, obstacleName: string) => `${obstacleName} — cell ${n}`,
+      cellBuilding: (name: string) => `Building ${name}`,
+      cellDemolish: (name: string, n: number) => `Demolish ${name} — cell ${n}`,
+      fiscalFreezeTitle: "Tax audit — 0 M$ on this cell",
+      ariaGrid: "Four by four placement grid",
+      ariaGridDemolition: "Grid — demolition mode",
+    },
+    biomes: BIOME_ROWS_EN,
     manifest: {
       deckTypesHidden: (n: number) => (n <= 1 ? "1 hidden type" : `${n} hidden types`),
+      nextTilesLabel: "Up next",
+      spyNextTilesLabel: "Spy · 4 tiles",
+      hiddenNextTilesHint: "Masked accounts",
+      manifestHeader: (levelId: number, seed: string) =>
+        `Cargo · Level ${levelId} · ${seed}`,
     },
     installPwa: {
       bannerText: "Install Planet Ponzi to play offline! 🚀",
@@ -475,6 +587,21 @@ export const strings = {
     empirePage: {
       title: "Ponzi Tower",
       subtitle: "Spend Ponzi Coins to climb the corporate ladder.",
+      globalYieldBanner: (n: number) => `CURRENT GLOBAL YIELD: +${n} 💰 / MINUTE`,
+      yieldBadge: (n: number) => `YIELD: +${n} 💰 / MIN`,
+      effectBadgePrefix: "EFFECT:",
+      effectFasterRecharge: "Life recharge 20 min → 15 min",
+      effectMineBonus: (n: number) => `+${n} score pts / mine`,
+      effectLivesMax: (n: number) => `+${n} max lives`,
+      effectLivesAndMine: (lives: number, minePts: number) =>
+        `+${lives} max lives · +${minePts} pt / mine`,
+      amortizedHours: (hours: number) => {
+        if (!Number.isFinite(hours) || hours <= 0) return "";
+        if (hours < 1 / 60) return "< 1 min payback";
+        if (hours < 1) return `Payback in ${Math.max(1, Math.round(hours * 60))} min`;
+        if (hours < 48) return `Payback in ${hours.toFixed(1)} h`;
+        return `Payback in ${(hours / 24).toFixed(1)} d`;
+      },
       purchased: "Owned",
       locked: "Locked",
       buyFor: "Buy",
@@ -503,8 +630,11 @@ export const strings = {
     },
     shop: {
       coinsLabel: "Your Ponzi Coins:",
+      coinsUnit: "coins",
+      priceCoins: (n: number) => `${n} coins`,
       buy: "Buy",
       comingSoon: "Coming soon",
+      comingSoonEllipsis: "…",
       sectionBlackMarket: "Black market (boosters)",
       sectionPrestige: "Prestige boutique (cosmetics)",
       sectionFunds: "Investment funds",
@@ -545,10 +675,15 @@ export const strings = {
           quote:
             "If you’re reading this, you survived onboarding. Congrats: you’re now officially hazardous to the open-plan vibe.",
         },
-        "21": {
+        "11": {
           kicker: "Act II — Debt Nebula",
           quote:
             "Rates rise, promises rise faster. A good CEO never pays in cash—only in narrative. Keep stacking assets, not apologies.",
+        },
+        "21": {
+          kicker: "Act III — Offshore Archipelago",
+          quote:
+            "First deck pressure, capital adrift: the market turns liquid, opaque, and—above all—billable. Sail between regulatory islands.",
         },
         "41": {
           kicker: "Act III — Speculation Vein",
@@ -626,6 +761,10 @@ export const strings = {
     rules: {
       title: "Rules",
       kicker: "Grid & score",
+      modalCloseAria: "Close rules",
+      inductionKicker: "Induction manual",
+      inductionTitle: "Board directives",
+      fiscalStampLabel: "FROZEN",
       megaStructureTitle: "Mega-structures (2×2 fusion)",
       megaStructureBody:
         "Make a 2×2 square of the same building type (e.g. four Mines) to create a Mega-Structure that pays a huge score bonus.",
@@ -635,6 +774,37 @@ export const strings = {
       fiscalFreezeTutorialBody:
         "The taxman just froze your highest‑yielding cell: it will count as 0 M$ in the final tally. On this Boss mandate, a freeze happens every 4 turns — plan ahead to limit the damage.",
       fiscalFreezeTutorialCta: "Got it",
+      directive1Label: "Directive #1 — Group synergy",
+      directive1Body:
+        "Place four identical buildings in a 2×2 square to trigger a mega-structure fusion: scoring collapses to one huge line item instead of four separate tiles.",
+      directive2Label: "Directive #2 — Tax optimization",
+      directive2Body:
+        "On Boss mandates (every 10 levels), the tax office periodically freezes your top-yielding cell: it pays 0 M$ in the final tally. Plan around the freeze cadence.",
+      directive3Label: "Directive #3 — Sector markets",
+      directive3Body:
+        "Each 10-level band is a different sector: dark matter tiles, austerity (water up, mines taxed), flow bonuses, quotas, chaos… Read the briefing before you deploy capital.",
+      summaryPartyTitle: "Match",
+      summaryPartyFixedOrder: "fixed order",
+      summaryPartyNeighbors: "neighbors",
+      summaryPartyNoDiag: "no diag.",
+      summaryRoiTitle: "Displayed ROI",
+      summaryRoiFormulaLeft: "Σ cells",
+      summaryRoiFormulaMode: "mode",
+      summaryRoiFormulaResult: "rounded",
+      summaryPerCellTitle: "M$ per cell",
+      summaryMineBase: "+3 M$",
+      summarySerreHint:
+        "Greenhouse: 1 M$ base + neighbor bonus · Water: 0 if no eligible neighbor",
+      summaryChip4x4: "4×4",
+      summaryChipOrth: "⊥",
+      summaryLabelMine: "Mine",
+      summaryLabelHabitacle: "Habitat",
+      summaryLabelSerre: "Greenhouse",
+      summaryLabelWater: "Water",
+      summaryLabelSerreNeighbor: "Adjacent greenhouse",
+      summaryFormulaIsolation: "0 M$",
+      summaryFormulaSerreResult: "1 + n M$",
+      summaryFormulaWaterNeighbor: "+2 M$ / neighbor",
     },
     tutorial: {
       level1PlaceMine: "Place the factory here",

@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
 
+import { PassiveIncomePop } from "@/src/components/layout/PassiveIncomePop";
 import {
   computePassiveModifiers,
   EMPIRE_BASE_MAX_LIVES,
@@ -69,7 +70,8 @@ export function EconomyHeader({
 
   return (
     <div className={`flex shrink-0 flex-wrap items-center justify-end gap-1 sm:gap-1.5 ${className}`.trim()}>
-      <span className={pill} title="Ponzi Coins">
+      <span className={`relative ${pill}`} title="Ponzi Coins">
+        <PassiveIncomePop />
         <span className="shrink-0 text-sm leading-none sm:text-base" aria-hidden>
           💰
         </span>

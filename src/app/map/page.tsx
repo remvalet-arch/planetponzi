@@ -8,14 +8,18 @@ import { LevelMap } from "@/src/components/map/LevelMap";
 import { MapHeader } from "@/src/components/map/MapHeader";
 import { StoryModal } from "@/src/components/map/StoryModal";
 import { getPendingCeoStoryMilestone, markCeoMemoSeen } from "@/src/lib/ceo-memos";
+import { computePassiveModifiers } from "@/src/lib/empire-tower";
 import { resumeAudio } from "@/src/lib/game-sounds";
 import { useAppStrings } from "@/src/lib/i18n/useAppStrings";
 import { getLocalDateSeed } from "@/src/lib/rng";
 import { useEconomyStore } from "@/src/store/useEconomyStore";
+import { useEmpireStore } from "@/src/store/useEmpireStore";
 import { useProgressStore } from "@/src/store/useProgressStore";
 
 export default function MapPage() {
-  const { t } = useAppStrings();
+  const { t, locale } = useAppStrings();
+  const tRef = useRef(t);
+  tRef.current = t;
   const scrollRef = useRef<HTMLDivElement>(null);
   const [bonusOpen, setBonusOpen] = useState(false);
   const [progressHydrated, setProgressHydrated] = useState(
@@ -75,6 +79,28 @@ export default function MapPage() {
     run();
     return unsub;
   }, []);
+
+  useEffect(() => {
+    const applyOffline = () => {
+      if (!useEconomyStore.persist.hasHydrated() || !useEmpireStore.persist.hasHydrated()) return;
+      const rate = computePassiveModifiers(useEmpireStore.getState().unlockedNodes).totalPassiveIncomePerMinute;
+      const gain = useEconomyStore.getState().applyOfflinePassiveIncome(rate);
+      if (gain > 0) {
+        const msg = tRef.current.economy.offlineGain(gain);
+        queueMicrotask(() => {
+          setMapHint(msg);
+          window.setTimeout(() => setMapHint((m) => (m === msg ? null : m)), 4200);
+        });
+      }
+    };
+    const uEco = useEconomyStore.persist.onFinishHydration(applyOffline);
+    const uEmp = useEmpireStore.persist.onFinishHydration(applyOffline);
+    applyOffline();
+    return () => {
+      uEco();
+      uEmp();
+    };
+  }, [locale]);
 
   return (
     <div

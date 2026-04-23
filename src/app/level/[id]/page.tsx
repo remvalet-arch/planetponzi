@@ -189,7 +189,8 @@ export default function LevelPage() {
   const mandateLen = placementSequence.length;
   const nextType =
     mandateLen > 0 && turn < mandateLen ? placementSequence[turn] : null;
-  const nextTheme = nextType ? getBuildingTheme(nextType) : null;
+  const levelPlanetId = getLevelById(id)?.planetId ?? 0;
+  const nextTheme = nextType ? getBuildingTheme(nextType, levelPlanetId) : null;
 
   if (!levelValid) {
     notFound();

@@ -5,7 +5,9 @@ import { useMemo } from "react";
 import { formatMultiplierFr, getDeckChallengeTitle } from "@/src/lib/difficulty";
 import { useAppStrings } from "@/src/lib/i18n/useAppStrings";
 import { pickHiddenDeckBuildingTypes } from "@/src/lib/rng";
+import { isHiddenNextTilesSector } from "@/src/lib/sector-rules";
 import { getBuildingTheme } from "@/src/lib/ui-helpers";
+import { getLevelById } from "@/src/lib/levels";
 import { getManifestAmbientCopy } from "@/src/lib/manifest-copy";
 import type { BuildingType } from "@/src/types/game";
 import { useLevelRunStore } from "@/src/store/useLevelRunStore";
@@ -42,7 +44,14 @@ export function Manifest() {
   const spyPreviewTurnsRemaining = useLevelRunStore((s) => s.spyPreviewTurnsRemaining);
   const status = useLevelRunStore((s) => s.status);
 
-  const previewCount = spyPreviewTurnsRemaining > 0 ? 4 : 2;
+  const planetId = useMemo(() => {
+    const def = levelId >= 1 ? getLevelById(levelId) : undefined;
+    return def?.planetId ?? 0;
+  }, [levelId]);
+
+  const hideNextTwo = levelId >= 1 && isHiddenNextTilesSector(levelId);
+  const previewCount =
+    spyPreviewTurnsRemaining > 0 ? 4 : hideNextTwo ? 0 : 2;
   const nextPieces =
     status === "playing"
       ? nextPiecesPreview(placementSequence, turn, previewCount)
@@ -61,7 +70,9 @@ export function Manifest() {
     >
       <div className="mb-1 flex items-start justify-between gap-2 border-b border-dotted border-slate-600/50 pb-1 sm:mb-1.5 sm:pb-1.5">
         <p className="line-clamp-1 min-w-0 font-mono text-[8px] uppercase leading-tight tracking-[0.14em] text-slate-500 sm:text-[9px] sm:tracking-[0.2em]">
-          Cargaison · Niveau {levelId || "—"} · {seed || "—"}
+          {levelId >= 1 && seed
+            ? t.manifest.manifestHeader(levelId, seed)
+            : `— · ${seed || "—"}`}
         </p>
         <span className="shrink-0 font-mono text-[8px] font-semibold text-cyan-400 sm:text-[9px]">FUN</span>
       </div>
@@ -77,11 +88,15 @@ export function Manifest() {
       {nextPieces.length > 0 ? (
         <div className="mb-1 rounded-md border border-slate-600/50 bg-slate-950/60 px-1.5 py-1 sm:mb-1.5">
           <p className="mb-0.5 font-mono text-[7px] uppercase leading-tight tracking-wider text-violet-300/90 sm:text-[8px] sm:tracking-widest">
-            {spyPreviewTurnsRemaining > 0 ? "Espion · 4" : "Suivants"}
+            {spyPreviewTurnsRemaining > 0
+              ? t.manifest.spyNextTilesLabel
+              : hideNextTwo
+                ? t.manifest.hiddenNextTilesHint
+                : t.manifest.nextTilesLabel}
           </p>
           <div className="flex flex-wrap items-center gap-0.5">
             {nextPieces.map((type, i) => {
-              const theme = getBuildingTheme(type);
+              const theme = getBuildingTheme(type, planetId);
               return (
                 <span
                   key={`${i}-${type}`}
@@ -98,7 +113,7 @@ export function Manifest() {
 
       <div className="flex flex-wrap items-center gap-x-1 gap-y-0.5 font-mono text-[10px] text-slate-100 sm:gap-x-2 sm:text-xs">
         {MANIFEST_ORDER.map((type, i) => {
-          const theme = getBuildingTheme(type);
+          const theme = getBuildingTheme(type, planetId);
           const count = dailyInventory[type];
           const hidden = hiddenTypes.has(type);
           return (

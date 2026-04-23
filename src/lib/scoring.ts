@@ -1,3 +1,4 @@
+import { isAusterityHydricSector } from "@/src/lib/sector-rules";
 import type { BuildingType, Cell } from "@/src/types/game";
 
 const COLS = 4;
@@ -7,6 +8,8 @@ const CELL_COUNT = ROWS * COLS;
 /** Options de score (ex. bonus passif Tour Ponzi sur les mines). */
 export type CellScoringOptions = {
   mineScoreBonusPerMine?: number;
+  /** Secteur / chaos (austérité : eau ×4, mines −2 de base). */
+  levelId?: number;
 };
 
 /**
@@ -31,6 +34,7 @@ function scoreForCell(
   index: number,
   grid: Cell[],
   mineScoreBonusPerMine: number,
+  levelId: number | undefined,
 ): number {
   const self = grid[index];
   if (!self || self.isPlayable === false) return 0;
@@ -38,8 +42,13 @@ function scoreForCell(
   const neighbors = orthogonalNeighborIndices(index);
 
   switch (building) {
-    case "mine":
-      return 3 + mineScoreBonusPerMine;
+    case "mine": {
+      let v = 3 + mineScoreBonusPerMine;
+      if (levelId != null && isAusterityHydricSector(levelId)) {
+        v = Math.max(0, v - 2);
+      }
+      return v;
+    }
 
     case "serre": {
       let adjacentSerres = 0;
@@ -61,6 +70,9 @@ function scoreForCell(
       for (const n of neighbors) {
         const b = grid[n]?.building;
         if (b === "habitacle" || b === "serre") bonus += 2;
+      }
+      if (levelId != null && isAusterityHydricSector(levelId)) {
+        return bonus * 4;
       }
       return bonus;
     }
@@ -92,7 +104,9 @@ export function getCellScores(grid: Cell[], options?: CellScoringOptions): numbe
       continue;
     }
     scores[i] =
-      building === null ? 0 : scoreForCell(building, i, grid, mineScoreBonusPerMine);
+      building === null
+        ? 0
+        : scoreForCell(building, i, grid, mineScoreBonusPerMine, options?.levelId);
   }
   return scores;
 }

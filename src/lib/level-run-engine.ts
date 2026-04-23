@@ -67,8 +67,9 @@ export function pickFiscalFreezeTarget(
   grid: Cell[],
   frozenCellIndices: readonly number[],
   mineScoreBonusPerMine = 0,
+  levelId?: number,
 ): number | null {
-  const scores = getCellScores(grid, { mineScoreBonusPerMine });
+  const scores = getCellScores(grid, { mineScoreBonusPerMine, levelId });
   const frozen = new Set(frozenCellIndices);
   let best = -Infinity;
   let bestIdx: number | null = null;
@@ -139,7 +140,12 @@ export function evaluateTriggers(input: EvaluateTriggersInput): EvaluateTriggers
     input.newTurn <= input.maxTurn &&
     input.newTurn % 4 === 0
   ) {
-    const pick = pickFiscalFreezeTarget(working, nextFrozen, input.mineScoreBonusPerMine ?? 0);
+    const pick = pickFiscalFreezeTarget(
+      working,
+      nextFrozen,
+      input.mineScoreBonusPerMine ?? 0,
+      input.levelId,
+    );
     if (pick != null && !nextFrozen.includes(pick)) {
       nextFrozen = [...nextFrozen, pick];
       newEffects.push({ kind: "fiscal_freeze", turn: input.newTurn, cellIndex: pick });
@@ -172,7 +178,8 @@ export function scoreGridForDeck(
   frozenCellIndices: readonly number[],
   deckMultiplier: number,
   mineScoreBonusPerMine?: number,
+  levelId = 0,
 ): number {
-  const base = calculateSessionGridScore(grid, frozenCellIndices, mineScoreBonusPerMine);
+  const base = calculateSessionGridScore(grid, frozenCellIndices, mineScoreBonusPerMine, levelId);
   return Math.round(base * deckMultiplier);
 }

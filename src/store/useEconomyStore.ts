@@ -51,8 +51,11 @@ export type EconomyStore = {
   lastBonusDate: string | null;
   /** Dernier tick (ms) du revenu passif online (1 min) — ancre pour éviter le double comptage avec le catch-up hors-ligne. */
   lastTickTimestamp: number | null;
+  /** Pulse UI court après crédit passif online (non persisté). */
+  passiveIncomePop: { amount: number; id: number } | null;
 
   checkLifeRecharge: () => void;
+  clearPassiveIncomePop: () => void;
   addCoins: (amount: number) => void;
   /** Retourne `false` si solde insuffisant (aucune dépense). */
   spendCoins: (amount: number) => boolean;
@@ -61,10 +64,20 @@ export type EconomyStore = {
   addLives: (amount: number) => void;
   refillLives: () => void;
   claimDailyBonus: () => void;
-  /** Prestige : solde à zéro + aligne les vies sur le nouveau plafond passif. */
+  /**
+   * Prestige : solde à zéro + aligne les vies sur le nouveau plafond passif.
+   * Le palier `prestigeLevel` et le multiplicateur de score (+10 % / palier) vivent dans
+   * `useProgressStore` — appeler `incrementPrestige()` après cette wipe (ex. page Tour).
+   */
   wipeEconomyForPrestige: () => void;
   /** Tick revenu passif pendant la session (crédit si taux &gt; 0). Met à jour `lastTickTimestamp`. */
   applyOnlinePassiveIncomeTick: (unlockedNodes: Record<string, boolean>) => void;
+  /**
+   * Crédite le passif hors-ligne depuis `lastTickTimestamp` (plafond 24 h).
+   * Si `lastTickTimestamp` est absent, ancre à maintenant sans rétroactif.
+   * @returns Pièces ajoutées (0 si rien à créditer).
+   */
+  applyOfflinePassiveIncome: (ratePerMinute: number) => number;
 };
 
 export const useEconomyStore = create<EconomyStore>()(
@@ -75,18 +88,51 @@ export const useEconomyStore = create<EconomyStore>()(
       lastLifeRechargeTime: null,
       lastBonusDate: null,
       lastTickTimestamp: null,
+      passiveIncomePop: null,
+
+      clearPassiveIncomePop: () => set({ passiveIncomePop: null }),
 
       applyOnlinePassiveIncomeTick: (unlockedNodes) => {
         const rate = computePassiveModifiers(unlockedNodes).totalPassiveIncomePerMinute;
         const now = Date.now();
         set((s) => {
           const add = rate > 0 ? Math.floor(rate) : 0;
+          const nextId = (s.passiveIncomePop?.id ?? 0) + 1;
           return {
             ...s,
             coins: add > 0 ? s.coins + add : s.coins,
             lastTickTimestamp: now,
+            passiveIncomePop: add > 0 ? { amount: add, id: nextId } : s.passiveIncomePop,
           };
         });
+      },
+
+      applyOfflinePassiveIncome: (ratePerMinute) => {
+        const now = Date.now();
+        const last = get().lastTickTimestamp;
+        if (last == null) {
+          set({ lastTickTimestamp: now });
+          return 0;
+        }
+        const CAP_MS = 24 * 60 * 60 * 1000;
+        const elapsed = Math.min(now - last, CAP_MS);
+        const minutes = Math.floor(elapsed / 60_000);
+        if (minutes <= 0) return 0;
+        if (ratePerMinute <= 0) {
+          set({ lastTickTimestamp: now });
+          return 0;
+        }
+        const gain = Math.floor(minutes * ratePerMinute);
+        if (gain > 0) {
+          set((state) => ({
+            ...state,
+            coins: state.coins + gain,
+            lastTickTimestamp: now,
+          }));
+          return gain;
+        }
+        set({ lastTickTimestamp: now });
+        return 0;
       },
 
       checkLifeRecharge: () => {
@@ -174,6 +220,7 @@ export const useEconomyStore = create<EconomyStore>()(
             lastLifeRechargeTime:
               nextLives < maxLives ? (s.lastLifeRechargeTime ?? Date.now()) : null,
             lastTickTimestamp: Date.now(),
+            passiveIncomePop: null,
           };
         });
       },

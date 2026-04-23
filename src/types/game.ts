@@ -11,7 +11,7 @@ export type DeckChallengeLevel = (typeof DECK_CHALLENGE_LEVELS)[number];
 /** Effectifs du manifeste pour la journée (somme = nombre de placements du mandat). */
 export type DailyInventory = Record<BuildingType, number>;
 
-export type TerrainType = "normal" | "lake" | "mountain" | "toxic";
+export type TerrainType = "normal" | "lake" | "mountain" | "toxic" | "void";
 
 /** Obstacle inconstructible : indice seul (= lac) ou indice + terrain. */
 export type ObstacleSpec = number | { index: number; terrain: Exclude<TerrainType, "normal"> };
