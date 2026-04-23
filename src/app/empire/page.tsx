@@ -15,6 +15,7 @@ import {
   type EmpireFloorDef,
 } from "@/src/lib/empire-tower";
 import { playEmpirePurchase } from "@/src/lib/game-sounds";
+import { heavyCash } from "@/src/lib/haptics";
 import { useEconomyStore } from "@/src/store/useEconomyStore";
 import { useEmpireStore } from "@/src/store/useEmpireStore";
 import { useProgressStore } from "@/src/store/useProgressStore";
@@ -110,6 +111,7 @@ export default function EmpirePage() {
     setToast(ok ? t.empirePage.purchaseSuccess : t.empirePage.insufficient);
     if (ok) {
       playEmpirePurchase();
+      heavyCash();
       useEconomyStore.getState().checkLifeRecharge();
     }
   };
@@ -176,25 +178,47 @@ export default function EmpirePage() {
                     <p className="whitespace-normal break-words text-left text-sm font-mono leading-relaxed text-slate-400">
                       {floor.description}
                     </p>
-                    <div className="flex flex-wrap gap-2">
-                      {passiveIncome > 0 ? (
-                        <span className="inline-flex max-w-full rounded-md border border-emerald-500/45 bg-emerald-950/50 px-2 py-1 font-mono text-[9px] font-semibold uppercase leading-tight tracking-wide text-emerald-200/95 sm:text-[10px]">
-                          {t.empirePage.yieldBadge(passiveIncome)}
-                        </span>
-                      ) : null}
-                      {paybackLabel ? (
-                        <span className="inline-flex max-w-full rounded-md border border-cyan-500/40 bg-cyan-950/35 px-2 py-1 font-mono text-[9px] font-semibold leading-tight text-cyan-100/95 sm:text-[10px]">
-                          {paybackLabel}
-                        </span>
-                      ) : null}
-                      {utilLines.map((line) => (
-                        <span
-                          key={line}
-                          className="inline-flex max-w-full rounded-md border border-amber-500/40 bg-amber-950/35 px-2 py-1 font-mono text-[9px] font-semibold uppercase leading-tight tracking-wide text-amber-100/95 sm:text-[10px]"
-                        >
-                          {line}
-                        </span>
-                      ))}
+                    <div className="flex flex-wrap gap-1.5">
+                      {owned ? (
+                        <>
+                          <span className="inline-flex max-w-full items-center rounded border border-slate-600/35 bg-slate-900/50 px-2 py-0.5 font-mono text-[9px] font-medium tracking-wide text-slate-500">
+                            {t.empirePage.activeFloorTag}
+                          </span>
+                          {utilLines.map((line) => (
+                            <span
+                              key={line}
+                              className="inline-flex max-w-full rounded border border-slate-600/40 bg-slate-800/30 px-2 py-0.5 font-mono text-[9px] font-semibold uppercase leading-tight tracking-wide text-slate-500"
+                            >
+                              {line}
+                            </span>
+                          ))}
+                        </>
+                      ) : (
+                        <>
+                          {passiveIncome > 0 ? (
+                            <span className="inline-flex max-w-full items-baseline gap-1 rounded border border-slate-600/45 bg-slate-800/40 px-2 py-0.5 font-mono text-[9px] leading-tight">
+                              <span className="font-semibold uppercase tracking-wide text-slate-500">
+                                {t.empirePage.yieldLabel}
+                              </span>
+                              <span className="font-semibold tabular-nums text-emerald-400/90">+{passiveIncome}</span>
+                              <span className="text-slate-500">{t.empirePage.yieldUnit}</span>
+                            </span>
+                          ) : null}
+                          {paybackLabel ? (
+                            <span className="inline-flex max-w-full rounded border border-slate-600/45 bg-slate-800/35 px-2 py-0.5 font-mono text-[9px] leading-tight text-slate-400">
+                              {paybackLabel}
+                            </span>
+                          ) : null}
+                          {utilLines.map((line) => (
+                            <span
+                              key={line}
+                              className="inline-flex max-w-full rounded border border-slate-600/40 bg-slate-800/35 px-2 py-0.5 font-mono text-[9px] font-semibold uppercase leading-tight tracking-wide text-slate-400"
+                            >
+                              {line}
+                            </span>
+                          ))}
+                        </>
+                      )}
                     </div>
                     <p className="font-mono text-[10px] uppercase tracking-widest text-violet-300/90">
                       {owned ? t.empirePage.purchased : blocked ? t.empirePage.locked : t.empirePage.buyFor}

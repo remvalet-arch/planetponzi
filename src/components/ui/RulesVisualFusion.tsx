@@ -2,10 +2,19 @@
 
 import { motion } from "framer-motion";
 
+import type { PlanetId } from "@/src/lib/levels";
+import { getBuildingTheme } from "@/src/lib/ui-helpers";
+
+type RulesVisualFusionProps = {
+  /** Secteur / biome dérivé du niveau le plus avancé débloqué. */
+  planetId: PlanetId;
+};
+
 /**
- * Mini-grille 2×2 pour la directive « synergie de groupe » (fusion méga).
+ * Mini-grille 2×2 pour la directive « synergie de groupe » (fusion méga) — mêmes skins qu’en partie.
  */
-export function RulesVisualFusion() {
+export function RulesVisualFusion({ planetId }: RulesVisualFusionProps) {
+  const { emoji, color } = getBuildingTheme("habitacle", planetId);
   return (
     <div
       className="mx-auto grid w-max grid-cols-2 gap-1 rounded-lg border border-cyan-500/35 bg-slate-950/80 p-2 shadow-inner shadow-cyan-950/40"
@@ -14,7 +23,7 @@ export function RulesVisualFusion() {
       {[0, 1, 2, 3].map((i) => (
         <motion.span
           key={i}
-          className="flex size-9 items-center justify-center rounded border border-cyan-400/50 bg-gradient-to-b from-slate-800 to-slate-950 text-base"
+          className={`flex size-9 items-center justify-center rounded border border-cyan-400/40 text-base shadow-inner ${color}`}
           animate={{
             scale: [1, 1.06, 1],
             boxShadow: [
@@ -30,7 +39,7 @@ export function RulesVisualFusion() {
             delay: i * 0.12,
           }}
         >
-          ⬛
+          {emoji}
         </motion.span>
       ))}
     </div>

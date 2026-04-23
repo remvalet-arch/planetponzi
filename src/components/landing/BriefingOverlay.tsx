@@ -4,7 +4,9 @@ import { motion } from "framer-motion";
 import { Building2, Droplets, Gem, Leaf, Rocket, Sparkles, X } from "lucide-react";
 
 import { BottomSheetShell } from "@/src/components/ui/BottomSheetShell";
+import { ContractIcon } from "@/src/components/ui/ContractIcon";
 import { setBriefingAcked } from "@/src/lib/briefing-flags";
+import { useAppStrings } from "@/src/lib/i18n/useAppStrings";
 
 const tileRows = [
   {
@@ -46,7 +48,14 @@ type BriefingOverlayProps = {
 };
 
 /** Briefing CEO en bottom sheet (première visite depuis l’écran d’accueil). */
+const BRIEFING_CONTRACT_DEMOS = [
+  { briefcases: 1, pts: 23 },
+  { briefcases: 2, pts: 39 },
+  { briefcases: 3, pts: 56 },
+] as const;
+
 export function BriefingOverlay({ open, onComplete }: BriefingOverlayProps) {
+  const { t } = useAppStrings();
   const dismiss = () => {
     setBriefingAcked();
     onComplete();
@@ -83,10 +92,25 @@ export function BriefingOverlay({ open, onComplete }: BriefingOverlayProps) {
         <p className="mt-4 text-sm leading-relaxed text-slate-200/95">
           Félicitations pour votre embauche chez Ponzi Corp ! Votre mission : exploiter
           l&apos;univers. Placez vos bâtiments, créez des synergies, ignorez l&apos;écologie.
-          Remplissez les quotas d&apos;étoiles de chaque secteur pour progresser.
+          Remplissez les quotas de contrats de chaque secteur pour progresser.
         </p>
 
-        <p className="mt-4 font-mono text-xs font-semibold uppercase tracking-wide text-cyan-300/90">
+        <p className="mt-5 font-mono text-lg font-bold tracking-tight text-white">{t.entryFlow.objectives}</p>
+        <p className="mt-2 text-xs leading-relaxed text-slate-400">{t.briefing.contractTiersBlurb}</p>
+        <div className="mt-3 flex flex-wrap items-center justify-center gap-2">
+          {BRIEFING_CONTRACT_DEMOS.map(({ briefcases, pts }) => (
+            <span
+              key={pts}
+              className="inline-flex items-center gap-1.5 rounded-full border border-slate-600/55 bg-slate-900/70 px-3 py-1.5 font-mono text-xs text-slate-100 shadow-md backdrop-blur-sm"
+            >
+              <ContractIcon count={briefcases as 1 | 2 | 3} size="md" seal="gold" className="shrink-0" />
+              <span className="font-black tabular-nums text-white">{pts}</span>
+              <span className="text-[9px] font-semibold uppercase text-slate-400">{t.entryFlow.ptsSuffix}</span>
+            </span>
+          ))}
+        </div>
+
+        <p className="mt-6 font-mono text-xs font-semibold uppercase tracking-wide text-cyan-300/90">
           Les 4 tuiles
         </p>
 

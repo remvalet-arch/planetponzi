@@ -19,6 +19,7 @@ import { getLevelById } from "@/src/lib/levels";
 import { useAppStrings } from "@/src/lib/i18n/useAppStrings";
 import { hasCompletedTutorial, markTutorialCompleted } from "@/src/lib/onboarding-flags";
 import { canPlayLevel } from "@/src/lib/star-gate";
+import { successPop } from "@/src/lib/haptics";
 import { playMegaFusion } from "@/src/lib/game-sounds";
 import { getBuildingTheme } from "@/src/lib/ui-helpers";
 import { useEconomyStore } from "@/src/store/useEconomyStore";
@@ -154,7 +155,10 @@ export default function LevelPage() {
     const hasMega = gridTemporaryEffects.some((e) => e.kind === "mega_industrial_fusion");
     if (hasMega && !megaFusionSfxPlayedRef.current) {
       megaFusionSfxPlayedRef.current = true;
-      queueMicrotask(() => playMegaFusion());
+      queueMicrotask(() => {
+        playMegaFusion();
+        successPop();
+      });
     }
     if (id !== 1) return;
     if (hasMega && !fusionToastShownRef.current) {

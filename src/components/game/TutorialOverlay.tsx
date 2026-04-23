@@ -26,6 +26,10 @@ export function TutorialOverlay() {
   }
 
   const targetIndex = LEVEL1_TUTORIAL_CELL_BY_TURN[turn]!;
+  const directiveTitle =
+    turn < 3 ? t.tutorial.level1Directive1Title : t.tutorial.level1Directive2Title;
+  const directiveBody =
+    turn < 3 ? t.tutorial.level1Directive1Body : t.tutorial.level1Directive2Body;
 
   return (
     <div
@@ -44,12 +48,15 @@ export function TutorialOverlay() {
                 <span className="select-none text-xl drop-shadow-[0_1px_2px_rgba(0,0,0,0.85)] motion-safe:animate-bounce">
                   👇
                 </span>
-                <span
-                  className="max-w-[95%] animate-pulse select-none rounded bg-black/55 px-1 py-0.5 font-mono text-[9px] font-semibold uppercase leading-tight text-amber-100 ring-1 ring-amber-400/40 sm:text-[10px]"
+                <div
+                  className="max-w-[95%] animate-pulse select-none rounded bg-black/60 px-1.5 py-1 font-mono text-[8px] leading-snug text-amber-50 ring-1 ring-amber-400/45 sm:text-[9px]"
                   aria-live="polite"
                 >
-                  {t.tutorial.level1PlaceMine}
-                </span>
+                  <p className="font-bold uppercase tracking-wide text-amber-100">{directiveTitle}</p>
+                  <p className="mt-0.5 line-clamp-3 text-left font-medium normal-case tracking-normal text-amber-50/95">
+                    {directiveBody}
+                  </p>
+                </div>
               </div>
             ) : null}
           </div>

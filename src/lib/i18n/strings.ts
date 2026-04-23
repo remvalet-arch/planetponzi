@@ -38,13 +38,14 @@ export const strings = {
       sectorEnter: "Vous entrez dans le Secteur {{roman}}",
       loadingProgress: "Chargement de la progression…",
       passiveYieldChip: (n: number) => `+${n} 💰 / MIN`,
-      sectorHudLine: (roman: string, planetName: string) => `Secteur ${roman} — ${planetName}`,
-      sectorProgress: (roman: string, done: number, total: number) =>
-        `Secteur ${roman} : ${done}/${total} marchés conquis`,
-      headerStarsCompact: (n: number) => `${n} étoiles`,
+      sectorHudCompact: (roman: string, planetName: string, done: number) =>
+        `Secteur ${roman} : ${planetName} · ${done}/10`,
+      sectorProgressHint: (roman: string, planetName: string, done: number, total: number) =>
+        `Progression : ${planetName} (secteur ${roman}) — ${done} marchés sur ${total}`,
+      headerStarsCompact: (n: number) => `${n} contrats`,
       starGateHint:
-        "Accumulez plus d'étoiles dans ce secteur pour affronter le Boss !",
-      starGateBadge: (n: number, cap: number) => `⭐ ${n} / ${cap}`,
+        "Accumulez plus de contrats dans ce secteur pour affronter le Boss !",
+      starGateBadge: (n: number, cap: number) => `${n} / ${cap}`,
       offlinePassiveToast: (gain: number) =>
         `Vos serveurs ont généré +${gain} 💰 en votre absence !`,
     },
@@ -96,13 +97,13 @@ export const strings = {
       settings: "Conformité (Paramètres)",
       languages: "Langues",
       resetCareer: "Détruire les preuves (Reset)",
-      resetConfirm: "Effacer toute la progression locale (niveaux, étoiles) ?",
+      resetConfirm: "Effacer toute la progression locale (niveaux, contrats) ?",
       restartLevel: "Restructurer (Recommencer)",
     },
     cloudSave: {
       sectionTitle: "Sauvegarde Cloud",
       sectionBody:
-        "Connectez-vous pour synchroniser niveaux, étoiles, prestige et économie entre appareils. Sans compte, la partie reste 100 % locale (invité).",
+        "Connectez-vous pour synchroniser niveaux, contrats, prestige et économie entre appareils. Sans compte, la partie reste 100 % locale (invité).",
       missingEnv:
         "Supabase n’est pas configuré (URL / clé anon). Ajoutez NEXT_PUBLIC_SUPABASE_URL et NEXT_PUBLIC_SUPABASE_ANON_KEY.",
       signedInAs: (email: string) => `Connecté : ${email}`,
@@ -142,19 +143,23 @@ export const strings = {
       cta: "Encaisser",
       allocationClaimed: "Allocation récupérée. Revenez demain.",
     },
+    briefing: {
+      contractTiersBlurb:
+        "Chaque mandat fixe trois seuils de score : ils déterminent combien de contrats vous signez.",
+    },
     entryFlow: {
       mandate: "Mandat",
-      objectives: "Objectifs de Dividendes",
+      objectives: "Objectifs de Contrats",
       starStripAria:
-        "Seuils de Profit : scores requis pour valider les dividendes 1, 2 et 3",
+        "Seuils de points : scores requis pour signer 1, 2 ou 3 contrats sur ce mandat",
       ptsSuffix: "pts",
       cta: "Lancer l'exploitation",
       ctaSub: "Jouer",
       loading: "Chargement du mandat…",
       maxEstimatedLabel: "Plafond estimé",
-      starCard1: "1er Palier 💰",
-      starCard2: "2ème Palier 💰💰",
-      starCard3: "3ème Palier 💰💰💰",
+      starCard1: "1er contrat",
+      starCard2: "2e contrat",
+      starCard3: "3e contrat",
       specialDirectivesTitle: "⚠️ Directives",
       directiveMandateMin: (p: { count: number; label: string }) =>
         `Mandat : construisez au moins ${p.count} ${p.label} (en fin de partie).`,
@@ -186,6 +191,9 @@ export const strings = {
       globalYieldBanner: (n: number) =>
         `RENDEMENT GLOBAL ACTUEL : +${n} 💰 / MINUTE`,
       yieldBadge: (n: number) => `RENDEMENT : +${n} 💰 / MIN`,
+      yieldLabel: "Rendement :",
+      yieldUnit: "💰 / min",
+      activeFloorTag: "[ ACTIF ]",
       effectBadgePrefix: "EFFET :",
       effectFasterRecharge: "Recharge des vies 20 min → 15 min",
       effectMineBonus: (n: number) => `+${n} pt scoring / mine`,
@@ -222,8 +230,9 @@ export const strings = {
       you: "Vous",
       loadError: "Classement indisponible.",
       prestigeShort: (n: number) => `P${n}`,
+      contractsInline: (n: number) => `${n} contrats`,
       maxScoreLabel: "Record",
-      meritHint: "Tri : prestige → étoiles → meilleur score.",
+      meritHint: "Tri : prestige → contrats → meilleur score.",
     },
     shop: {
       coinsLabel: "Vos Ponzi Coins :",
@@ -263,6 +272,16 @@ export const strings = {
     storyModal: {
       memoHeader: (n: number) => `Mémo #${n}`,
       closeCta: "Compris — retour à la carte",
+    },
+    unlockMemos: {
+      shopMemoHeader: "Mémo Board — Ligne de crédit",
+      towerMemoHeader: "Mémo Board — Actifs structurés",
+      shopKicker: "La Boutique vous attend",
+      shopQuote:
+        "Stagiaire, j'ai autorisé l'ouverture de votre ligne de crédit. La Boutique est ouverte. Dépensez intelligemment.",
+      towerKicker: "La Tour s'ouvre à vous",
+      towerQuote:
+        "Bienvenue dans la cour des grands. La Tour Ponzi (QG) est désormais accessible. Faites travailler l'argent des autres.",
     },
     ceoStory: {
       memos: {
@@ -304,11 +323,13 @@ export const strings = {
     },
     endScreen: {
       levelKicker: (levelId: number) => `Trimestre ${levelId} · Clôturé`,
-      rewardsTitle: "Dividendes",
-      finalYieldLabel: "Rendement Final",
-      starsAriaNone: "Aucun palier de profit sur 3",
+      rewardsTitle: "Contrats signés",
+      finalYieldLabel: "Points pour signer les contrats",
+      starsAriaNone: "Aucun contrat signé sur 3",
       starsAria: (earned: number) =>
-        earned <= 1 ? `${earned} palier de profit sur 3` : `${earned} paliers de profit sur 3`,
+        earned <= 1
+          ? `${earned} contrat signé sur 3`
+          : `${earned} contrats signés sur 3`,
       pointsUnit: "pts",
       minimizeAria: "Réduire le bilan",
       reopenBilanSr: "Rouvrir le bilan",
@@ -325,7 +346,7 @@ export const strings = {
       mandateFailedTitle: "Mandat non tenu",
       mandateFailedLead: "Le mandat grille n’a pas été respecté (pas un problème de points seuls).",
       mandateFailedBody:
-        "Conditions grille non remplies (ex. forêts). Score OK, 0 palier de profit validé : le mandat prime.",
+        "Conditions grille non remplies (ex. forêts). Score OK, 0 contrat signé : le mandat prime.",
       mandateFailedMissing: (fragments: string) =>
         `Manque : ${fragments}. Rejouez en ciblant ça.`,
       mandateFailedFragment: (label: string, current: number, required: number) =>
@@ -361,10 +382,12 @@ export const strings = {
       modalCloseAria: "Fermer les règles",
       inductionKicker: "Manuel d’induction",
       inductionTitle: "Directives du Board",
+      inductionSectorLine: (sectorName: string) =>
+        `Secteur actuel : ${sectorName} — les icônes ci-dessous suivent votre biome.`,
       fiscalStampLabel: "GELÉ",
       megaStructureTitle: "Méga-structures (fusion 2×2)",
       megaStructureBody:
-        "Formez un carré 2×2 avec le même type de bâtiment (ex. : 4 Mines) pour créer une Méga-Structure qui rapporte énormément de points.",
+        "Formez un carré 2×2 avec quatre bâtiments identiques pour créer une Méga-Structure qui rapporte énormément de points.",
       fiscalBossTitle: "Contrôle fiscal (Boss)",
       fiscalBossBody:
         "Tous les 10 niveaux (Niveaux Boss), le Fisc s'invite ! Tous les 4 tours de jeu, le Fisc gèlera votre case la plus rentable. Une case gelée rapporte 0 M$ à la fin de la partie. Construisez intelligemment pour minimiser les pertes.",
@@ -405,6 +428,11 @@ export const strings = {
     },
     tutorial: {
       level1PlaceMine: "Placez l'usine ici",
+      level1Directive1Title: "Directive #1",
+      level1Directive1Body: "Posez ces mines ici. C'est le début de votre empire.",
+      level1Directive2Title: "Directive #2",
+      level1Directive2Body:
+        "Regardez ces 4 bâtiments fusionner. C'est beau, c'est rentable, c'est nous.",
       level1FusionToast:
         "Fusion réussie ! Les méga-structures rapportent beaucoup plus !",
       level1FusionToastCeo:
@@ -412,15 +440,15 @@ export const strings = {
       skip: "Passer",
       next: "Suivant",
       done: "Choisir le mode",
-      step1Title: "Manifeste",
+      step1Title: "Bienvenue, Stagiaire.",
       step1Body:
-        "Chaque jour : 16 bâtiments dans un ordre fixe. Le manifeste donne les quantités par type, pas les emplacements.",
-      step2Title: "Grille",
+        "Posez ces usines en carré 2×2 : c’est une fusion industrielle, pas une coïncidence. C’est un ordre — le Board n’aime pas l’improvisation.",
+      step2Title: "Cadence",
       step2Body:
-        "Une case par tour, voisins = haut, bas, gauche, droite. Pas de diagonale.",
-      step3Title: "Score",
+        "Une case par tour. Voisins = haut, bas, gauche, droite — pas en diagonale : ce n’est pas la philanthropie.",
+      step3Title: "Bilan",
       step3Body:
-        "Chaque case remplie rapporte des M$ selon son type et ses voisins. Total × coefficient du mode (menu Règles). Objectif : ROI affiché maximal.",
+        "Le ROI affiché tranche. Trois contrats si vous performez ; sinon le mandat prime sur le score. Capitalisme, pas crèche.",
     },
   },
   en: {
@@ -445,12 +473,13 @@ export const strings = {
       sectorEnter: "You are entering Sector {{roman}}",
       loadingProgress: "Loading progress…",
       passiveYieldChip: (n: number) => `+${n} 💰 / MIN`,
-      sectorHudLine: (roman: string, planetName: string) => `Sector ${roman} — ${planetName}`,
-      sectorProgress: (roman: string, done: number, total: number) =>
-        `Sector ${roman}: ${done}/${total} markets secured`,
-      headerStarsCompact: (n: number) => `${n} stars`,
-      starGateHint: "Earn more stars in this sector to challenge the Boss!",
-      starGateBadge: (n: number, cap: number) => `⭐ ${n} / ${cap}`,
+      sectorHudCompact: (roman: string, planetName: string, done: number) =>
+        `Sector ${roman}: ${planetName} · ${done}/10`,
+      sectorProgressHint: (roman: string, planetName: string, done: number, total: number) =>
+        `Progress: ${planetName} (sector ${roman}) — ${done} of ${total} markets`,
+      headerStarsCompact: (n: number) => `${n} contracts`,
+      starGateHint: "Earn more contracts in this sector to challenge the Boss!",
+      starGateBadge: (n: number, cap: number) => `${n} / ${cap}`,
       offlinePassiveToast: (gain: number) =>
         `Your rigs minted +${gain} 💰 while you were away!`,
     },
@@ -500,13 +529,13 @@ export const strings = {
       settings: "Compliance (Settings)",
       languages: "Languages",
       resetCareer: "Shred evidence (Reset)",
-      resetConfirm: "Erase all local progress (levels, stars)?",
+      resetConfirm: "Erase all local progress (levels, contracts)?",
       restartLevel: "Restructure (Restart)",
     },
     cloudSave: {
       sectionTitle: "Cloud save",
       sectionBody:
-        "Sign in to sync levels, stars, prestige, and economy across devices. Without an account, progress stays 100% local (guest).",
+        "Sign in to sync levels, contracts, prestige, and economy across devices. Without an account, progress stays 100% local (guest).",
       missingEnv:
         "Supabase is not configured (URL / anon key). Set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY.",
       signedInAs: (email: string) => `Signed in: ${email}`,
@@ -546,19 +575,23 @@ export const strings = {
       cta: "Claim",
       allocationClaimed: "Allocation claimed. Come back tomorrow.",
     },
+    briefing: {
+      contractTiersBlurb:
+        "Each mandate sets three score thresholds — they determine how many contracts you sign.",
+    },
     entryFlow: {
       mandate: "Mandate",
-      objectives: "Dividend targets",
+      objectives: "Contract Objectives",
       starStripAria:
-        "Profit thresholds: scores required to validate dividend tiers 1, 2, and 3",
+        "Point thresholds: scores required to sign 1, 2, or 3 contracts on this mandate",
       ptsSuffix: "pts",
       cta: "Start extraction",
       ctaSub: "Play",
       loading: "Loading mandate…",
       maxEstimatedLabel: "Est. cap",
-      starCard1: "Tier 1 💰",
-      starCard2: "Tier 2 💰💰",
-      starCard3: "Tier 3 💰💰💰",
+      starCard1: "1st contract",
+      starCard2: "2nd contract",
+      starCard3: "3rd contract",
       specialDirectivesTitle: "⚠️ Directives",
       directiveMandateMin: (p: { count: number; label: string }) =>
         `Mandate: place at least ${p.count} ${p.label} on the final grid.`,
@@ -589,6 +622,9 @@ export const strings = {
       subtitle: "Spend Ponzi Coins to climb the corporate ladder.",
       globalYieldBanner: (n: number) => `CURRENT GLOBAL YIELD: +${n} 💰 / MINUTE`,
       yieldBadge: (n: number) => `YIELD: +${n} 💰 / MIN`,
+      yieldLabel: "Yield:",
+      yieldUnit: "💰 / min",
+      activeFloorTag: "[ ACTIVE ]",
       effectBadgePrefix: "EFFECT:",
       effectFasterRecharge: "Life recharge 20 min → 15 min",
       effectMineBonus: (n: number) => `+${n} score pts / mine`,
@@ -625,8 +661,9 @@ export const strings = {
       you: "You",
       loadError: "Leaderboard unavailable.",
       prestigeShort: (n: number) => `P${n}`,
+      contractsInline: (n: number) => `${n} contracts`,
       maxScoreLabel: "Best",
-      meritHint: "Order: prestige → stars → best score.",
+      meritHint: "Order: prestige → contracts → best score.",
     },
     shop: {
       coinsLabel: "Your Ponzi Coins:",
@@ -668,6 +705,16 @@ export const strings = {
       memoHeader: (n: number) => `Memo #${n}`,
       closeCta: "Got it — back to the map",
     },
+    unlockMemos: {
+      shopMemoHeader: "Board memo — Credit line",
+      towerMemoHeader: "Board memo — Structured assets",
+      shopKicker: "The Shop is open",
+      shopQuote:
+        "Intern, I’ve authorized your credit line. The Shop is open. Spend wisely.",
+      towerKicker: "The Tower awaits",
+      towerQuote:
+        "Welcome to the inner circle. Ponzi Tower (HQ) is now unlocked. Put other people’s money to work.",
+    },
     ceoStory: {
       memos: {
         "1": {
@@ -708,11 +755,11 @@ export const strings = {
     },
     endScreen: {
       levelKicker: (levelId: number) => `Q${levelId} · Closed`,
-      rewardsTitle: "Dividends",
-      finalYieldLabel: "Final Yield",
-      starsAriaNone: "No profit tier out of 3",
+      rewardsTitle: "Signed contracts",
+      finalYieldLabel: "Points to sign contracts",
+      starsAriaNone: "No contract signed out of 3",
       starsAria: (earned: number) =>
-        `${earned} profit tier${earned > 1 ? "s" : ""} out of 3`,
+        `${earned} contract${earned > 1 ? "s" : ""} signed out of 3`,
       pointsUnit: "pts",
       minimizeAria: "Shrink summary",
       reopenBilanSr: "Open summary again",
@@ -729,7 +776,7 @@ export const strings = {
       mandateFailedTitle: "Mandate not met",
       mandateFailedLead: "Grid mandate failed (not just points).",
       mandateFailedBody:
-        "Grid rules not met (e.g. forests). OK score, 0 profit tiers validated — mandate wins.",
+        "Grid rules not met (e.g. forests). OK score, 0 contracts signed — mandate wins.",
       mandateFailedMissing: (fragments: string) =>
         `Missing: ${fragments}. Replay with focus.`,
       mandateFailedFragment: (label: string, current: number, required: number) =>
@@ -764,10 +811,12 @@ export const strings = {
       modalCloseAria: "Close rules",
       inductionKicker: "Induction manual",
       inductionTitle: "Board directives",
+      inductionSectorLine: (sectorName: string) =>
+        `Current sector: ${sectorName} — icons below match your biome.`,
       fiscalStampLabel: "FROZEN",
       megaStructureTitle: "Mega-structures (2×2 fusion)",
       megaStructureBody:
-        "Make a 2×2 square of the same building type (e.g. four Mines) to create a Mega-Structure that pays a huge score bonus.",
+        "Make a 2×2 square of four identical buildings to create a Mega-Structure that pays a huge score bonus.",
       fiscalBossTitle: "Tax audit (Boss levels)",
       fiscalBossBody:
         "Every 10 levels (Boss levels), the taxman shows up! Every 4 turns, the taxman freezes your highest‑yielding cell. A frozen cell pays 0 M$ at the end of the run. Build smart to limit the damage.",
@@ -808,21 +857,26 @@ export const strings = {
     },
     tutorial: {
       level1PlaceMine: "Place the factory here",
+      level1Directive1Title: "Directive #1",
+      level1Directive1Body: "Drop those mines right here. This is where your empire starts.",
+      level1Directive2Title: "Directive #2",
+      level1Directive2Body:
+        "Watch those four buildings merge. It’s beautiful, it’s profitable, it’s us.",
       level1FusionToast: "Fusion complete! Mega-structures pay a lot more!",
       level1FusionToastCeo:
         "See that 2×2 block of mines? That's what we call corporate synergy.",
       skip: "Skip",
       next: "Next",
       done: "Pick mode",
-      step1Title: "Manifest",
+      step1Title: "Welcome, Intern.",
       step1Body:
-        "Each day: 16 buildings in a fixed order. The manifest shows counts per type, not positions.",
-      step2Title: "Grid",
+        "Drop those factories in a 2×2 square — that’s an industrial merger, not serendipity. It’s an order: the Board despises improv.",
+      step2Title: "Cadence",
       step2Body:
-        "One cell per turn; neighbors = up, down, left, right. No diagonals.",
-      step3Title: "Score",
+        "One cell per turn. Neighbors = up, down, left, right — no diagonals; this isn’t charity.",
+      step3Title: "Close",
       step3Body:
-        "Each filled cell pays M$ from its type and neighbors. Total × mode multiplier (Rules menu). Goal: maximize displayed ROI.",
+        "Displayed ROI decides. Three contracts if you deliver; otherwise the mandate beats raw score. Capitalism, not daycare.",
     },
   },
 } as const;

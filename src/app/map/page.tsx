@@ -7,7 +7,11 @@ import { DailyBonusModal } from "@/src/components/map/DailyBonusModal";
 import { LevelMap } from "@/src/components/map/LevelMap";
 import { MapHeader } from "@/src/components/map/MapHeader";
 import { StoryModal } from "@/src/components/map/StoryModal";
-import { getPendingCeoStoryMilestone, markCeoMemoSeen } from "@/src/lib/ceo-memos";
+import {
+  CEO_HUB_UNLOCK_MAX_LEVEL,
+  getPendingCeoStoryMilestone,
+  markCeoMemoSeen,
+} from "@/src/lib/ceo-memos";
 import { computePassiveModifiers } from "@/src/lib/empire-tower";
 import { resumeAudio } from "@/src/lib/game-sounds";
 import { useAppStrings } from "@/src/lib/i18n/useAppStrings";
@@ -29,6 +33,15 @@ export default function MapPage() {
   const [mapHint, setMapHint] = useState<string | null>(null);
 
   const unlockedLevels = useProgressStore((s) => s.unlockedLevels);
+  const hasSeenShopUnlockCeoMemo = useProgressStore((s) => s.hasSeenShopUnlockCeoMemo);
+  const hasSeenTowerUnlockCeoMemo = useProgressStore((s) => s.hasSeenTowerUnlockCeoMemo);
+  const markShopUnlockCeoMemoSeen = useProgressStore((s) => s.markShopUnlockCeoMemoSeen);
+  const markTowerUnlockCeoMemoSeen = useProgressStore((s) => s.markTowerUnlockCeoMemoSeen);
+
+  const maxUnlocked = useMemo(
+    () => (unlockedLevels.length ? Math.max(...unlockedLevels) : 1),
+    [unlockedLevels],
+  );
 
   useEffect(() => {
     return useProgressStore.persist.onFinishHydration(() => setProgressHydrated(true));
@@ -50,22 +63,72 @@ export default function MapPage() {
     }
   }, [progressHydrated]);
 
-  const storyMilestone = useMemo(() => {
+  const sectorMilestone = useMemo(() => {
     void storyDismissGen;
     if (!progressHydrated || bonusOpen) return null;
     return getPendingCeoStoryMilestone(unlockedLevels);
   }, [progressHydrated, bonusOpen, unlockedLevels, storyDismissGen]);
 
-  const closeStory = useCallback(() => {
-    if (storyMilestone != null) markCeoMemoSeen(storyMilestone);
-    setStoryDismissGen((n) => n + 1);
-  }, [storyMilestone]);
+  const unlockKind = useMemo(() => {
+    if (!progressHydrated || bonusOpen) return null;
+    if (sectorMilestone != null) return null;
+    if (maxUnlocked >= CEO_HUB_UNLOCK_MAX_LEVEL.shop && !hasSeenShopUnlockCeoMemo)
+      return "shop" as const;
+    if (maxUnlocked >= CEO_HUB_UNLOCK_MAX_LEVEL.tower && !hasSeenTowerUnlockCeoMemo)
+      return "tower" as const;
+    return null;
+  }, [
+    progressHydrated,
+    bonusOpen,
+    sectorMilestone,
+    maxUnlocked,
+    hasSeenShopUnlockCeoMemo,
+    hasSeenTowerUnlockCeoMemo,
+  ]);
 
-  const storyMemo =
-    storyMilestone != null
-      ? ((t.ceoStory.memos as Record<string, { kicker: string; quote: string }>)[String(storyMilestone)] ??
-        t.ceoStory.fallback)
-      : null;
+  const closeStoryModal = useCallback(() => {
+    if (sectorMilestone != null) {
+      markCeoMemoSeen(sectorMilestone);
+    } else if (unlockKind === "shop") {
+      markShopUnlockCeoMemoSeen();
+    } else if (unlockKind === "tower") {
+      markTowerUnlockCeoMemoSeen();
+    }
+    setStoryDismissGen((n) => n + 1);
+  }, [
+    sectorMilestone,
+    unlockKind,
+    markShopUnlockCeoMemoSeen,
+    markTowerUnlockCeoMemoSeen,
+  ]);
+
+  const storyPayload = useMemo(() => {
+    if (sectorMilestone != null) {
+      const memo =
+        (t.ceoStory.memos as Record<string, { kicker: string; quote: string }>)[String(sectorMilestone)] ??
+        t.ceoStory.fallback;
+      return {
+        key: `sector-${sectorMilestone}`,
+        memoHeader: t.storyModal.memoHeader(sectorMilestone),
+        memo,
+      };
+    }
+    if (unlockKind === "shop") {
+      return {
+        key: "unlock-shop",
+        memoHeader: t.unlockMemos.shopMemoHeader,
+        memo: { kicker: t.unlockMemos.shopKicker, quote: t.unlockMemos.shopQuote },
+      };
+    }
+    if (unlockKind === "tower") {
+      return {
+        key: "unlock-tower",
+        memoHeader: t.unlockMemos.towerMemoHeader,
+        memo: { kicker: t.unlockMemos.towerKicker, quote: t.unlockMemos.towerQuote },
+      };
+    }
+    return null;
+  }, [t, sectorMilestone, unlockKind]);
 
   useEffect(() => {
     const run = () => {
@@ -129,14 +192,14 @@ export default function MapPage() {
       </div>
       <BottomNav variant="dark" />
       <DailyBonusModal open={bonusOpen} onClose={() => setBonusOpen(false)} />
-      {storyMilestone != null && storyMemo ? (
+      {storyPayload ? (
         <StoryModal
-          key={storyMilestone}
+          key={storyPayload.key}
           open
-          memo={storyMemo}
-          memoHeader={t.storyModal.memoHeader(storyMilestone)}
+          memo={storyPayload.memo}
+          memoHeader={storyPayload.memoHeader}
           closeLabel={t.storyModal.closeCta}
-          onClose={closeStory}
+          onClose={closeStoryModal}
         />
       ) : null}
       {mapHint ? (

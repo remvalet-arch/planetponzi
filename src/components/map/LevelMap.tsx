@@ -4,9 +4,10 @@ import type { RefObject } from "react";
 import { useCallback, useEffect, useLayoutEffect, useId, useMemo, useState } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { Check, Lock, Star } from "lucide-react";
+import { Check, Lock } from "lucide-react";
 
 import { MapCeoAvatar } from "@/src/components/map/MapCeoAvatar";
+import { ContractIcon } from "@/src/components/ui/ContractIcon";
 import { useAppStrings } from "@/src/lib/i18n/useAppStrings";
 import { vibrateLevelTap } from "@/src/lib/haptics";
 import {
@@ -108,7 +109,7 @@ type MapLayout = {
 /**
  * Carte « ascension » : parcours du niveau max au 1, y croissant vers le bas.
  * - Niveau 100 en haut (y faible), niveau 1 en bas (y fort).
- * - Bannière de secteur dans le gap au-dessus des blocs 10, 20, … 90 et bannière d’entrée au-dessus du bloc sommet (91–100).
+ * - Bannière d’intro secteur avant chaque premier niveau du bloc : 1, 11, 21, …, 91 (aligné sur planetIdForLevel).
  */
 function buildMapLayout(
   levels: typeof orderedLevels,
@@ -123,19 +124,7 @@ function buildMapLayout(
   const banners: BannerLayout[] = [];
 
   for (let id = maxId; id >= minId; id--) {
-    if (id === maxId) {
-      const planetIdx = planetIdForLevel(maxId);
-      const planet = PLANETS[planetIdx];
-      if (planet) {
-        const copy = getBannerCopy(planet);
-        banners.push({
-          planet,
-          yCenterPx: y + BANNER_GAP_PX / 2,
-          ...copy,
-        });
-      }
-      y += BANNER_GAP_PX;
-    } else if (id % 10 === 0) {
+    if ((id - 1) % 10 === 0) {
       const planetIdx = planetIdForLevel(id);
       const planet = PLANETS[planetIdx];
       if (planet) {
@@ -190,22 +179,23 @@ function StarGateQuotaBadge({ gateStars }: { gateStars: number }) {
   return (
     <motion.span
       key={gateStars}
-      className="rounded-full border border-amber-500/40 bg-amber-950/80 px-1.5 py-0.5 font-mono text-[9px] font-bold tabular-nums text-amber-200"
+      className="inline-flex items-center gap-1 rounded-full border border-amber-500/40 bg-amber-950/80 px-1.5 py-0.5 font-mono text-[9px] font-bold tabular-nums text-amber-200"
       initial={{ scale: 0.35, rotate: -42, opacity: 0.35 }}
       animate={{ scale: 1, rotate: 0, opacity: 1 }}
       transition={{ type: "spring", stiffness: 440, damping: 14 }}
     >
-      {t.map.starGateBadge(gateStars, STAR_GATE_QUOTA)}
+      <ContractIcon count={1} size="sm" seal="ruby" />
+      <span>{t.map.starGateBadge(gateStars, STAR_GATE_QUOTA)}</span>
     </motion.span>
   );
 }
 
-/** Étoiles sous un nœud terminé : pop échelonné quand le score du niveau augmente. */
-function LevelCompletedStars({ earned }: { earned: 0 | 1 | 2 | 3 }) {
+/** Contrats (paliers) sous un nœud terminé : pop échelonné quand le score du niveau augmente. */
+function LevelCompletedContracts({ earned }: { earned: 0 | 1 | 2 | 3 }) {
   return (
     <motion.div
       key={earned}
-      className="flex h-4 items-center justify-center gap-0.5"
+      className="flex h-5 items-center justify-center gap-0.5"
       aria-hidden
       initial="hidden"
       animate="show"
@@ -227,13 +217,12 @@ function LevelCompletedStars({ earned }: { earned: 0 | 1 | 2 | 3 }) {
             },
           }}
         >
-          <Star
-            className={`size-3.5 ${
-              i < earned
-                ? "fill-amber-400 text-amber-600 drop-shadow-[0_0_4px_rgb(251_191_36/0.8)]"
-                : "fill-slate-600/50 text-slate-500"
-            }`}
-            strokeWidth={1.25}
+          <ContractIcon
+            count={1}
+            size="sm"
+            seal="gold"
+            muted={i >= earned}
+            className={i < earned ? "drop-shadow-[0_0_4px_rgb(148_163_184/0.45)]" : ""}
           />
         </motion.div>
       ))}
@@ -524,25 +513,29 @@ export function LevelMap({ scrollParentRef }: LevelMapProps) {
           ) : null}
         </svg>
 
-        {banners.map((b) => (
-          <header
-            key={`banner-${b.planet.id}`}
-            className="absolute left-1/2 z-[14] w-[min(92%,22rem)] -translate-x-1/2 -translate-y-1/2 px-1"
-            style={{ top: `${(b.yCenterPx / heightPx) * 100}%` }}
-          >
-            <div className="rounded-2xl border border-cyan-500/50 bg-slate-900 px-4 py-4 text-center shadow-[0_0_15px_rgba(6,182,212,0.4)] backdrop-blur-md">
-              <p className="pp-map-banner-kicker font-mono text-[11px] font-bold uppercase tracking-[0.22em] text-cyan-200">
-                {b.title}
-              </p>
-              {b.planet.id > 0 ? (
-                <p className="pp-map-banner-title mt-3 text-base font-bold leading-snug text-white sm:text-lg">{b.subtitle}</p>
-              ) : null}
-              <p className="pp-map-banner-body mt-3 whitespace-normal break-words font-mono text-xs leading-relaxed text-slate-200 sm:text-sm">
-                {b.blurb}
-              </p>
-            </div>
-          </header>
-        ))}
+        {banners.map((b) => {
+          const [r, g, bl] = b.planet.toneA;
+          return (
+            <header
+              key={`banner-${b.planet.id}`}
+              className="absolute left-1/2 z-[14] w-[min(92%,22rem)] -translate-x-1/2 -translate-y-1/2 px-1"
+              style={{ top: `${(b.yCenterPx / heightPx) * 100}%` }}
+            >
+              <div
+                className="rounded-xl border border-slate-800 border-l-4 bg-slate-950/60 px-4 py-3 text-left shadow-lg backdrop-blur-md"
+                style={{ borderLeftColor: `rgb(${r} ${g} ${bl})` }}
+              >
+                <p className="font-mono text-sm font-medium uppercase tracking-wider text-slate-200">{b.title}</p>
+                {b.planet.id > 0 ? (
+                  <p className="mt-1.5 font-mono text-xs tracking-wide text-slate-400">{b.subtitle}</p>
+                ) : null}
+                <p className="mt-2 whitespace-normal break-words font-mono text-[11px] leading-relaxed text-slate-400">
+                  {b.blurb}
+                </p>
+              </div>
+            </header>
+          );
+        })}
 
         {/* Nœuds : premier plan au-dessus du chemin et des bannières */}
         <div className="absolute inset-0 z-[25] min-h-0 w-full">
@@ -648,7 +641,7 @@ export function LevelMap({ scrollParentRef }: LevelMapProps) {
                       >
                         <Check className="size-6 stroke-[3] text-emerald-200 drop-shadow-[0_0_6px_rgba(167,243,208,0.7)]" aria-hidden />
                       </div>
-                      <LevelCompletedStars earned={earned} />
+                      <LevelCompletedContracts earned={earned} />
                     </Link>
                   ) : isActive ? (
                     <motion.div

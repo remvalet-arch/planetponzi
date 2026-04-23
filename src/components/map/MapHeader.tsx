@@ -2,16 +2,15 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
-import { Menu, Star } from "lucide-react";
+import { Menu } from "lucide-react";
 
 import { AppNavDrawer } from "@/src/components/layout/AppNavDrawer";
+import { ContractIcon } from "@/src/components/ui/ContractIcon";
 import { EconomyHeader } from "@/src/components/layout/EconomyHeader";
 import { RulesModal, markRulesFirstVisitDone } from "@/src/components/ui/RulesModal";
-import { computePassiveModifiers } from "@/src/lib/empire-tower";
 import { useAppStrings } from "@/src/lib/i18n/useAppStrings";
 import { getMapCurrentLevel, planetIdForLevel } from "@/src/lib/levels";
 import { toRomanSector } from "@/src/lib/roman";
-import { useEmpireStore } from "@/src/store/useEmpireStore";
 import { useProgressStore } from "@/src/store/useProgressStore";
 
 function totalStars(starsByLevel: Record<string, number>): number {
@@ -28,15 +27,9 @@ export function MapHeader() {
   const { t } = useAppStrings();
   const starsByLevel = useProgressStore((s) => s.starsByLevel);
   const unlockedLevels = useProgressStore((s) => s.unlockedLevels);
-  const empireUnlocked = useEmpireStore((s) => s.unlockedNodes);
   const count = totalStars(starsByLevel);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [rulesOpen, setRulesOpen] = useState(false);
-
-  const passivePerMin = useMemo(
-    () => computePassiveModifiers(empireUnlocked).totalPassiveIncomePerMinute,
-    [empireUnlocked],
-  );
 
   const currentLevel = useMemo(
     () => getMapCurrentLevel(unlockedLevels, starsByLevel),
@@ -51,13 +44,7 @@ export function MapHeader() {
     const roman = toRomanSector(pid + 1);
     const meta = t.planets[pid];
     const name = meta?.name ?? "";
-    return {
-      roman,
-      name,
-      doneInSector,
-      total: 10,
-      pct: Math.min(100, Math.round((doneInSector / 10) * 100)),
-    };
+    return { roman, name, doneInSector };
   }, [currentLevel, unlockedLevels, t]);
 
   const closeRules = () => {
@@ -93,40 +80,26 @@ export function MapHeader() {
             </motion.button>
 
             <div className="flex min-w-0 flex-1 items-center justify-center gap-1.5 whitespace-nowrap rounded-pp-lg border border-slate-600/60 bg-slate-900/70 px-2 py-2 sm:gap-2 sm:px-3">
-              <Star className="size-5 shrink-0 fill-amber-400 text-amber-500" strokeWidth={1.5} aria-hidden />
-              <span className="font-mono text-sm font-semibold tabular-nums text-white">
+              <ContractIcon count={1} size="sm" seal="gold" className="shrink-0 opacity-90" />
+              <span className="min-w-0 truncate font-mono text-sm font-semibold text-white">
                 {t.map.headerStarsCompact(count)}
               </span>
             </div>
 
-            <div className="flex max-w-[min(38vw,9.5rem)] shrink-0 flex-col items-end gap-0.5 sm:max-w-none">
-              <div className="w-full rounded-lg border border-emerald-500/40 bg-emerald-950/30 px-2 py-1 text-center font-mono text-[9px] font-semibold uppercase leading-tight tracking-wide text-emerald-100/95 shadow-inner shadow-emerald-950/25 sm:text-[10px]">
-                {t.map.passiveYieldChip(passivePerMin)}
-              </div>
-              <EconomyHeader className="max-w-[min(52vw,14rem)] justify-end sm:max-w-none" />
-            </div>
+            <EconomyHeader className="max-w-[min(52vw,15rem)] justify-end sm:max-w-none" />
           </div>
 
-          <div className="rounded-xl border border-emerald-500/30 bg-emerald-950/20 px-3 py-2 shadow-inner shadow-emerald-950/20">
-            <p className="text-center font-mono text-[10px] font-semibold uppercase tracking-wide text-emerald-100/90 sm:text-[11px]">
-              {t.map.sectorHudLine(sectorHud.roman, sectorHud.name)}
+          <div
+            className="flex items-center justify-center gap-2 rounded-lg border border-slate-600/45 bg-slate-900/55 px-3 py-1.5"
+            title={t.map.sectorProgressHint(sectorHud.roman, sectorHud.name, sectorHud.doneInSector, 10)}
+          >
+            <p className="min-w-0 truncate text-center font-mono text-[10px] leading-snug tracking-wide text-slate-300 sm:text-[11px]">
+              {t.map.sectorHudCompact(sectorHud.roman, sectorHud.name, sectorHud.doneInSector)}
             </p>
-            <div
-              className="mt-2 h-1.5 overflow-hidden rounded-full bg-slate-800/90"
-              role="progressbar"
-              aria-valuenow={sectorHud.doneInSector}
-              aria-valuemin={0}
-              aria-valuemax={sectorHud.total}
-              aria-label={t.map.sectorProgress(sectorHud.roman, sectorHud.doneInSector, sectorHud.total)}
-            >
-              <div
-                className="h-full rounded-full bg-gradient-to-r from-emerald-600 to-cyan-400 transition-[width] duration-500 ease-out"
-                style={{ width: `${sectorHud.pct}%` }}
-              />
-            </div>
-            <p className="mt-1.5 text-center font-mono text-[9px] text-emerald-200/80 sm:text-[10px]">
-              {t.map.sectorProgress(sectorHud.roman, sectorHud.doneInSector, sectorHud.total)}
-            </p>
+            <span
+              className="size-1.5 shrink-0 rounded-full bg-emerald-400/70 ring-1 ring-emerald-500/25"
+              aria-hidden
+            />
           </div>
         </div>
       </header>

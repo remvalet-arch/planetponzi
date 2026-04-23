@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useMemo } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import {
   BarChart3,
@@ -55,6 +56,12 @@ export function AppNavDrawer({
 }: AppNavDrawerProps) {
   const { t } = useAppStrings();
   const resetCareer = useProgressStore((s) => s.resetCareer);
+  const unlockedLevels = useProgressStore((s) => s.unlockedLevels);
+  const maxUnlocked = useMemo(
+    () => (unlockedLevels.length ? Math.max(...unlockedLevels) : 1),
+    [unlockedLevels],
+  );
+  const leaderboardUnlocked = maxUnlocked >= 10;
 
   const handleReset = () => {
     if (typeof window === "undefined") return;
@@ -112,14 +119,16 @@ export function AppNavDrawer({
                 <Map className="size-5 shrink-0 text-pp-gold-dark" strokeWidth={2} aria-hidden />
                 {t.nav.map}
               </Link>
-              <Link
-                href="/leaderboard"
-                onClick={onClose}
-                className={`${navLinkClass} ${navLinkHoverViolet}`}
-              >
-                <Trophy className="size-5 shrink-0 text-amber-400" strokeWidth={2} aria-hidden />
-                {t.nav.leaderboard}
-              </Link>
+              {leaderboardUnlocked ? (
+                <Link
+                  href="/leaderboard"
+                  onClick={onClose}
+                  className={`${navLinkClass} ${navLinkHoverViolet}`}
+                >
+                  <Trophy className="size-5 shrink-0 text-amber-400" strokeWidth={2} aria-hidden />
+                  {t.nav.leaderboard}
+                </Link>
+              ) : null}
               {onOpenStats ? (
                 <motion.button
                   type="button"

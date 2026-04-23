@@ -8,8 +8,9 @@ import { motion } from "framer-motion";
 import { PanelBottomOpen, Share2, X } from "lucide-react";
 
 import { Grid } from "@/src/components/game/Grid";
+import { ContractIcon } from "@/src/components/ui/ContractIcon";
 import { playUIClick, playVictoryCash } from "@/src/lib/game-sounds";
-import { vibrateVictoryStars } from "@/src/lib/haptics";
+import { successPop } from "@/src/lib/haptics";
 import { computePassiveModifiers } from "@/src/lib/empire-tower";
 import {
   calculateStars,
@@ -176,7 +177,7 @@ export function EndScreen({ onShareFeedback }: EndScreenProps) {
   useEffect(() => {
     if (status !== "finished" || minimized || victoryVibrateRef.current) return;
     victoryVibrateRef.current = true;
-    const id = window.setTimeout(() => vibrateVictoryStars(), 480);
+    const id = window.setTimeout(() => successPop(), 480);
     return () => window.clearTimeout(id);
   }, [status, minimized]);
 
@@ -313,10 +314,10 @@ export function EndScreen({ onShareFeedback }: EndScreenProps) {
                   damping: 14,
                   delay: i * 0.08,
                 }}
-                className="inline-flex select-none text-3xl leading-none drop-shadow-[0_0_8px_rgba(251,191,36,0.8)]"
+                className="inline-flex select-none drop-shadow-[0_0_6px_rgb(148_163_184/0.35)]"
                 aria-hidden
               >
-                💰
+                <ContractIcon count={1} size="lg" seal="gold" />
               </motion.span>
             ))}
             <span className="whitespace-nowrap tabular-nums text-slate-400">
@@ -382,13 +383,11 @@ export function EndScreen({ onShareFeedback }: EndScreenProps) {
                     key={index}
                     variants={endCoinPopIn}
                     className={`inline-flex select-none leading-none ${
-                      earned
-                        ? "text-4xl drop-shadow-[0_0_8px_rgba(251,191,36,0.8)]"
-                        : "text-4xl grayscale opacity-30 drop-shadow-none"
+                      earned ? "drop-shadow-[0_0_8px_rgb(148_163_184/0.45)]" : ""
                     }`}
                     aria-hidden
                   >
-                    💰
+                    <ContractIcon count={1} size="lg" seal="gold" muted={!earned} />
                   </motion.span>
                 );
               })}

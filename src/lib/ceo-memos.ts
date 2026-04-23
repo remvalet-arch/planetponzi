@@ -1,3 +1,13 @@
+/**
+ * Déblocage hub (Boutique / Tour) : StoryModal sur la carte quand `max(unlockedLevels)`
+ * atteint ces seuils — textes dans `strings.unlockMemos`, flags dans `useProgressStore`.
+ * (Distinct des paliers secteur ci-dessous.)
+ */
+export const CEO_HUB_UNLOCK_MAX_LEVEL = {
+  shop: 3,
+  tower: 5,
+} as const;
+
 /** Paliers narration CEO sur la carte (nouveau secteur / acte). */
 export const CEO_STORY_MILESTONES = [1, 11, 21, 41, 61, 81] as const;
 

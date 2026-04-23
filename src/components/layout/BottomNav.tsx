@@ -2,15 +2,31 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useMemo } from "react";
 import { Building2, Map, ShoppingCart } from "lucide-react";
 
+import { CEO_HUB_UNLOCK_MAX_LEVEL } from "@/src/lib/ceo-memos";
 import { useAppStrings } from "@/src/lib/i18n/useAppStrings";
+import { useProgressStore } from "@/src/store/useProgressStore";
 
-const tabs = [
-  { href: "/map", labelKey: "map" as const, Icon: Map },
-  { href: "/empire", labelKey: "empire" as const, Icon: Building2 },
-  { href: "/shop", labelKey: "shop" as const, Icon: ShoppingCart },
-];
+/** Ordre d’affichage : Carte → Tour → Boutique (boucle de gameplay). */
+const allTabs = [
+  { href: "/map", labelKey: "map" as const, Icon: Map, minLevel: 1, sortOrder: 0 },
+  {
+    href: "/empire",
+    labelKey: "empire" as const,
+    Icon: Building2,
+    minLevel: CEO_HUB_UNLOCK_MAX_LEVEL.tower,
+    sortOrder: 1,
+  },
+  {
+    href: "/shop",
+    labelKey: "shop" as const,
+    Icon: ShoppingCart,
+    minLevel: CEO_HUB_UNLOCK_MAX_LEVEL.shop,
+    sortOrder: 2,
+  },
+] as const;
 
 type BottomNavProps = {
   /** Barre sombre (ex. boutique) pour coller au shell dark. */
@@ -21,6 +37,18 @@ export function BottomNav({ variant = "light" }: BottomNavProps) {
   const pathname = usePathname();
   const { t } = useAppStrings();
   const isDark = variant === "dark";
+  const unlockedLevels = useProgressStore((s) => s.unlockedLevels);
+  const maxUnlocked = useMemo(
+    () => (unlockedLevels.length ? Math.max(...unlockedLevels) : 1),
+    [unlockedLevels],
+  );
+  const tabs = useMemo(
+    () =>
+      [...allTabs]
+        .filter((tab) => maxUnlocked >= tab.minLevel)
+        .sort((a, b) => a.sortOrder - b.sortOrder),
+    [maxUnlocked],
+  );
 
   return (
     <nav

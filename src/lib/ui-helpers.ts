@@ -50,8 +50,8 @@ export type ShareMeta = {
  */
 function starLineForShare(score: number, levelId: number | undefined, grid: Cell[]): string {
   const n = levelId != null ? calculateStars(score, levelId, grid) : 0;
-  const filled = "⭐".repeat(n);
-  const empty = "☆".repeat(3 - n);
+  const filled = "●".repeat(n);
+  const empty = "○".repeat(3 - n);
   return `${filled}${empty}`;
 }
 

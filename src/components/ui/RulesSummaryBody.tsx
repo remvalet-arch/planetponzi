@@ -1,14 +1,18 @@
 "use client";
 
 import type { ReactNode } from "react";
+import { useMemo } from "react";
 
 import {
   formatMultiplierFr,
   getDeckChallengeTitle,
 } from "@/src/lib/difficulty";
 import { useAppStrings } from "@/src/lib/i18n/useAppStrings";
+import { planetIdForLevel } from "@/src/lib/levels";
+import { getBuildingTheme } from "@/src/lib/ui-helpers";
 import { RulesVisualFiscalStamp } from "@/src/components/ui/RulesVisualFiscalStamp";
 import { RulesVisualFusion } from "@/src/components/ui/RulesVisualFusion";
+import { useProgressStore } from "@/src/store/useProgressStore";
 import { DECK_CHALLENGE_LEVELS, type DeckChallengeLevel } from "@/src/types/game";
 
 function SectionTitle({ children }: { children: ReactNode }) {
@@ -19,10 +23,21 @@ function SectionTitle({ children }: { children: ReactNode }) {
   );
 }
 
-function TileBox({ emoji, label }: { emoji: string; label: string }) {
+function TileBox({
+  emoji,
+  label,
+  tileClassName,
+}: {
+  emoji: string;
+  label: string;
+  /** Classes biome (fond, bordure) — sinon style neutre. */
+  tileClassName?: string;
+}) {
   return (
     <span
-      className="inline-flex min-h-10 min-w-10 items-center justify-center rounded-lg border border-slate-600/70 bg-slate-900/80 px-2 text-lg shadow-inner"
+      className={`inline-flex min-h-10 min-w-10 items-center justify-center rounded-lg px-2 text-lg shadow-inner ${
+        tileClassName ?? "border border-slate-600/70 bg-slate-900/80 text-slate-100"
+      }`}
       title={label}
     >
       <span aria-hidden>{emoji}</span>
@@ -68,6 +83,16 @@ function DirectiveCard({ label, children }: { label: string; children?: ReactNod
 export function RulesSummaryBody() {
   const { t } = useAppStrings();
   const r = t.rules;
+  const unlockedLevels = useProgressStore((s) => s.unlockedLevels);
+  const planetId = useMemo(() => {
+    const maxU = unlockedLevels.length ? Math.max(...unlockedLevels) : 1;
+    return planetIdForLevel(maxU);
+  }, [unlockedLevels]);
+  const sectorName = t.planets[planetId]!.name;
+  const mineSkin = getBuildingTheme("mine", planetId);
+  const habitacleSkin = getBuildingTheme("habitacle", planetId);
+  const serreSkin = getBuildingTheme("serre", planetId);
+  const eauSkin = getBuildingTheme("eau", planetId);
 
   return (
     <div className="space-y-5 text-slate-100">
@@ -76,10 +101,13 @@ export function RulesSummaryBody() {
           {r.inductionKicker}
         </p>
         <h2 className="font-mono text-sm font-bold tracking-tight text-white sm:text-base">{r.inductionTitle}</h2>
+        <p className="font-mono text-[10px] leading-relaxed text-slate-500 sm:text-[11px]">
+          {r.inductionSectorLine(sectorName)}
+        </p>
       </header>
 
       <DirectiveCard label={r.directive1Label}>
-        <RulesVisualFusion />
+        <RulesVisualFusion planetId={planetId} />
         <p className="text-center font-mono text-[11px] leading-relaxed text-slate-400">{r.directive1Body}</p>
         <p className="text-center font-mono text-[10px] leading-relaxed text-slate-500">{r.megaStructureBody}</p>
       </DirectiveCard>
@@ -134,35 +162,49 @@ export function RulesSummaryBody() {
         <SectionTitle>{r.summaryPerCellTitle}</SectionTitle>
         <div className="divide-y divide-slate-700/50 rounded-xl border border-slate-700/60 bg-slate-900/45">
           <div className="flex flex-wrap items-center justify-center gap-2 py-2.5 font-mono text-[11px]">
-            <TileBox emoji="⬛" label={r.summaryLabelMine} />
+            <TileBox emoji={mineSkin.emoji} label={r.summaryLabelMine} tileClassName={mineSkin.color} />
             <span className="text-slate-600">=</span>
             <span className="font-semibold text-cyan-300">{r.summaryMineBase}</span>
           </div>
           <FormulaRow
-            left={<TileBox emoji="🧑‍🚀" label={r.summaryLabelHabitacle} />}
+            left={
+              <TileBox
+                emoji={habitacleSkin.emoji}
+                label={r.summaryLabelHabitacle}
+                tileClassName={habitacleSkin.color}
+              />
+            }
             op="⊥"
-            right={<TileBox emoji="⬛" label={r.summaryLabelMine} />}
+            right={<TileBox emoji={mineSkin.emoji} label={r.summaryLabelMine} tileClassName={mineSkin.color} />}
             result={<span className="text-rose-400">{r.summaryFormulaIsolation}</span>}
           />
           <FormulaRow
-            left={<TileBox emoji="🌱" label={r.summaryLabelSerre} />}
+            left={<TileBox emoji={serreSkin.emoji} label={r.summaryLabelSerre} tileClassName={serreSkin.color} />}
             op="+"
             right={
               <span className="flex items-center gap-1">
                 <span className="text-slate-600">n ×</span>
-                <TileBox emoji="🌱" label={r.summaryLabelSerreNeighbor} />
+                <TileBox
+                  emoji={serreSkin.emoji}
+                  label={r.summaryLabelSerreNeighbor}
+                  tileClassName={serreSkin.color}
+                />
               </span>
             }
             result={<span className="text-slate-100">{r.summaryFormulaSerreResult}</span>}
           />
           <FormulaRow
-            left={<TileBox emoji="💧" label={r.summaryLabelWater} />}
+            left={<TileBox emoji={eauSkin.emoji} label={r.summaryLabelWater} tileClassName={eauSkin.color} />}
             op="+"
             right={
               <span className="flex items-center gap-1">
-                <TileBox emoji="🧑‍🚀" label={r.summaryLabelHabitacle} />
+                <TileBox
+                  emoji={habitacleSkin.emoji}
+                  label={r.summaryLabelHabitacle}
+                  tileClassName={habitacleSkin.color}
+                />
                 <span className="text-slate-600">/</span>
-                <TileBox emoji="🌱" label={r.summaryLabelSerre} />
+                <TileBox emoji={serreSkin.emoji} label={r.summaryLabelSerre} tileClassName={serreSkin.color} />
               </span>
             }
             result={<span className="text-slate-100">{r.summaryFormulaWaterNeighbor}</span>}

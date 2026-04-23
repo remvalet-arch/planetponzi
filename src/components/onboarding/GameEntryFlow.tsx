@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import { AlertTriangle, Sparkles } from "lucide-react";
 
 import { BottomSheetShell } from "@/src/components/ui/BottomSheetShell";
+import { ContractIcon, type ContractIconCount } from "@/src/components/ui/ContractIcon";
 import { markRulesFirstVisitDone } from "@/src/components/ui/RulesModal";
 import { useAppStrings } from "@/src/lib/i18n/useAppStrings";
 import { computePassiveModifiers } from "@/src/lib/empire-tower";
@@ -24,7 +25,7 @@ type GameEntryFlowProps = {
 };
 
 /**
- * Avant la partie : cibles d’étoiles + lancement (deck imposé par la définition Saga).
+ * Avant la partie : seuils de contrats + lancement (deck imposé par la définition Saga).
  */
 export function GameEntryFlow({ open }: GameEntryFlowProps) {
   const { t } = useAppStrings();
@@ -221,25 +222,20 @@ export function GameEntryFlow({ open }: GameEntryFlowProps) {
                 title={`${row.label} — ${row.pts} ${t.entryFlow.ptsSuffix}`}
                 aria-label={`${row.label}: ${row.pts} ${t.entryFlow.ptsSuffix}`}
               >
-                <span className="flex select-none items-center gap-0.5" aria-hidden>
-                  {Array.from({ length: row.starCount }).map((_, j) => (
-                    <motion.span
-                      key={j}
-                      initial={{ scale: 0.2, opacity: 0, rotate: -22 }}
-                      animate={{ scale: 1, opacity: 1, rotate: 0 }}
-                      transition={{
-                        delay: 0.08 + i * 0.07 + j * 0.09,
-                        type: "spring",
-                        stiffness: 560,
-                        damping: 14,
-                      }}
-                      className="inline-flex select-none text-3xl leading-none drop-shadow-[0_0_8px_rgba(251,191,36,0.8)] sm:text-4xl"
-                      aria-hidden
-                    >
-                      💰
-                    </motion.span>
-                  ))}
-                </span>
+                <motion.span
+                  className="flex select-none items-center"
+                  initial={{ scale: 0.2, opacity: 0, rotate: -10 }}
+                  animate={{ scale: 1, opacity: 1, rotate: 0 }}
+                  transition={{
+                    delay: 0.08 + i * 0.07,
+                    type: "spring",
+                    stiffness: 560,
+                    damping: 14,
+                  }}
+                  aria-hidden
+                >
+                  <ContractIcon count={row.starCount as ContractIconCount} size="lg" seal="gold" />
+                </motion.span>
                 <span className="font-mono text-sm font-black tabular-nums text-white">{row.pts}</span>
                 <span className="font-mono text-[9px] font-semibold uppercase text-slate-400">
                   {t.entryFlow.ptsSuffix}

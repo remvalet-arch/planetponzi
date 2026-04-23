@@ -30,8 +30,14 @@ export type ProgressStore = {
   prestigeLevel: number;
   /** Tutoriel gel fiscal (modale à brancher plus tard). */
   hasSeenFiscalFreezeTutorial: boolean;
+  /** Mémo CEO — déblocage Boutique (niveau 3). */
+  hasSeenShopUnlockCeoMemo: boolean;
+  /** Mémo CEO — déblocage Tour (niveau 5). */
+  hasSeenTowerUnlockCeoMemo: boolean;
   incrementPrestige: () => void;
   markFiscalFreezeTutorialSeen: () => void;
+  markShopUnlockCeoMemoSeen: () => void;
+  markTowerUnlockCeoMemoSeen: () => void;
   /**
    * Fin de partie : meilleur score / étoiles, débloque le niveau suivant si au moins 1★.
    * Idempotent si les valeurs ne sont pas meilleures que l’existant.
@@ -76,6 +82,8 @@ export const useProgressStore = create<ProgressStore>()(
       lastCompletedLevelId: null,
       prestigeLevel: 0,
       hasSeenFiscalFreezeTutorial: false,
+      hasSeenShopUnlockCeoMemo: false,
+      hasSeenTowerUnlockCeoMemo: false,
 
       incrementPrestige: () => {
         set((s) => ({
@@ -86,6 +94,10 @@ export const useProgressStore = create<ProgressStore>()(
       clearLastCompletedLevel: () => set({ lastCompletedLevelId: null }),
 
       markFiscalFreezeTutorialSeen: () => set({ hasSeenFiscalFreezeTutorial: true }),
+
+      markShopUnlockCeoMemoSeen: () => set({ hasSeenShopUnlockCeoMemo: true }),
+
+      markTowerUnlockCeoMemoSeen: () => set({ hasSeenTowerUnlockCeoMemo: true }),
 
       setPseudo: (raw) => {
         const t = raw.trim().slice(0, 15);
@@ -104,6 +116,8 @@ export const useProgressStore = create<ProgressStore>()(
           pseudo: s.pseudo,
           prestigeLevel: s.prestigeLevel,
           hasSeenFiscalFreezeTutorial: false,
+          hasSeenShopUnlockCeoMemo: false,
+          hasSeenTowerUnlockCeoMemo: false,
         }));
       },
 
@@ -152,7 +166,7 @@ export const useProgressStore = create<ProgressStore>()(
     }),
     {
       name: "planet-ponzi-progress",
-      version: 10,
+      version: 11,
       storage: persistLocalStorage,
       partialize: (state) => ({
         unlockedLevels: state.unlockedLevels,
@@ -164,6 +178,8 @@ export const useProgressStore = create<ProgressStore>()(
         pseudo: state.pseudo,
         prestigeLevel: state.prestigeLevel,
         hasSeenFiscalFreezeTutorial: state.hasSeenFiscalFreezeTutorial,
+        hasSeenShopUnlockCeoMemo: state.hasSeenShopUnlockCeoMemo,
+        hasSeenTowerUnlockCeoMemo: state.hasSeenTowerUnlockCeoMemo,
       }),
       migrate: (persisted, fromVersion) => {
         let base = (persisted ?? {}) as Record<string, unknown>;
@@ -243,6 +259,19 @@ export const useProgressStore = create<ProgressStore>()(
             hasSeenFiscalFreezeTutorial:
               typeof base.hasSeenFiscalFreezeTutorial === "boolean"
                 ? base.hasSeenFiscalFreezeTutorial
+                : false,
+          };
+        }
+        if (fromVersion < 11) {
+          base = {
+            ...base,
+            hasSeenShopUnlockCeoMemo:
+              typeof base.hasSeenShopUnlockCeoMemo === "boolean"
+                ? base.hasSeenShopUnlockCeoMemo
+                : false,
+            hasSeenTowerUnlockCeoMemo:
+              typeof base.hasSeenTowerUnlockCeoMemo === "boolean"
+                ? base.hasSeenTowerUnlockCeoMemo
                 : false,
           };
         }

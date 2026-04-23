@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { BottomNav } from "@/src/components/layout/BottomNav";
 import { HubShellBar } from "@/src/components/layout/HubShellBar";
+import { ContractIcon } from "@/src/components/ui/ContractIcon";
 import { useAppStrings } from "@/src/lib/i18n/useAppStrings";
 import { getSupabaseBrowser } from "@/src/lib/supabase";
 import type { LeaderboardRow } from "@/src/types/leaderboard";
@@ -169,7 +170,10 @@ export default function LeaderboardPage() {
                           <span className="text-slate-600"> · </span>
                         </>
                       ) : null}
-                      {row.total_stars} ★
+                      <span className="inline-flex items-center gap-1">
+                        <ContractIcon count={1} size="sm" seal="gold" />
+                        {t.leaderboard.contractsInline(row.total_stars)}
+                      </span>
                       <span className="text-slate-600"> · </span>
                       {t.leaderboard.maxScoreLabel}{" "}
                       {Number(row.max_score ?? 0).toLocaleString()}

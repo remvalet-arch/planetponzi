@@ -7,7 +7,7 @@ import {
   coerceDeckChallengeLevel,
   getDeckScoreMultiplier,
 } from "@/src/lib/difficulty";
-import { vibratePlaceBuilding } from "@/src/lib/haptics";
+import { lightTap } from "@/src/lib/haptics";
 import { playPlacementPop } from "@/src/lib/game-sounds";
 import { captureGameEvent } from "@/src/lib/analytics";
 import {
@@ -449,7 +449,7 @@ export const useLevelRunStore = create<LevelRunStore>()(
           const nextScore = scoreWithPrestige(rawScore);
           const nonce = state.demolishNonce + 1;
 
-          vibratePlaceBuilding();
+          lightTap();
           playPlacementPop();
 
           set({
@@ -508,7 +508,7 @@ export const useLevelRunStore = create<LevelRunStore>()(
         );
         const nextShake = triggerOut.gridShake ? state.gridShakeNonce + 1 : state.gridShakeNonce;
 
-        vibratePlaceBuilding();
+        lightTap();
         playPlacementPop();
 
         set({

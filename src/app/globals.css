@@ -128,6 +128,11 @@ textarea,
     box-shadow: var(--pp-shadow-modal);
   }
 
+  /* Mémo secteur : max-height plus basse (priorité sur .pp-modal-panel). */
+  .pp-modal-panel.pp-modal-panel--story-compact {
+    @apply max-h-[min(68dvh,440px)] sm:max-h-[min(58dvh,400px)];
+  }
+
   .pp-modal-panel--dark {
     @apply border-white/15 bg-gradient-to-b from-slate-900 to-slate-950 text-slate-100;
   }
@@ -263,19 +268,6 @@ textarea,
     #fff 2px,
     #fff 4px
   );
-}
-
-/* Bannières secteurs — léger néon statique sur les titres. */
-.pp-map-banner-kicker {
-  filter: drop-shadow(0 0 6px rgba(34, 211, 238, 0.45));
-}
-
-.pp-map-banner-title {
-  filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.35));
-}
-
-.pp-map-banner-body {
-  filter: drop-shadow(0 0 4px rgba(148, 163, 184, 0.25));
 }
 
 /* z-index du tiroir menu : défini en Tailwind sur le conteneur (z-[100] / panneau z-[101]). */

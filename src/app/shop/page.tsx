@@ -5,9 +5,11 @@ import { motion } from "framer-motion";
 import { Heart, Pickaxe, ScanSearch } from "lucide-react";
 
 import { BottomNav } from "@/src/components/layout/BottomNav";
+import { ContractIcon } from "@/src/components/ui/ContractIcon";
 import { HubShellBar } from "@/src/components/layout/HubShellBar";
 import { ShopDailyBonusHero } from "@/src/components/shop/ShopDailyBonusHero";
 import { ShopProductCard, type ShopProductAccent } from "@/src/components/shop/ShopProductCard";
+import { heavyCash } from "@/src/lib/haptics";
 import { useAppStrings } from "@/src/lib/i18n/useAppStrings";
 import { useEconomyStore } from "@/src/store/useEconomyStore";
 import { useProgressStore } from "@/src/store/useProgressStore";
@@ -68,6 +70,7 @@ export default function ShopPage() {
       return;
     }
     refillLives();
+    heavyCash();
     setToast(t.shop.boughtSurvival);
   }, [refillLives, spendCoins, t.shop]);
 
@@ -77,6 +80,7 @@ export default function ShopPage() {
       return;
     }
     addBoosters("demolition", 1);
+    heavyCash();
     setToast(t.shop.boughtDemolition);
   }, [addBoosters, spendCoins, t.shop]);
 
@@ -86,6 +90,7 @@ export default function ShopPage() {
       return;
     }
     addBoosters("spy", 1);
+    heavyCash();
     setToast(t.shop.boughtSpy);
   }, [addBoosters, spendCoins, t.shop]);
 
@@ -220,7 +225,7 @@ export default function ShopPage() {
               title={t.shop.teaserBriefcaseTitle}
               description={t.shop.teaserBriefcaseDesc}
               price={0}
-              icon={<span className="text-2xl leading-none">💼</span>}
+              icon={<ContractIcon count={1} size="lg" seal="gold" className="opacity-95" />}
               buyLabel={t.shop.buy}
               onBuy={noop}
               disabled={false}

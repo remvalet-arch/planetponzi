@@ -38,11 +38,12 @@ export function EconomyHeader({
   const [tick, setTick] = useState(0);
   const [nowMs, setNowMs] = useState<number | undefined>(undefined);
 
-  const { maxLives, rechargeMs } = useMemo(() => {
+  const { maxLives, rechargeMs, passivePerMin } = useMemo(() => {
     const m = computePassiveModifiers(empireUnlocked);
     return {
       maxLives: EMPIRE_BASE_MAX_LIVES + m.livesMaxBonus,
       rechargeMs: m.lifeRechargeIntervalMs,
+      passivePerMin: Math.max(0, Math.floor(m.totalPassiveIncomePerMinute)),
     };
   }, [empireUnlocked]);
 
@@ -66,24 +67,33 @@ export function EconomyHeader({
       : 0;
 
   const pill =
-    "inline-flex max-w-[min(46vw,11rem)] items-center gap-1 whitespace-nowrap rounded-full border border-white/10 bg-slate-950/70 px-2 py-1 font-mono text-[10px] font-semibold tabular-nums text-white shadow-md backdrop-blur-sm sm:max-w-none sm:gap-1.5 sm:px-2.5 sm:text-[11px]";
+    "inline-flex max-w-[min(52vw,13rem)] items-center gap-1 rounded-full border border-white/10 bg-slate-950/70 px-2 py-1 font-mono text-[10px] font-semibold tabular-nums text-white shadow-md backdrop-blur-sm sm:max-w-none sm:gap-1.5 sm:px-2.5 sm:text-[11px]";
 
   return (
     <div className={`flex shrink-0 flex-wrap items-center justify-end gap-1 sm:gap-1.5 ${className}`.trim()}>
-      <span className={`relative ${pill}`} title="Ponzi Coins">
+      <span
+        className={`relative ${pill} flex-wrap justify-center`}
+        title={passivePerMin > 0 ? `Ponzi Coins · +${passivePerMin}/min passif` : "Ponzi Coins"}
+      >
         <PassiveIncomePop />
-        <span className="shrink-0 text-sm leading-none sm:text-base" aria-hidden>
-          💰
+        <span className="inline-flex shrink-0 items-baseline gap-1 whitespace-nowrap">
+          <span className="text-sm leading-none sm:text-base" aria-hidden>
+            💰
+          </span>
+          <motion.span
+            key={coins}
+            initial={{ scale: 1.08 }}
+            animate={{ scale: 1 }}
+            transition={{ duration: 0.32, ease: [0.22, 1, 0.36, 1] }}
+            className="min-w-0 truncate text-amber-200 tabular-nums"
+          >
+            {coins}
+          </motion.span>
+          <span className="text-[10px] font-medium leading-none text-slate-400/80 sm:text-[11px]">
+            (<span className="tabular-nums text-emerald-400/85">+{passivePerMin}</span>
+            <span className="text-slate-500/90">/min</span>)
+          </span>
         </span>
-        <motion.span
-          key={coins}
-          initial={{ scale: 1.08 }}
-          animate={{ scale: 1 }}
-          transition={{ duration: 0.32, ease: [0.22, 1, 0.36, 1] }}
-          className="min-w-0 truncate whitespace-nowrap text-amber-200 tabular-nums"
-        >
-          {coins}
-        </motion.span>
       </span>
       {showLives ? (
         <span className={pill} title="Vies">
