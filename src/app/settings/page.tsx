@@ -7,6 +7,7 @@ import { HubShellBar } from "@/src/components/layout/HubShellBar";
 import { CloudAuthSection } from "@/src/components/settings/CloudAuthSection";
 import { SettingsCeoDisplayName } from "@/src/components/settings/SettingsCeoDisplayName";
 import { SettingsHapticsRow } from "@/src/components/settings/SettingsHapticsRow";
+import { SettingsSoundRow } from "@/src/components/settings/SettingsSoundRow";
 import { SettingsLanguageRow } from "@/src/components/settings/SettingsLanguageRow";
 import { DevPlaytestPanel } from "@/src/components/dev/DevPlaytestPanel";
 import { useAppStrings } from "@/src/lib/i18n/useAppStrings";
@@ -20,6 +21,7 @@ export default function SettingsPage() {
       <div className="flex min-h-0 flex-1 flex-col items-center gap-4 overflow-y-auto px-6 pb-[calc(5.5rem+env(safe-area-inset-bottom))] pt-4">
         <SettingsLanguageRow />
         <SettingsHapticsRow />
+        <SettingsSoundRow />
         <SettingsCeoDisplayName />
         <div className="flex w-full max-w-sm flex-col gap-3 rounded-pp-xl border border-slate-700/60 bg-slate-900/55 p-4">
           <p className="font-mono text-[10px] uppercase tracking-widest text-slate-500">

@@ -474,6 +474,7 @@ export const useLevelRunStore = create<LevelRunStore>()(
 
         const gridBeforePlacement = state.grid;
         const nextGrid = applyBuildingToGrid(gridBeforePlacement, verdict.cellIndex, verdict.building);
+        useProgressStore.getState().incrementBuildingsPlaced();
         const nextTurn = state.turn + 1;
         const maxTurn = state.placementSequence.length;
         const finished = nextTurn >= maxTurn;
@@ -548,10 +549,12 @@ export const useLevelRunStore = create<LevelRunStore>()(
             }
           }
           useProgressStore.getState().commitLevelResult(state.levelId, stars, nextScore);
-          if (stars > 1) {
+          if (stars > 0) {
             useEconomyStore.getState().addCoins(stars * 10);
-          } else {
+          }
+          if (stars < 1) {
             useEconomyStore.getState().consumeLife();
+            useProgressStore.getState().incrementFailures();
           }
           recordGameCompletion({
             score: nextScore,
@@ -610,6 +613,7 @@ export const useLevelRunStore = create<LevelRunStore>()(
       },
 
       restartCurrentLevel: () => {
+        useProgressStore.getState().incrementFailures();
         get().resetBoard();
       },
 

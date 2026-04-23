@@ -9,8 +9,8 @@ import { PanelBottomOpen, Share2, X } from "lucide-react";
 
 import { Grid } from "@/src/components/game/Grid";
 import { ContractIcon } from "@/src/components/ui/ContractIcon";
-import { playUIClick, playVictoryCash } from "@/src/lib/game-sounds";
-import { successPop } from "@/src/lib/haptics";
+import { playErrorBuzzer, playUIClick, playVictoryCash } from "@/src/lib/game-sounds";
+import { failureShock, successPop } from "@/src/lib/haptics";
 import { computePassiveModifiers } from "@/src/lib/empire-tower";
 import { hasPendingHubUnlock } from "@/src/lib/ceo-memos";
 import {
@@ -206,9 +206,16 @@ export function EndScreen({ onShareFeedback }: EndScreenProps) {
   useEffect(() => {
     if (status !== "finished" || minimized || victoryVibrateRef.current) return;
     victoryVibrateRef.current = true;
-    const id = window.setTimeout(() => successPop(), 480);
+    const earned = calculateStars(score, levelId, grid);
+    const id = window.setTimeout(() => {
+      if (earned > 0) successPop();
+      else {
+        failureShock();
+        playErrorBuzzer();
+      }
+    }, 480);
     return () => window.clearTimeout(id);
-  }, [status, minimized]);
+  }, [status, minimized, score, levelId, grid]);
 
   /** Après les étoiles : victoire (≥1★) → barre 3s puis /map (sauf navigation manuelle). */
   useEffect(() => {
@@ -270,7 +277,7 @@ export function EndScreen({ onShareFeedback }: EndScreenProps) {
       ? t.endScreen.mandateFailedMissing(mandateDetailFragments.join(" · "))
       : null;
   const isOptimalYield = maxScoreEstimate > 0 && score >= maxScoreEstimate;
-  const earnedCoins = earnedStars > 1 ? earnedStars * 10 : 0;
+  const earnedCoins = earnedStars > 0 ? earnedStars * 10 : 0;
 
   const nextId = levelId + 1;
   const hasNextLevel = LEVELS.some((l) => l.id === nextId);
@@ -483,9 +490,26 @@ export function EndScreen({ onShareFeedback }: EndScreenProps) {
 
           {earnedStars <= 1 ? (
             <div
-              className="mt-3 flex flex-col items-center gap-1 rounded-xl border border-rose-900/50 bg-gradient-to-b from-rose-950/50 to-slate-950/40 px-3 py-2 text-center shadow-inner"
+              className="relative mt-3 flex flex-col items-center gap-1 overflow-visible rounded-xl border border-rose-900/50 bg-gradient-to-b from-rose-950/50 to-slate-950/40 px-3 py-2 text-center shadow-inner"
               role="status"
             >
+              {earnedStars === 0 ? (
+                <motion.div
+                  className="pointer-events-none absolute inset-0 z-20 flex items-center justify-center px-2"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ duration: 0.2 }}
+                >
+                  <motion.div
+                    initial={{ scale: 3, opacity: 0, rotate: -14 }}
+                    animate={{ scale: 1, opacity: 1, rotate: -10 }}
+                    transition={{ type: "spring", bounce: 0.5 }}
+                    className="max-w-[min(100%,18rem)] rounded-md border-4 border-red-600 bg-red-950/40 px-3 py-2 text-center font-mono text-xs font-black uppercase leading-tight tracking-[0.2em] text-red-600 shadow-[0_0_24px_rgba(220_38_38/0.45)] ring-2 ring-red-500/40 sm:text-sm"
+                  >
+                    {t.endScreen.failureStampText}
+                  </motion.div>
+                </motion.div>
+              ) : null}
               <span className="text-2xl leading-none" aria-hidden>
                 💔
               </span>

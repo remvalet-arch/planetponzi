@@ -34,6 +34,12 @@ export type ProgressStore = {
   hasSeenShopUnlockCeoMemo: boolean;
   /** Mémo CEO — déblocage Tour (niveau 5). */
   hasSeenTowerUnlockCeoMemo: boolean;
+  /** Vanity : bâtiments posés (toutes parties). */
+  totalBuildingsPlaced: number;
+  /** Vanity : échecs (0★ en fin de mandat) + abandons « Recommencer ». */
+  totalFailures: number;
+  incrementBuildingsPlaced: () => void;
+  incrementFailures: () => void;
   incrementPrestige: () => void;
   markFiscalFreezeTutorialSeen: () => void;
   markShopUnlockCeoMemoSeen: () => void;
@@ -84,6 +90,20 @@ export const useProgressStore = create<ProgressStore>()(
       hasSeenFiscalFreezeTutorial: false,
       hasSeenShopUnlockCeoMemo: false,
       hasSeenTowerUnlockCeoMemo: false,
+      totalBuildingsPlaced: 0,
+      totalFailures: 0,
+
+      incrementBuildingsPlaced: () => {
+        set((s) => ({
+          totalBuildingsPlaced: Math.min(2_000_000_000, Math.max(0, s.totalBuildingsPlaced) + 1),
+        }));
+      },
+
+      incrementFailures: () => {
+        set((s) => ({
+          totalFailures: Math.min(2_000_000_000, Math.max(0, s.totalFailures) + 1),
+        }));
+      },
 
       incrementPrestige: () => {
         set((s) => ({
@@ -118,6 +138,8 @@ export const useProgressStore = create<ProgressStore>()(
           hasSeenFiscalFreezeTutorial: false,
           hasSeenShopUnlockCeoMemo: false,
           hasSeenTowerUnlockCeoMemo: false,
+          totalBuildingsPlaced: 0,
+          totalFailures: 0,
         }));
       },
 
@@ -166,7 +188,7 @@ export const useProgressStore = create<ProgressStore>()(
     }),
     {
       name: "planet-ponzi-progress",
-      version: 11,
+      version: 12,
       storage: persistLocalStorage,
       partialize: (state) => ({
         unlockedLevels: state.unlockedLevels,
@@ -180,6 +202,8 @@ export const useProgressStore = create<ProgressStore>()(
         hasSeenFiscalFreezeTutorial: state.hasSeenFiscalFreezeTutorial,
         hasSeenShopUnlockCeoMemo: state.hasSeenShopUnlockCeoMemo,
         hasSeenTowerUnlockCeoMemo: state.hasSeenTowerUnlockCeoMemo,
+        totalBuildingsPlaced: state.totalBuildingsPlaced,
+        totalFailures: state.totalFailures,
       }),
       migrate: (persisted, fromVersion) => {
         let base = (persisted ?? {}) as Record<string, unknown>;
@@ -273,6 +297,16 @@ export const useProgressStore = create<ProgressStore>()(
               typeof base.hasSeenTowerUnlockCeoMemo === "boolean"
                 ? base.hasSeenTowerUnlockCeoMemo
                 : false,
+          };
+        }
+        if (fromVersion < 12) {
+          const tb = base.totalBuildingsPlaced;
+          const tf = base.totalFailures;
+          base = {
+            ...base,
+            totalBuildingsPlaced:
+              typeof tb === "number" && Number.isFinite(tb) ? Math.max(0, Math.floor(tb)) : 0,
+            totalFailures: typeof tf === "number" && Number.isFinite(tf) ? Math.max(0, Math.floor(tf)) : 0,
           };
         }
         return base;

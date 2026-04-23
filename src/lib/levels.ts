@@ -367,8 +367,9 @@ export function getSolverLevelContext(def: LevelDefinition): SolverLevelContext 
  * Les cibles **ne sont pas** une progression arithmétique fixe sur l’id niveau : elles sont
  * **proportionnelles au plafond glouton** `estimateMaxScore(seed, deck, ctx)` pour chaque mandat.
  *
- * - **Forme** : `one = max(15, ⌊0.35×max⌋)`, `two = ⌊0.6×max⌋`, `three = ⌊0.85×max⌋` (avec +1 si
- *   égalités pour garder 1 < 2 < 3). Donc **localement linéaire en maxScore**, pas exponentielle en `id`.
+ * - **Forme** : `one = max(15, ⌊0.65×max⌋)`, `two = ⌊0.80×max⌋`, `three = ⌊0.95×max⌋` (avec +1 si
+ *   égalités pour garder 1 < 2 < 3). Courbe **impitoyable** : ~60 % du max ne suffit plus pour 1★ ;
+ *   le joueur doit structurer la grille (synergies, méga 2×2, mandats) sous peine de 0★.
  * - **Deck / multiplicateur** : `deckChallengeForLevel` — mode 0 jusqu’au 20, puis 2 jusqu’au 80, puis 3
  *   (sauf 4 réservé). Saut de difficulté **par paliers d’ids**, pas par planetId seul.
  * - **Secteur (planetId)** : obstacles / chaos / mandats (`winCondition`, sismique niv.100) modulent le
@@ -384,9 +385,9 @@ function dynamicStarThresholds(
   solverCtx: SolverLevelContext,
 ): LevelStarThresholds {
   const maxScore = estimateMaxScore(cargoSeed, deck, solverCtx);
-  let three = Math.floor(maxScore * 0.85);
-  let two = Math.floor(maxScore * 0.6);
-  const one = Math.max(15, Math.floor(maxScore * 0.35));
+  let three = Math.floor(maxScore * 0.95);
+  let two = Math.floor(maxScore * 0.8);
+  const one = Math.max(15, Math.floor(maxScore * 0.65));
   if (two <= one) two = one + 1;
   if (three <= two) three = two + 1;
   return { one, two, three };

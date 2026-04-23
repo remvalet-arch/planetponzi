@@ -3,20 +3,27 @@
 import { useMemo } from "react";
 
 import { formatMultiplierFr } from "@/src/lib/difficulty";
+import { useAppStrings } from "@/src/lib/i18n/useAppStrings";
 import {
   formatAvgScore,
   getLevelLabel,
   getPlayerStats,
   getTotalGamesCompleted,
 } from "@/src/lib/stats";
+import { useProgressStore } from "@/src/store/useProgressStore";
 import { DECK_CHALLENGE_LEVELS, type DeckChallengeLevel } from "@/src/types/game";
 
 /**
  * Contenu des statistiques (page `/stats` ou modale).
  */
 export function StatsScreen() {
+  const { t } = useAppStrings();
   const stats = useMemo(() => getPlayerStats(), []);
   const totalPlayed = getTotalGamesCompleted();
+  const totalBuildingsPlaced = useProgressStore((s) => s.totalBuildingsPlaced);
+  const totalFailures = useProgressStore((s) => s.totalFailures);
+  const carbonTons = totalBuildingsPlaced * 150;
+  const burnoutInterns = totalFailures * 3;
 
   const maxBar = useMemo(() => {
     let m = 1;
@@ -138,6 +145,36 @@ export function StatsScreen() {
             );
           })}
         </ul>
+      </section>
+
+      <section
+        className={`${rowCard} space-y-3 px-3 py-3`}
+        aria-labelledby="stats-rse-heading"
+      >
+        <p
+          id="stats-rse-heading"
+          className="font-mono text-[10px] uppercase tracking-widest text-rose-300/90"
+        >
+          {t.statsRse.sectionTitle}
+        </p>
+        <div className="flex flex-col gap-2 font-mono text-xs sm:flex-row sm:justify-between sm:gap-6">
+          <div>
+            <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-500">
+              {t.statsRse.carbonTitle}
+            </p>
+            <p className="mt-1 text-lg font-black tabular-nums text-emerald-400/90">
+              {t.statsRse.carbonValue(carbonTons)}
+            </p>
+          </div>
+          <div>
+            <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-500">
+              {t.statsRse.burnoutTitle}
+            </p>
+            <p className="mt-1 text-lg font-black tabular-nums text-rose-300/90">
+              {t.statsRse.burnoutValue(burnoutInterns)}
+            </p>
+          </div>
+        </div>
       </section>
 
       <p className="border-t border-slate-700/60 pt-3 font-mono text-[10px] text-slate-500">

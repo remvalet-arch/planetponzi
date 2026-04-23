@@ -5,6 +5,18 @@
 
 let ctx: AudioContext | null = null;
 
+function readSoundEffectsEnabled(): boolean {
+  if (typeof window === "undefined") return false;
+  try {
+    const { useSettingsStore } =
+      // eslint-disable-next-line @typescript-eslint/no-require-imports -- évite cycle au chargement
+      require("@/src/store/useSettingsStore") as typeof import("@/src/store/useSettingsStore");
+    return useSettingsStore.getState().soundEnabled !== false;
+  } catch {
+    return true;
+  }
+}
+
 function getAudioContext(): AudioContext | null {
   if (typeof window === "undefined") return null;
   const AC = window.AudioContext ?? (window as typeof window & { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
@@ -43,12 +55,14 @@ function beep(
 
 /** Clic UI (boutons navigation, etc.) — très court, aigu. */
 export function playUIClick(): void {
+  if (!readSoundEffectsEnabled()) return;
   resumeAudio();
   beep(2000, 0.02, "triangle", 0.08);
 }
 
 /** Placement / démolition validé (fréquence légèrement randomisée pour éviter la monotonie). */
 export function playPlacementPop(): void {
+  if (!readSoundEffectsEnabled()) return;
   resumeAudio();
   const freq = 920 * (0.85 + Math.random() * 0.3);
   beep(freq, 0.045, "sine", 0.1);
@@ -56,6 +70,7 @@ export function playPlacementPop(): void {
 
 /** Marché noir refusé, etc. */
 export function playErrorBuzzer(): void {
+  if (!readSoundEffectsEnabled()) return;
   resumeAudio();
   beep(140, 0.12, "square", 0.08);
   const c = getAudioContext();
@@ -64,6 +79,7 @@ export function playErrorBuzzer(): void {
 
 /** Au moins 1★ en fin de partie. */
 export function playVictoryCash(): void {
+  if (!readSoundEffectsEnabled()) return;
   resumeAudio();
   const c = getAudioContext();
   if (!c) return;
@@ -76,6 +92,7 @@ export function playVictoryCash(): void {
 
 /** Achat réussi sur la Tour. */
 export function playEmpirePurchase(): void {
+  if (!readSoundEffectsEnabled()) return;
   resumeAudio();
   const c = getAudioContext();
   if (!c) return;
@@ -88,6 +105,7 @@ export function playEmpirePurchase(): void {
  * Fusion industrielle 2×2 : arpège ascendant + brillante finale (récompense « juice »).
  */
 export function playMegaFusion(): void {
+  if (!readSoundEffectsEnabled()) return;
   resumeAudio();
   const c = getAudioContext();
   if (!c) return;

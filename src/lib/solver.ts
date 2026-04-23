@@ -37,7 +37,7 @@ export type SolverLevelContext = {
   seismicRift?: SeismicRiftSolverSpec;
   /** Requis si faille sismique. */
   cargoSeed?: string;
-  /** Bonus Tour Ponzi : +N par mine (hors méga 2×2 — aligné sur `session-scoring`). */
+  /** Bonus Tour Ponzi : +N par mine ; la méga 2×2 inclut +4N dans le total session (`session-scoring`). */
   mineScoreBonusPerMine?: number;
   /** Mandat grille (isolation / alignement) — pris en compte par le glouton et les seuils. */
   winCondition?: WinCondition;

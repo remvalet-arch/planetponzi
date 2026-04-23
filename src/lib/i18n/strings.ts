@@ -137,6 +137,11 @@ export const strings = {
       hapticsBody:
         "Active ou désactive les vibrations du téléphone lors des actions du jeu (placements, succès, achats).",
     },
+    settingsAudio: {
+      sectionTitle: "Audio",
+      soundLabel: "Effets sonores",
+      soundBody: "Active ou coupe les bips et jingles générés pendant la partie (Web Audio).",
+    },
     ceoDisplayName: {
       kicker: "Identité",
       title: "Nom de PDG",
@@ -391,6 +396,14 @@ export const strings = {
       /** Convocation CEO / mémo hub — CTA primaire quand la carte est requise avant le niveau suivant. */
       returnToHqRequired: "Retour au QG (Message du Board)",
       pendingMemoMapFirst: "Le Board exige un passage par la carte avant la suite.",
+      failureStampText: "REDRESSEMENT FISCAL",
+    },
+    statsRse: {
+      sectionTitle: "Bilan RSE & RH",
+      carbonTitle: "Empreinte Carbone",
+      carbonValue: (tons: number) => `${tons} Tonnes`,
+      burnoutTitle: "Stagiaires en Burn-out",
+      burnoutValue: (n: number) => `${n}`,
     },
     energy: {
       kicker: "Énergie",
@@ -593,6 +606,11 @@ export const strings = {
       hapticsLabel: "Haptic feedback (vibrations)",
       hapticsBody:
         "Turn phone vibrations on or off for in-game actions (placements, wins, purchases).",
+    },
+    settingsAudio: {
+      sectionTitle: "Audio",
+      soundLabel: "Sound effects",
+      soundBody: "Enable or mute in-game bleeps and jingles (Web Audio).",
     },
     ceoDisplayName: {
       kicker: "Identity",
@@ -841,6 +859,14 @@ export const strings = {
       backToHqCountdown: (seconds: number) => `HQ in ${seconds}s`,
       returnToHqRequired: "Return to HQ (Board message)",
       pendingMemoMapFirst: "The Board requires a stop at the map before you continue.",
+      failureStampText: "AUDIT FAILED",
+    },
+    statsRse: {
+      sectionTitle: "ESG & HR Report",
+      carbonTitle: "Carbon footprint",
+      carbonValue: (tons: number) => `${tons} metric tons`,
+      burnoutTitle: "Interns in burnout",
+      burnoutValue: (n: number) => `${n}`,
     },
     energy: {
       kicker: "Energy",

@@ -36,6 +36,11 @@ export function heavyCash(): void {
   safeVibrate([50, 50, 100]);
 }
 
+/** Fin de mandat sans contrat (0★) — feedback d’échec fort. */
+export function failureShock(): void {
+  safeVibrate([100, 50, 100]);
+}
+
 export function vibrateLevelTap(): void {
   safeVibrate(10);
 }

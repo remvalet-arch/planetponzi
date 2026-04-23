@@ -61,7 +61,8 @@ export function calculateSessionGridScore(
   levelId = 0,
 ): number {
   if (grid.length !== CELL_COUNT) return 0;
-  if (detectIndustrialMega2x2(grid)) return industrialMegaTotalForLevel(levelId);
+  if (detectIndustrialMega2x2(grid))
+    return industrialMegaTotalForLevel(levelId, resolveMineBonus(mineScoreBonusPerMine));
 
   const mine = resolveMineBonus(mineScoreBonusPerMine);
   const frozen = new Set(frozenCellIndices);
@@ -89,7 +90,7 @@ export function getSessionCellScores(
   const mega = detectIndustrialMega2x2(grid);
   if (mega) {
     const megaSet = new Set<number>(mega.indices);
-    const total = industrialMegaTotalForLevel(levelId);
+    const total = industrialMegaTotalForLevel(levelId, resolveMineBonus(mineScoreBonusPerMine));
     const per = total / 4;
     return Array.from({ length: CELL_COUNT }, (_, i) => (megaSet.has(i) ? per : 0));
   }

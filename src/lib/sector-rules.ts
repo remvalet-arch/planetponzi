@@ -3,6 +3,7 @@
  * Niveaux 91–99 : chaos — combinaisons déterministes dérivées de la seed de règle.
  */
 
+import { getMineScoreBonusPerMine } from "@/src/lib/empire-tower";
 import { fnv1a32 } from "@/src/lib/rng";
 
 export type ChaosGameplayFlags = {
@@ -85,7 +86,14 @@ export function isSiliconMineQuotaLevel(levelId: number): boolean {
   return chaosGameplayForLevel(levelId)?.minMine4 === true;
 }
 
-/** Score méga-industriel (2×2 mines) selon le secteur. */
-export function industrialMegaTotalForLevel(levelId: number): number {
-  return isMegaPlateauSector(levelId) ? 60 : 40;
+/**
+ * Score méga-industriel (2×2 mines) : base secteur (40 ou 60) + bonus Tour × 4 mines
+ * (aligné sur quatre cases du bloc — la méga reste compétitive en fin de partie).
+ */
+export function industrialMegaTotalForLevel(levelId: number, mineScoreBonusPerMine?: number): number {
+  const base = isMegaPlateauSector(levelId) ? 60 : 40;
+  const bonus =
+    mineScoreBonusPerMine !== undefined ? mineScoreBonusPerMine : getMineScoreBonusPerMine();
+  const mineBonus = Math.max(0, Math.floor(bonus));
+  return base + 4 * mineBonus;
 }

@@ -26,7 +26,7 @@ export function logDifficultyCurveAudit(): void {
     "2★": l.stars.two,
     "3★": l.stars.three,
   }));
-  console.info("[Planète Ponzi playtest] Courbe contrats — voir commentaire dans `levels.ts` (`dynamicStarThresholds`).");
+  console.info("[Planète Ponzi playtest] Courbe contrats — `levels.ts` (`dynamicStarThresholds`, fractions 0.65 / 0.80 / 0.95).");
   console.table(rows);
 }
 

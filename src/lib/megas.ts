@@ -1,6 +1,6 @@
 import type { BuildingType, Cell } from "@/src/types/game";
 
-/** Score total lorsqu’un carré 2×2 de mines forme le Complexe Industriel. */
+/** Base M$ du méga 2×2 mines (secteur standard) — le total réel ajoute `4 ×` bonus Tour (`sector-rules`). */
 export const INDUSTRIAL_MEGA_TOTAL_SCORE = 40;
 
 const COLS = 4;
