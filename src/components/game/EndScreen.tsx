@@ -12,6 +12,7 @@ import { ContractIcon } from "@/src/components/ui/ContractIcon";
 import { playUIClick, playVictoryCash } from "@/src/lib/game-sounds";
 import { successPop } from "@/src/lib/haptics";
 import { computePassiveModifiers } from "@/src/lib/empire-tower";
+import { hasPendingHubUnlock } from "@/src/lib/ceo-memos";
 import {
   calculateStars,
   getLevelById,
@@ -88,8 +89,36 @@ export function EndScreen({ onShareFeedback }: EndScreenProps) {
   const deckChallengeLevel = useLevelRunStore((s) => s.deckChallengeLevel);
   const enterLevel = useLevelRunStore((s) => s.enterLevel);
   const unlockedLevels = useProgressStore((s) => s.unlockedLevels);
+  const hasSeenShopUnlockCeoMemo = useProgressStore((s) => s.hasSeenShopUnlockCeoMemo);
+  const hasSeenTowerUnlockCeoMemo = useProgressStore((s) => s.hasSeenTowerUnlockCeoMemo);
   const mineEmpireBonus = useEmpireStore((s) =>
     computePassiveModifiers(s.unlockedNodes).mineScoreBonusPerMine,
+  );
+
+  const earnedStarsForHub = useMemo(() => {
+    if (status !== "finished" || levelId < 1 || grid.length !== 16) return 0;
+    return calculateStars(score, levelId, grid);
+  }, [status, levelId, score, grid]);
+
+  const nextIdForHub = levelId >= 1 ? levelId + 1 : 0;
+  const hasNextLevelForHub = LEVELS.some((l) => l.id === nextIdForHub);
+
+  const unlockedLevelsForHubMemo = useMemo(() => {
+    const arr = [...unlockedLevels];
+    if (earnedStarsForHub >= 1 && hasNextLevelForHub && !arr.includes(nextIdForHub)) {
+      arr.push(nextIdForHub);
+    }
+    return arr;
+  }, [unlockedLevels, earnedStarsForHub, hasNextLevelForHub, nextIdForHub]);
+
+  const pendingHubMemo = useMemo(
+    () =>
+      hasPendingHubUnlock({
+        unlockedLevels: unlockedLevelsForHubMemo,
+        hasSeenShopUnlockCeoMemo,
+        hasSeenTowerUnlockCeoMemo,
+      }),
+    [unlockedLevelsForHubMemo, hasSeenShopUnlockCeoMemo, hasSeenTowerUnlockCeoMemo],
   );
 
   const [shareLabel, setShareLabel] = useState<"idle" | "copied" | "error">("idle");
@@ -274,10 +303,14 @@ export function EndScreen({ onShareFeedback }: EndScreenProps) {
     setMinimized(false);
   };
 
-  const handleContinue = () => {
+  const handlePrimaryVictoryCta = () => {
     playUIClick();
     skipAutoMapRef.current = true;
     setShowVictoryExitBar(false);
+    if (earnedStars >= 1 && pendingHubMemo) {
+      router.push("/map");
+      return;
+    }
     if (nextUnlocked) {
       router.push(`/level/${nextId}`);
     } else {
@@ -321,7 +354,8 @@ export function EndScreen({ onShareFeedback }: EndScreenProps) {
               </motion.span>
             ))}
             <span className="whitespace-nowrap tabular-nums text-slate-400">
-              · {score} {t.endScreen.pointsUnit}
+              · {score}
+              {t.endScreen.msUnit}
             </span>
           </span>
           <span className="sr-only">{t.endScreen.reopenBilanSr}</span>
@@ -398,8 +432,8 @@ export function EndScreen({ onShareFeedback }: EndScreenProps) {
           </p>
           <div className="mt-1 mb-3 flex items-center justify-center gap-6">
             <p className="text-3xl font-black text-white">
-              {score}{" "}
-              <span className="text-lg text-slate-400">{t.endScreen.pointsUnit}</span>
+              {score}
+              <span className="text-lg text-slate-400">{t.endScreen.msUnit}</span>
             </p>
             {earnedCoins > 0 && (
               <p className="flex items-center gap-1.5 text-2xl font-black text-amber-400 tabular-nums">
@@ -475,7 +509,11 @@ export function EndScreen({ onShareFeedback }: EndScreenProps) {
             </div>
           ) : null}
 
-          {nextUnlocked ? (
+          {earnedStars >= 1 && pendingHubMemo ? (
+            <p className="mt-2 text-center font-mono text-[10px] text-amber-200/90">
+              {t.endScreen.pendingMemoMapFirst}
+            </p>
+          ) : nextUnlocked ? (
             <p className="mt-2 text-center font-mono text-[10px] text-slate-500">
               {t.endScreen.nextStopLevel(nextId)}
             </p>
@@ -500,7 +538,7 @@ export function EndScreen({ onShareFeedback }: EndScreenProps) {
             {t.endScreen.escapeOrBackdropHint}
           </p>
 
-          {earnedStars > 0 && showVictoryExitBar ? (
+          {earnedStars > 0 && showVictoryExitBar && !pendingHubMemo ? (
             <div className="mt-2 px-1">
               <p className="mb-1 text-center font-mono text-[10px] text-slate-400">
                 {t.endScreen.backToHqCountdown(AUTO_MAP_REDIRECT_SEC)}
@@ -535,10 +573,10 @@ export function EndScreen({ onShareFeedback }: EndScreenProps) {
             <motion.button
               type="button"
               whileTap={{ scale: 0.92 }}
-              onClick={handleContinue}
+              onClick={handlePrimaryVictoryCta}
               className="flex min-h-14 w-full items-center justify-center rounded-pp-xl border border-emerald-600/60 bg-gradient-to-b from-emerald-500 to-emerald-700 px-5 py-3 font-mono text-sm font-semibold text-white shadow-lg hover:brightness-110 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-300"
             >
-              {t.endScreen.continue}
+              {earnedStars >= 1 && pendingHubMemo ? t.endScreen.returnToHqRequired : t.endScreen.continue}
             </motion.button>
           </div>
 

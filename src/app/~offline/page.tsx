@@ -8,7 +8,7 @@ export const metadata: Metadata = {
 export default function OfflinePage() {
   return (
     <div className="flex min-h-0 flex-1 flex-col items-center justify-center gap-6 bg-[#0B0F19] px-6 pb-10 pt-[max(2.5rem,calc(env(safe-area-inset-top)+1.5rem))] text-center text-slate-100">
-      <p className="font-mono text-[10px] uppercase tracking-[0.35em] text-cyan-300/90">Planet Ponzi Saga</p>
+      <p className="font-mono text-[10px] uppercase tracking-[0.35em] text-cyan-300/90">Planète Ponzi</p>
       <h1 className="max-w-sm text-2xl font-bold tracking-tight text-white">Vous êtes hors ligne</h1>
       <p className="max-w-md font-mono text-sm text-slate-400">
         La connexion a sauté. Les niveaux déjà chargés peuvent rester disponibles grâce au cache ;

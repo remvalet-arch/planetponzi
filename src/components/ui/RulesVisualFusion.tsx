@@ -14,7 +14,8 @@ type RulesVisualFusionProps = {
  * Mini-grille 2×2 pour la directive « synergie de groupe » (fusion méga) — mêmes skins qu’en partie.
  */
 export function RulesVisualFusion({ planetId }: RulesVisualFusionProps) {
-  const { emoji, color } = getBuildingTheme("habitacle", planetId);
+  /** Aligné sur `detectIndustrialMega2x2` : fusion méga = quatre mines uniquement. */
+  const { emoji, color } = getBuildingTheme("mine", planetId);
   return (
     <div
       className="mx-auto grid w-max grid-cols-2 gap-1 rounded-lg border border-cyan-500/35 bg-slate-950/80 p-2 shadow-inner shadow-cyan-950/40"

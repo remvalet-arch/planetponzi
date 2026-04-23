@@ -2,7 +2,7 @@ import { getSupabaseBrowser } from "@/src/lib/supabase";
 import type { BuildingType } from "@/src/types/game";
 import type { Cell } from "@/src/types/game";
 
-export type SagaCompletionApiPayload = {
+export type GameCompletionApiPayload = {
   levelId: number;
   stars: number;
   score: number;
@@ -22,7 +22,7 @@ export type SagaCompletionApiPayload = {
  * Envoie la partie terminée vers `/api/game-completions` (Supabase via service role).
  * Ne bloque jamais l’UI : en cas d’erreur réseau ou 5xx, log seulement.
  */
-export function syncGameCompletionToApi(payload: SagaCompletionApiPayload): void {
+export function syncGameCompletionToApi(payload: GameCompletionApiPayload): void {
   if (typeof window === "undefined") return;
 
   const body = {

@@ -174,7 +174,7 @@ export default function ShopPage() {
                   price={meta.price}
                   priceLabel={t.shop.priceCoins(meta.price)}
                   icon={p.icon}
-                  buyLabel={t.shop.buy}
+                  buyLabel={t.shop.ctaAcquire}
                   onBuy={meta.onBuy}
                   disabled={coins < meta.price}
                   accent={p.accent}

@@ -1,4 +1,4 @@
-/** Persistance : l’utilisateur a validé le briefing Saga (une fois). */
+/** Persistance : l’utilisateur a validé le briefing d’entrée (une fois). */
 export const BRIEFING_ACK_STORAGE_KEY = "pp-saga-briefing-ack-v1";
 
 export function isBriefingAcked(): boolean {

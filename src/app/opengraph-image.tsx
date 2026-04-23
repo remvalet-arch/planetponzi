@@ -163,7 +163,7 @@ export default function OpenGraphImage() {
               textShadow: "0 2px 12px rgba(15,23,42,0.35)",
             }}
           >
-            Grille 4×4 · Saga · étoiles · PWA hors-ligne
+            Grille 4×4 · réflexion · mandats · PWA hors-ligne
           </div>
         </div>
       </div>

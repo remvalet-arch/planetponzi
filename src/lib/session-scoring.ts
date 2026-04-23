@@ -50,7 +50,8 @@ function fluxTripleAlignmentBonus(grid: Cell[]): number {
 }
 
 /**
- * Score de session : méga 2×2 mines → total secteur ; sinon somme des cases avec gels fiscaux à 0.
+ * Score de session : méga 2×2 **mines uniquement** (`detectIndustrialMega2x2`) → total secteur ;
+ * sinon somme des cases avec gels fiscaux à 0.
  * @param mineScoreBonusPerMine — bonus Tour par mine ; si omis, lecture Empire (client).
  */
 export function calculateSessionGridScore(

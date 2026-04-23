@@ -26,7 +26,7 @@ export type LevelStarThresholds = {
   three: number;
 };
 
-/** Position sur la carte Saga (pourcentages 0–100, coin supérieur gauche du plateau). */
+/** Position sur la carte des marchés (pourcentages 0–100, coin supérieur gauche du plateau). */
 export type LevelMapPosition = {
   x: number;
   y: number;
@@ -296,7 +296,7 @@ export type LevelDefinition = {
   winCondition?: WinCondition;
 };
 
-/** Nombre de niveaux Saga générés (carte + progression). */
+/** Nombre de niveaux sur la carte (génération carte + progression). */
 export const LEVEL_COUNT = 100;
 
 const CENTER_VOID_OBSTACLES: ObstacleSpec[] = [
@@ -361,7 +361,23 @@ export function getSolverLevelContext(def: LevelDefinition): SolverLevelContext 
   return buildSolverContext(def.id, def.seed, def.obstacles, def.seismicRift, def.winCondition);
 }
 
-/** Seuils dérivés du score max estimé (solver glouton + marges 35 % / 60 % / 85 %). */
+/**
+ * Courbe de difficulté « contrats » (1–100) — audit playtest
+ * ----------------------------------------------------------
+ * Les cibles **ne sont pas** une progression arithmétique fixe sur l’id niveau : elles sont
+ * **proportionnelles au plafond glouton** `estimateMaxScore(seed, deck, ctx)` pour chaque mandat.
+ *
+ * - **Forme** : `one = max(15, ⌊0.35×max⌋)`, `two = ⌊0.6×max⌋`, `three = ⌊0.85×max⌋` (avec +1 si
+ *   égalités pour garder 1 < 2 < 3). Donc **localement linéaire en maxScore**, pas exponentielle en `id`.
+ * - **Deck / multiplicateur** : `deckChallengeForLevel` — mode 0 jusqu’au 20, puis 2 jusqu’au 80, puis 3
+ *   (sauf 4 réservé). Saut de difficulté **par paliers d’ids**, pas par planetId seul.
+ * - **Secteur (planetId)** : obstacles / chaos / mandats (`winCondition`, sismique niv.100) modulent le
+ *   `solverCtx` → **maxScore varie par vague** ; certains secteurs appliquent encore **×1,2** sur les
+ *   trois seuils (`isInflationStarSector`). Les planètes ne sont donc pas un simple « re-skin » : elles
+ *   déforment la courbe via la géométrie de grille + règles.
+ * - **Synthèse** : la courbe globale 1→100 suit l’**enveloppe du solver** sous contraintes de plus en
+ *   plus dures ; inspecter `LEVELS.map(l => l.stars)` ou lancer l’audit console en dev (`dev-playtest-tools`).
+ */
 function dynamicStarThresholds(
   cargoSeed: string,
   deck: DeckChallengeLevel,
@@ -503,7 +519,7 @@ export function calculateStars(score: number, levelId: number, grid?: Cell[]): 0
 }
 
 /**
- * Niveau « courant » sur la carte : premier objectif pertinent dans l’ordre Saga.
+ * Niveau « courant » sur la carte : premier objectif pertinent dans l’ordre des mandats.
  * - On privilégie la **progression avant** : si un palier plus haut est déjà débloqué,
  *   un ancien niveau incomplet (moins de 3★) ne bloque plus l’indicateur carte (évite la
  *   carte « figée » au niveau 15 après avoir gagné 16–18 avec 1–2★ sur 15).

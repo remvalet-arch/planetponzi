@@ -50,7 +50,7 @@ export type Cell = {
 
 /** Snapshot sérialisable de l’état de jeu (tests, persistance éventuelle). */
 export type GameState = {
-  /** Identifiant du niveau Saga en cours (0 = aucune session chargée). */
+  /** Identifiant du niveau en cours sur la carte (0 = aucune session chargée). */
   levelId: number;
   /** Seed de cargaison du niveau (RNG déterministe). */
   seed: string;

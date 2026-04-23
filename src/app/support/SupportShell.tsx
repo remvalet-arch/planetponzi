@@ -17,7 +17,7 @@ export function SupportShell() {
           <p className="font-mono text-[10px] uppercase tracking-[0.35em] text-cyan-300/90">Merci</p>
           <h1 className="mt-3 text-2xl font-bold tracking-tight text-white sm:text-3xl">Un mot du développeur</h1>
           <p className="mt-4 font-mono text-sm leading-relaxed text-slate-400">
-            Merci d&apos;avoir joué à <span className="font-semibold text-slate-100">Planet Ponzi Saga</span>.
+            Merci d&apos;avoir joué à <span className="font-semibold text-slate-100">Planète Ponzi</span>.
             Si le jeu vous a fait sourire (ou rager sur une grille), un petit soutien aide à garder le projet
             vivant : correctifs, niveaux, et idées un peu trop ambitieuses.
           </p>

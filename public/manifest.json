@@ -1,27 +1,28 @@
 {
-  "name": "Planet Ponzi Saga",
-  "short_name": "Planet Ponzi",
-  "description": "Planet Ponzi Saga — puzzle spatial par niveaux, style Saga, jouable hors-ligne.",
+  "name": "Planète Ponzi | Jeu de réflexion capitaliste et cynique",
+  "short_name": "Planète Ponzi",
+  "description": "Jeu de réflexion capitaliste et cynique : fusionnez des bâtiments, fuyez l'audit fiscal et bâtissez votre empire sur la carte des marchés.",
   "start_url": "/",
+  "scope": "/",
   "display": "standalone",
-  "background_color": "#f6f7ff",
-  "theme_color": "#7c3aed",
+  "background_color": "#09090b",
+  "theme_color": "#020617",
   "orientation": "portrait-primary",
   "icons": [
     {
-      "src": "/icon-192.png",
+      "src": "/icon-192x192.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "/icon-512.png",
+      "src": "/icon-512x512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "/icon-512.png",
+      "src": "/icon-512x512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "maskable"

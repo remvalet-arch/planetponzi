@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
 /*
- * Planet Ponzi — DA « Bright & Juicy » (casual / Saga)
+ * Planète Ponzi — DA « Bright & Juicy » (casual / cynique)
  * Tokens sémantiques : bg-pp-* / border-pp-* / rounded-pp-*
  */
 :root {
@@ -237,7 +237,7 @@ textarea,
   }
 }
 
-/* Carte Saga — flux de données sur le tracé SVG (léger, pas de filtre supplémentaire). */
+/* Carte des marchés — flux de données sur le tracé SVG (léger, pas de filtre supplémentaire). */
 @keyframes data-flow {
   to {
     stroke-dashoffset: -100;

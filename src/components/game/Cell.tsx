@@ -26,7 +26,7 @@ function obstacleCopyLabel(
 
 export type CellProps = {
   cell: CellModel;
-  /** Secteur Saga (0–9) — skins + libellés ARIA. */
+  /** Secteur carte (0–9) — skins + libellés ARIA. */
   planetId?: number;
   /** Placement normal (case vide) ou démolition (case occupée). */
   onClick?: () => void;

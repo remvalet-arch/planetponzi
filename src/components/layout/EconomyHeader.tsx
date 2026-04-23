@@ -24,10 +24,13 @@ function formatCountdown(ms: number): string {
 export function EconomyHeader({
   className = "",
   showLives = true,
+  compact = false,
 }: {
   className?: string;
   /** Affiche le badge vies + timer (ex. masqué sur la Tour). */
   showLives?: boolean;
+  /** HUD partie : pilules plus étroites, sans détail passif /min. */
+  compact?: boolean;
 }) {
   const coins = useEconomyStore((s) => s.coins);
   const lives = useEconomyStore((s) => s.lives);
@@ -66,8 +69,9 @@ export function EconomyHeader({
       ? Math.max(0, lastLifeRechargeTime + rechargeMs - nowMs)
       : 0;
 
-  const pill =
-    "inline-flex max-w-[min(52vw,13rem)] items-center gap-1 rounded-full border border-white/10 bg-slate-950/70 px-2 py-1 font-mono text-[10px] font-semibold tabular-nums text-white shadow-md backdrop-blur-sm sm:max-w-none sm:gap-1.5 sm:px-2.5 sm:text-[11px]";
+  const pill = compact
+    ? "inline-flex max-w-[min(34vw,8.25rem)] items-center gap-0.5 rounded-full border border-white/10 bg-slate-950/70 px-1.5 py-0.5 font-mono text-[9px] font-semibold tabular-nums text-white shadow-md backdrop-blur-sm sm:max-w-[min(30vw,7.5rem)] sm:gap-1 sm:px-2 sm:text-[10px]"
+    : "inline-flex max-w-[min(52vw,13rem)] items-center gap-1 rounded-full border border-white/10 bg-slate-950/70 px-2 py-1 font-mono text-[10px] font-semibold tabular-nums text-white shadow-md backdrop-blur-sm sm:max-w-none sm:gap-1.5 sm:px-2.5 sm:text-[11px]";
 
   return (
     <div className={`flex shrink-0 flex-wrap items-center justify-end gap-1 sm:gap-1.5 ${className}`.trim()}>
@@ -77,7 +81,7 @@ export function EconomyHeader({
       >
         <PassiveIncomePop />
         <span className="inline-flex shrink-0 items-baseline gap-1 whitespace-nowrap">
-          <span className="text-sm leading-none sm:text-base" aria-hidden>
+          <span className={`leading-none ${compact ? "text-xs sm:text-sm" : "text-sm sm:text-base"}`} aria-hidden>
             💰
           </span>
           <motion.span
@@ -89,15 +93,20 @@ export function EconomyHeader({
           >
             {coins}
           </motion.span>
-          <span className="text-[10px] font-medium leading-none text-slate-400/80 sm:text-[11px]">
-            (<span className="tabular-nums text-emerald-400/85">+{passivePerMin}</span>
-            <span className="text-slate-500/90">/min</span>)
-          </span>
+          {!compact ? (
+            <span className="text-[10px] font-medium leading-none text-slate-400/80 sm:text-[11px]">
+              (<span className="tabular-nums text-emerald-400/85">+{passivePerMin}</span>
+              <span className="text-slate-500/90">/min</span>)
+            </span>
+          ) : null}
         </span>
       </span>
       {showLives ? (
         <span className={pill} title="Vies">
-          <span className="shrink-0 text-sm leading-none sm:text-base" aria-hidden>
+          <span
+            className={`shrink-0 leading-none ${compact ? "text-xs sm:text-sm" : "text-sm sm:text-base"}`}
+            aria-hidden
+          >
             ❤️
           </span>
           <span className="whitespace-nowrap text-rose-100">

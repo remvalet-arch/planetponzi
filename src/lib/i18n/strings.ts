@@ -7,6 +7,9 @@
 
 import { BIOME_ROWS_EN, BIOME_ROWS_FR } from "@/src/lib/i18n/biome-copy";
 
+/** Espace fin insécable + M$ — suffixe affiché après une valeur chiffrée (valorisation). */
+export const VALORIZATION_MS_UNIT = "\u202fM$";
+
 export type Locale = "fr" | "en";
 
 export type PlanetStrings = {
@@ -17,8 +20,16 @@ export type PlanetStrings = {
 export const strings = {
   fr: {
     brand: {
-      name: "Planet Ponzi",
+      name: "Planète Ponzi",
       tagline: "Capitalisme spatial. Un mandat par jour.",
+    },
+    homeSplash: {
+      displayTitle: "PLANÈTE PONZI",
+      slogan: "Jeu de réflexion capitaliste et cynique",
+      boardLine1: "Prêt pour le prochain tour de table ?",
+      boardLine2: "Le Board attend vos résultats.",
+      boardLine3: "Optimisez la grille. Maximisez les profits.",
+      cta: "Ouvrir la séance",
     },
     /** Secteurs 1–10 (10 niveaux chacun) — lore cynique. */
     planets: [
@@ -72,13 +83,13 @@ export const strings = {
         `Cargaison · Niveau ${levelId} · ${seed}`,
     },
     installPwa: {
-      bannerText: "Téléchargez Planet Ponzi pour jouer hors-ligne ! 🚀",
+      bannerText: "Téléchargez Planète Ponzi pour jouer hors-ligne ! 🚀",
       installCta: "Installer",
       dismissAria: "Masquer pour cette session",
       bannerAria: "Proposition d’installation de l’application",
       iosModalTitle: "Sur l’écran d’accueil (iOS)",
       iosModalBody:
-        "Touchez l’icône Partage ⬆️ en bas, puis « Sur l’écran d’accueil » pour ajouter Planet Ponzi comme une app.",
+        "Touchez l’icône Partage ⬆️ en bas, puis « Sur l’écran d’accueil » pour ajouter Planète Ponzi comme une app.",
       closeCta: "OK",
     },
     nav: {
@@ -100,6 +111,10 @@ export const strings = {
       resetConfirm: "Effacer toute la progression locale (niveaux, contrats) ?",
       restartLevel: "Restructurer (Recommencer)",
     },
+    gameHud: {
+      valorization: "VALORISATION",
+      valorizationShort: "VALO.",
+    },
     cloudSave: {
       sectionTitle: "Sauvegarde Cloud",
       sectionBody:
@@ -115,6 +130,12 @@ export const strings = {
       googleCta: "Continuer avec Google",
       orDivider: "ou",
       errorGeneric: "Une erreur est survenue. Réessayez.",
+    },
+    settingsA11y: {
+      sectionTitle: "Accessibilité",
+      hapticsLabel: "Retour haptique (Vibrations)",
+      hapticsBody:
+        "Active ou désactive les vibrations du téléphone lors des actions du jeu (placements, succès, achats).",
     },
     ceoDisplayName: {
       kicker: "Identité",
@@ -145,14 +166,14 @@ export const strings = {
     },
     briefing: {
       contractTiersBlurb:
-        "Chaque mandat fixe trois seuils de score : ils déterminent combien de contrats vous signez.",
+        "Chaque mandat fixe trois seuils de valorisation (M$) : ils déterminent combien de contrats vous signez.",
     },
     entryFlow: {
       mandate: "Mandat",
       objectives: "Objectifs de Contrats",
       starStripAria:
-        "Seuils de points : scores requis pour signer 1, 2 ou 3 contrats sur ce mandat",
-      ptsSuffix: "pts",
+        "Seuils de valorisation : M$ requis pour signer 1, 2 ou 3 contrats sur ce mandat",
+      msUnit: VALORIZATION_MS_UNIT,
       cta: "Lancer l'exploitation",
       ctaSub: "Jouer",
       loading: "Chargement du mandat…",
@@ -166,7 +187,7 @@ export const strings = {
       directiveSeismic: (turn: number) =>
         `Sismique : une case occupée sera détruite à la fin du tour ${turn}.`,
       directiveFiscalBoss:
-        "Boss — Contrôle fiscal : tous les 4 tours, le Fisc gèle votre case la plus rentable (0 pt au bilan pour cette case).",
+        "Boss — Contrôle fiscal : tous les 4 tours, le Fisc gèle votre case la plus rentable (0 M$ au bilan pour cette case).",
     },
     mandate: {
       buildings: {
@@ -196,10 +217,10 @@ export const strings = {
       activeFloorTag: "[ ACTIF ]",
       effectBadgePrefix: "EFFET :",
       effectFasterRecharge: "Recharge des vies 20 min → 15 min",
-      effectMineBonus: (n: number) => `+${n} pt scoring / mine`,
+      effectMineBonus: (n: number) => `+${n} M$ scoring / mine`,
       effectLivesMax: (n: number) => `+${n} vie max`,
       effectLivesAndMine: (lives: number, minePts: number) =>
-        `+${lives} vie max · +${minePts} pt / mine`,
+        `+${lives} vie max · +${minePts}\u202fM$ / mine`,
       amortizedHours: (hours: number) => {
         if (!Number.isFinite(hours) || hours <= 0) return "";
         if (hours < 1 / 60) return "Amorti < 1 min";
@@ -214,13 +235,13 @@ export const strings = {
       insufficient: "Solde insuffisant.",
       purchaseSuccess: "Étage acquis !",
       prestigeKicker: "Prestige",
-      prestigeScoreBonus: "+10 % de score final par palier de prestige (toutes parties).",
+      prestigeScoreBonus: "+10 % de valorisation finale par palier de prestige (toutes parties).",
       prestigeCurrent: (n: number) => `Palier actuel : ${n}`,
       bankruptcyCta: "Déposer le bilan",
       bankruptcyLocked: "Atteignez l’Héliport privé pour liquider la tour.",
       bankruptcyModalTitle: "Faillite stratégique ?",
       bankruptcyModalBody:
-        "La tour repart à zéro, vos Ponzi Coins sont saisis, mais votre palier prestige augmente — et avec lui, votre bonus de score sur chaque mandat.",
+        "La tour repart à zéro, vos Ponzi Coins sont saisis, mais votre palier prestige augmente — et avec lui, votre bonus de valorisation sur chaque mandat.",
       bankruptcyConfirm: "Liquider",
       bankruptcyCancel: "Annuler",
       bankruptcyDone: "Bilan déposé. Le Board applaudit votre résilience.",
@@ -231,14 +252,16 @@ export const strings = {
       loadError: "Classement indisponible.",
       prestigeShort: (n: number) => `P${n}`,
       contractsInline: (n: number) => `${n} contrats`,
-      maxScoreLabel: "Record",
-      meritHint: "Tri : prestige → contrats → meilleur score.",
+      maxScoreLabel: "Meilleure valorisation",
+      meritHint: "Tri : prestige → contrats → meilleure valorisation.",
     },
     shop: {
       coinsLabel: "Vos Ponzi Coins :",
       coinsUnit: "pièces",
       priceCoins: (n: number) => `${n} pièces`,
       buy: "Acheter",
+      /** CTA boutique — boosters (lisible sur fond dégradé). */
+      ctaAcquire: "Acquérir",
       comingSoon: "Bientôt",
       comingSoonEllipsis: "…",
       sectionBlackMarket: "Marché Noir (Boosters)",
@@ -325,13 +348,13 @@ export const strings = {
     endScreen: {
       levelKicker: (levelId: number) => `Trimestre ${levelId} · Clôturé`,
       rewardsTitle: "Contrats signés",
-      finalYieldLabel: "Points pour signer les contrats",
+      finalYieldLabel: "Valorisation pour signer les contrats",
       starsAriaNone: "Aucun contrat signé sur 3",
       starsAria: (earned: number) =>
         earned <= 1
           ? `${earned} contrat signé sur 3`
           : `${earned} contrats signés sur 3`,
-      pointsUnit: "pts",
+      msUnit: VALORIZATION_MS_UNIT,
       minimizeAria: "Réduire le bilan",
       reopenBilanSr: "Rouvrir le bilan",
       replay: "Réinvestir (Rejouer)",
@@ -345,9 +368,10 @@ export const strings = {
       insufficientTitle: "Redressement Judiciaire",
       insufficientBody: "Le Board vous retire sa confiance. (−1 vie)",
       mandateFailedTitle: "Mandat non tenu",
-      mandateFailedLead: "Le mandat grille n’a pas été respecté (pas un problème de points seuls).",
+      mandateFailedLead:
+        "Le mandat grille n’a pas été respecté (pas un problème de valorisation M$ seule).",
       mandateFailedBody:
-        "Conditions grille non remplies (ex. forêts). Score OK, 0 contrat signé : le mandat prime.",
+        "Conditions grille non remplies (ex. forêts). Valorisation OK, 0 contrat signé : le mandat prime.",
       mandateFailedMissing: (fragments: string) =>
         `Manque : ${fragments}. Rejouez en ciblant ça.`,
       mandateFailedFragment: (label: string, current: number, required: number) =>
@@ -364,6 +388,9 @@ export const strings = {
       nextStopLevel: (n: number) => `Suite : T${n}`,
       escapeOrBackdropHint: "Échap / fond : réduire",
       backToHqCountdown: (seconds: number) => `QG dans ${seconds}s`,
+      /** Convocation CEO / mémo hub — CTA primaire quand la carte est requise avant le niveau suivant. */
+      returnToHqRequired: "Retour au QG (Message du Board)",
+      pendingMemoMapFirst: "Le Board exige un passage par la carte avant la suite.",
     },
     energy: {
       kicker: "Énergie",
@@ -375,11 +402,11 @@ export const strings = {
       shareForLifeUsed: "Bonus partage déjà utilisé aujourd’hui.",
       shareTwitter: "Partager sur X",
       shareCopy: (gameUrl: string) =>
-        `Je viens de ruiner l'économie sur Planet Ponzi ! Battez mon score : ${gameUrl}`,
+        `Je viens de ruiner l'économie sur Planète Ponzi ! Battez ma valorisation : ${gameUrl}`,
     },
     rules: {
       title: "Règles",
-      kicker: "Grille & score",
+      kicker: "Grille & valorisation",
       modalCloseAria: "Fermer les règles",
       inductionKicker: "Manuel d’induction",
       inductionTitle: "Directives du Board",
@@ -388,7 +415,7 @@ export const strings = {
       fiscalStampLabel: "GELÉ",
       megaStructureTitle: "Méga-structures (fusion 2×2)",
       megaStructureBody:
-        "Formez un carré 2×2 avec quatre bâtiments identiques pour créer une Méga-Structure qui rapporte énormément de points.",
+        "Placez quatre mines (usines) en carré 2×2 pour former le Complexe industriel : la valorisation M$ de ces quatre cases est remplacée par un bonus massif unique (monopole industriel).",
       fiscalBossTitle: "Contrôle fiscal (Boss)",
       fiscalBossBody:
         "Tous les 10 niveaux (Niveaux Boss), le Fisc s'invite ! Tous les 4 tours de jeu, le Fisc gèlera votre case la plus rentable. Une case gelée rapporte 0 M$ à la fin de la partie. Construisez intelligemment pour minimiser les pertes.",
@@ -397,7 +424,7 @@ export const strings = {
       fiscalFreezeTutorialCta: "J'ai compris",
       directive1Label: "Directive n°1 — Synergie de groupe",
       directive1Body:
-        "Alignez quatre bâtiments identiques en carré 2×2 pour déclencher une fusion méga-structure : le bilan comptabilise un bonus massif à la place des quatre cases séparées.",
+        "Alignez quatre mines en carré 2×2 : fusion « méga-structure » industrielle — le bilan comptabilise un bonus unique à la place des quatre cases (autres bâtiments : pas de fusion méga).",
       directive2Label: "Directive n°2 — Optimisation fiscale",
       directive2Body:
         "Sur les mandats Boss (tous les 10 niveaux), le fisc fige périodiquement votre case la plus rentable : elle tombe à 0 M$ au bilan. Anticipez la cadence des gels.",
@@ -449,13 +476,21 @@ export const strings = {
         "Une case par tour. Voisins = haut, bas, gauche, droite — pas en diagonale : ce n’est pas la philanthropie.",
       step3Title: "Bilan",
       step3Body:
-        "Le ROI affiché tranche. Trois contrats si vous performez ; sinon le mandat prime sur le score. Capitalisme, pas crèche.",
+        "Le ROI affiché tranche. Trois contrats si vous performez ; sinon le mandat prime sur la valorisation. Capitalisme, pas crèche.",
     },
   },
   en: {
     brand: {
-      name: "Planet Ponzi",
+      name: "Planète Ponzi",
       tagline: "Orbital capitalism. One mandate per day.",
+    },
+    homeSplash: {
+      displayTitle: "PLANÈTE PONZI",
+      slogan: "A cynical capitalist puzzle game",
+      boardLine1: "Ready for the next board round?",
+      boardLine2: "The Board is waiting on your numbers.",
+      boardLine3: "Optimize the grid. Maximize profit.",
+      cta: "Enter the session",
     },
     planets: [
       { name: "The Startup Belt", blurb: "Beginner dreams — unicorn optics." },
@@ -507,13 +542,13 @@ export const strings = {
         `Cargo · Level ${levelId} · ${seed}`,
     },
     installPwa: {
-      bannerText: "Install Planet Ponzi to play offline! 🚀",
+      bannerText: "Install Planète Ponzi to play offline! 🚀",
       installCta: "Install",
       dismissAria: "Dismiss for this session",
       bannerAria: "App install offer",
       iosModalTitle: "Add to Home Screen (iOS)",
       iosModalBody:
-        "Tap the Share button ⬆️ at the bottom, then “Add to Home Screen” to install Planet Ponzi like an app.",
+        "Tap the Share button ⬆️ at the bottom, then “Add to Home Screen” to install Planète Ponzi like an app.",
       closeCta: "OK",
     },
     nav: {
@@ -533,6 +568,10 @@ export const strings = {
       resetConfirm: "Erase all local progress (levels, contracts)?",
       restartLevel: "Restructure (Restart)",
     },
+    gameHud: {
+      valorization: "VALUATION",
+      valorizationShort: "VAL.",
+    },
     cloudSave: {
       sectionTitle: "Cloud save",
       sectionBody:
@@ -548,6 +587,12 @@ export const strings = {
       googleCta: "Continue with Google",
       orDivider: "or",
       errorGeneric: "Something went wrong. Try again.",
+    },
+    settingsA11y: {
+      sectionTitle: "Accessibility",
+      hapticsLabel: "Haptic feedback (vibrations)",
+      hapticsBody:
+        "Turn phone vibrations on or off for in-game actions (placements, wins, purchases).",
     },
     ceoDisplayName: {
       kicker: "Identity",
@@ -578,14 +623,14 @@ export const strings = {
     },
     briefing: {
       contractTiersBlurb:
-        "Each mandate sets three score thresholds — they determine how many contracts you sign.",
+        "Each mandate sets three valuation (M$) thresholds — they determine how many contracts you sign.",
     },
     entryFlow: {
       mandate: "Mandate",
       objectives: "Contract Objectives",
       starStripAria:
-        "Point thresholds: scores required to sign 1, 2, or 3 contracts on this mandate",
-      ptsSuffix: "pts",
+        "Valuation thresholds: M$ required to sign 1, 2, or 3 contracts on this mandate",
+      msUnit: VALORIZATION_MS_UNIT,
       cta: "Start extraction",
       ctaSub: "Play",
       loading: "Loading mandate…",
@@ -628,10 +673,10 @@ export const strings = {
       activeFloorTag: "[ ACTIVE ]",
       effectBadgePrefix: "EFFECT:",
       effectFasterRecharge: "Life recharge 20 min → 15 min",
-      effectMineBonus: (n: number) => `+${n} score pts / mine`,
+      effectMineBonus: (n: number) => `+${n} M$ scoring / mine`,
       effectLivesMax: (n: number) => `+${n} max lives`,
       effectLivesAndMine: (lives: number, minePts: number) =>
-        `+${lives} max lives · +${minePts} pt / mine`,
+        `+${lives} max lives · +${minePts}\u202fM$ / mine`,
       amortizedHours: (hours: number) => {
         if (!Number.isFinite(hours) || hours <= 0) return "";
         if (hours < 1 / 60) return "< 1 min payback";
@@ -646,13 +691,13 @@ export const strings = {
       insufficient: "Not enough coins.",
       purchaseSuccess: "Floor acquired!",
       prestigeKicker: "Prestige",
-      prestigeScoreBonus: "+10% final score per prestige tier (every run).",
+      prestigeScoreBonus: "+10% final valuation per prestige tier (every run).",
       prestigeCurrent: (n: number) => `Current tier: ${n}`,
       bankruptcyCta: "File for bankruptcy",
       bankruptcyLocked: "Reach the Private Helipad to liquidate the tower.",
       bankruptcyModalTitle: "Strategic bankruptcy?",
       bankruptcyModalBody:
-        "The tower resets, your Ponzi Coins are seized, but your prestige tier rises — boosting your score on every mandate.",
+        "The tower resets, your Ponzi Coins are seized, but your prestige tier rises — boosting your valuation on every mandate.",
       bankruptcyConfirm: "Liquidate",
       bankruptcyCancel: "Cancel",
       bankruptcyDone: "Bankruptcy filed. The board loves your resilience.",
@@ -663,14 +708,15 @@ export const strings = {
       loadError: "Leaderboard unavailable.",
       prestigeShort: (n: number) => `P${n}`,
       contractsInline: (n: number) => `${n} contracts`,
-      maxScoreLabel: "Best",
-      meritHint: "Order: prestige → contracts → best score.",
+      maxScoreLabel: "Best valuation",
+      meritHint: "Order: prestige → contracts → best valuation.",
     },
     shop: {
       coinsLabel: "Your Ponzi Coins:",
       coinsUnit: "coins",
       priceCoins: (n: number) => `${n} coins`,
       buy: "Buy",
+      ctaAcquire: "Acquire",
       comingSoon: "Coming soon",
       comingSoonEllipsis: "…",
       sectionBlackMarket: "Black market (boosters)",
@@ -757,11 +803,11 @@ export const strings = {
     endScreen: {
       levelKicker: (levelId: number) => `Q${levelId} · Closed`,
       rewardsTitle: "Signed contracts",
-      finalYieldLabel: "Points to sign contracts",
+      finalYieldLabel: "Valuation to sign contracts",
       starsAriaNone: "No contract signed out of 3",
       starsAria: (earned: number) =>
         `${earned} contract${earned > 1 ? "s" : ""} signed out of 3`,
-      pointsUnit: "pts",
+      msUnit: VALORIZATION_MS_UNIT,
       minimizeAria: "Shrink summary",
       reopenBilanSr: "Open summary again",
       replay: "Reinvest (Replay)",
@@ -775,9 +821,9 @@ export const strings = {
       insufficientTitle: "Chapter 11 Bankruptcy",
       insufficientBody: "The Board has lost confidence in you. (−1 life)",
       mandateFailedTitle: "Mandate not met",
-      mandateFailedLead: "Grid mandate failed (not just points).",
+      mandateFailedLead: "Grid mandate failed (not just M$ valuation).",
       mandateFailedBody:
-        "Grid rules not met (e.g. forests). OK score, 0 contracts signed — mandate wins.",
+        "Grid rules not met (e.g. forests). OK valuation, 0 contracts signed — mandate wins.",
       mandateFailedMissing: (fragments: string) =>
         `Missing: ${fragments}. Replay with focus.`,
       mandateFailedFragment: (label: string, current: number, required: number) =>
@@ -793,6 +839,8 @@ export const strings = {
       nextStopLevel: (n: number) => `Next: Q${n}`,
       escapeOrBackdropHint: "Esc / backdrop: shrink",
       backToHqCountdown: (seconds: number) => `HQ in ${seconds}s`,
+      returnToHqRequired: "Return to HQ (Board message)",
+      pendingMemoMapFirst: "The Board requires a stop at the map before you continue.",
     },
     energy: {
       kicker: "Energy",
@@ -804,11 +852,11 @@ export const strings = {
       shareForLifeUsed: "Share bonus already claimed today.",
       shareTwitter: "Share on X",
       shareCopy: (gameUrl: string) =>
-        `I just wrecked the economy on Planet Ponzi! Beat my score: ${gameUrl}`,
+        `I just wrecked the economy on Planète Ponzi! Beat my valuation: ${gameUrl}`,
     },
     rules: {
       title: "Rules",
-      kicker: "Grid & score",
+      kicker: "Grid & valuation",
       modalCloseAria: "Close rules",
       inductionKicker: "Induction manual",
       inductionTitle: "Board directives",
@@ -817,7 +865,7 @@ export const strings = {
       fiscalStampLabel: "FROZEN",
       megaStructureTitle: "Mega-structures (2×2 fusion)",
       megaStructureBody:
-        "Make a 2×2 square of four identical buildings to create a Mega-Structure that pays a huge score bonus.",
+        "Place four mines (factories) in a 2×2 square to form the Industrial Complex: the M$ valuation of those four tiles collapses into one huge line item (industrial monopoly).",
       fiscalBossTitle: "Tax audit (Boss levels)",
       fiscalBossBody:
         "Every 10 levels (Boss levels), the taxman shows up! Every 4 turns, the taxman freezes your highest‑yielding cell. A frozen cell pays 0 M$ at the end of the run. Build smart to limit the damage.",
@@ -826,7 +874,7 @@ export const strings = {
       fiscalFreezeTutorialCta: "Got it",
       directive1Label: "Directive #1 — Group synergy",
       directive1Body:
-        "Place four identical buildings in a 2×2 square to trigger a mega-structure fusion: scoring collapses to one huge line item instead of four separate tiles.",
+        "Place four mines in a 2×2 square for the industrial mega-structure fusion — one big line item instead of four tiles (other building types do not mega-fuse).",
       directive2Label: "Directive #2 — Tax optimization",
       directive2Body:
         "On Boss mandates (every 10 levels), the tax office periodically freezes your top-yielding cell: it pays 0 M$ in the final tally. Plan around the freeze cadence.",
@@ -877,7 +925,7 @@ export const strings = {
         "One cell per turn. Neighbors = up, down, left, right — no diagonals; this isn’t charity.",
       step3Title: "Close",
       step3Body:
-        "Displayed ROI decides. Three contracts if you deliver; otherwise the mandate beats raw score. Capitalism, not daycare.",
+        "Displayed ROI decides. Three contracts if you deliver; otherwise the mandate beats raw valuation. Capitalism, not daycare.",
     },
   },
 } as const;

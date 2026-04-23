@@ -1,4 +1,4 @@
--- Profil guest (player_id, pseudo) + agrégation classement (meilleures étoiles par niveau Saga).
+-- Profil guest (player_id, pseudo) + agrégation classement (meilleures étoiles par niveau).
 
 ALTER TABLE public.game_completions
   ADD COLUMN IF NOT EXISTS player_id uuid,

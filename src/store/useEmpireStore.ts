@@ -4,6 +4,7 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
 import {
+  closeEmpirePrerequisiteGaps,
   computePassiveModifiers,
   EMPIRE_FLOORS,
   EMPIRE_MINING_FLOOR_IDS,
@@ -67,7 +68,7 @@ export const useEmpireStore = create<EmpireStore>()(
     }),
     {
       name: STORAGE_KEY,
-      version: 4,
+      version: 5,
       storage: persistLocalStorage,
       partialize: (state) => ({ unlockedNodes: state.unlockedNodes }),
       migrate: (persisted, fromVersion) => {
@@ -99,7 +100,14 @@ export const useEmpireStore = create<EmpireStore>()(
         if (fromVersion < 4 && merged["open-space-toxique"] && !merged["botnet-etudiant"]) {
           merged["botnet-etudiant"] = true;
         }
-        return { unlockedNodes: merged };
+        /**
+         * v5 : chaîne de prérequis complète — l’ancienne migration minage (v3) pouvait laisser
+         * des étages utilitaires (héliport, open space…) à false tout en marquant le calculateur,
+         * ce qui bloquait définitivement « Siphonage Orbital ».
+         */
+        const unlockedNodes =
+          fromVersion < 5 ? closeEmpirePrerequisiteGaps(merged) : merged;
+        return { unlockedNodes };
       },
     },
   ),

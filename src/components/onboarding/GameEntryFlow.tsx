@@ -25,7 +25,7 @@ type GameEntryFlowProps = {
 };
 
 /**
- * Avant la partie : seuils de contrats + lancement (deck imposé par la définition Saga).
+ * Avant la partie : seuils de contrats + lancement (deck imposé par la définition du mandat).
  */
 export function GameEntryFlow({ open }: GameEntryFlowProps) {
   const { t } = useAppStrings();
@@ -142,7 +142,8 @@ export function GameEntryFlow({ open }: GameEntryFlowProps) {
               🎯 {t.entryFlow.maxEstimatedLabel}
             </p>
             <p className="mt-1 text-center font-mono text-xl font-black tabular-nums tracking-tight text-amber-100">
-              {maxEstimated} <span className="text-sm font-bold text-amber-200/80">{t.entryFlow.ptsSuffix}</span>
+              {maxEstimated}
+              <span className="text-sm font-bold text-amber-200/80">{t.entryFlow.msUnit}</span>
             </p>
           </motion.div>
         ) : null}
@@ -195,21 +196,21 @@ export function GameEntryFlow({ open }: GameEntryFlowProps) {
                 k: "1" as const,
                 starCount: 1 as const,
                 label: t.entryFlow.starCard1,
-                pts: def.stars.one,
+                valor: def.stars.one,
                 ring: "border-amber-400/45 bg-amber-500/15",
               },
               {
                 k: "2" as const,
                 starCount: 2 as const,
                 label: t.entryFlow.starCard2,
-                pts: def.stars.two,
+                valor: def.stars.two,
                 ring: "border-cyan-400/40 bg-cyan-500/12",
               },
               {
                 k: "3" as const,
                 starCount: 3 as const,
                 label: t.entryFlow.starCard3,
-                pts: def.stars.three,
+                valor: def.stars.three,
                 ring: "border-violet-400/45 bg-violet-500/12",
               },
             ].map((row, i) => (
@@ -219,8 +220,8 @@ export function GameEntryFlow({ open }: GameEntryFlowProps) {
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ delay: 0.04 + i * 0.05, type: "spring", stiffness: 420, damping: 22 }}
                 className={`inline-flex items-center gap-2 rounded-full border px-2.5 py-1.5 shadow-md ${row.ring}`}
-                title={`${row.label} — ${row.pts} ${t.entryFlow.ptsSuffix}`}
-                aria-label={`${row.label}: ${row.pts} ${t.entryFlow.ptsSuffix}`}
+                title={`${row.label} — ${row.valor}${t.entryFlow.msUnit}`}
+                aria-label={`${row.label}: ${row.valor}${t.entryFlow.msUnit}`}
               >
                 <motion.span
                   className="flex select-none items-center"
@@ -236,9 +237,9 @@ export function GameEntryFlow({ open }: GameEntryFlowProps) {
                 >
                   <ContractIcon count={row.starCount as ContractIconCount} size="lg" seal="gold" />
                 </motion.span>
-                <span className="font-mono text-sm font-black tabular-nums text-white">{row.pts}</span>
+                <span className="font-mono text-sm font-black tabular-nums text-white">{row.valor}</span>
                 <span className="font-mono text-[9px] font-semibold uppercase text-slate-400">
-                  {t.entryFlow.ptsSuffix}
+                  {t.entryFlow.msUnit}
                 </span>
               </motion.div>
             ))}

@@ -40,6 +40,19 @@ export type EmpireFloorDef = {
 /** Dernier étage achetable : débloque « Déposer le bilan » (prestige). */
 export const EMPIRE_HELIPORT_FLOOR_ID = "heliport-prive";
 
+/**
+ * Audit ROI Tour (coût marginal vs revenu passif ajouté)
+ * ------------------------------------------------------
+ * Le « temps d’amortissement pièces » d’un étage **avec** `passiveIncomePerMinute` vaut
+ * `cost / Δpassif` (minutes de jeu à taux constant). Les étages **sans** passif (Open Space,
+ * Direction, Héliport, Skydeck, Wellness…) n’ont pas d’amortissement direct : le coût se paie sur
+ * le **stock cumulé** des étages minage déjà pris (ex. Orbite 14 M$ avec +0 passif ≈ plusieurs jours
+ * de passif cumulé au taux d’avant achat — mur ressenti).
+ *
+ * Courbe de coût : grosses marches x2–x4 entre paliers ; passif en **sauts** (+1, +5, +20, +75…).
+ * Ajustement 2026-04 : **Orbite du Board** légèrement raboté (14 M$ → 11 M$) pour réduire le pic
+ * sans casser la fantasy « orbite LEO ».
+ */
 /** Paliers revenu passif (minage) — ids stables pour migrations. */
 export const EMPIRE_MINING_FLOOR_IDS = [
   "botnet-etudiant",
@@ -187,7 +200,7 @@ export const EMPIRE_FLOORS: EmpireFloorDef[] = [
     id: "war-room-narratif",
     order: 14,
     name: "War Room du Narratif",
-    description: "Table ovale et vérité ajustable. Les mines deviennent une story : +2 pts / mine.",
+    description: "Table ovale et vérité ajustable. Les mines deviennent une story : +2\u202fM$ / mine.",
     emoji: "📡",
     cost: 8_500_000,
     effects: { mineScoreBonusPerMine: 2 },
@@ -197,9 +210,9 @@ export const EMPIRE_FLOORS: EmpireFloorDef[] = [
     order: 15,
     name: "Orbite du Board (LEO)",
     description:
-      "Satellite corporate. Visibilité planétaire, moralité nulle. Package exécutif : +1 vie max et +1 pt / mine.",
+      "Satellite corporate. Visibilité planétaire, moralité nulle. Package exécutif : +1 vie max et +1 M$ scoring / mine.",
     emoji: "🛰️",
-    cost: 14_000_000,
+    cost: 11_000_000,
     effects: { livesMaxBonus: 1, mineScoreBonusPerMine: 1 },
   },
 ];
@@ -210,6 +223,28 @@ export function getEmpireFloorById(id: string): EmpireFloorDef | undefined {
 
 export function getEmpireFloorByOrder(order: number): EmpireFloorDef | undefined {
   return EMPIRE_FLOORS.find((f) => f.order === order);
+}
+
+/**
+ * Répare les sauvegardes incohérentes (ex. migration v3 qui débloquait la chaîne minage
+ * sans les étages utilitaires intermédiaires) : tout étage débloqué implique la chaîne
+ * complète des étages d’ordre inférieur.
+ */
+export function closeEmpirePrerequisiteGaps(unlocked: Record<string, boolean>): Record<string, boolean> {
+  const floorsAsc = [...EMPIRE_FLOORS].sort((a, b) => a.order - b.order);
+  let hi = -1;
+  for (const f of floorsAsc) {
+    if (unlocked[f.id]) hi = Math.max(hi, f.order);
+  }
+  if (hi < 0) return { ...unlocked };
+  const next = { ...unlocked };
+  for (const f of floorsAsc) {
+    if (f.order <= hi) next[f.id] = true;
+  }
+  for (const f of EMPIRE_FLOORS) {
+    if (f.defaultUnlocked) next[f.id] = true;
+  }
+  return next;
 }
 
 function readUnlockedNodesLazy(): Record<string, boolean> {

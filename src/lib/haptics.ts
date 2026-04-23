@@ -1,6 +1,19 @@
-/** Retour d’haptique mobile (no-op si indisponible). */
+function readHapticsEnabled(): boolean {
+  if (typeof window === "undefined") return false;
+  try {
+    const { useSettingsStore } =
+      // eslint-disable-next-line @typescript-eslint/no-require-imports -- évite cycle settings ↔ économie au chargement
+      require("@/src/store/useSettingsStore") as typeof import("@/src/store/useSettingsStore");
+    return useSettingsStore.getState().hapticsEnabled !== false;
+  } catch {
+    return true;
+  }
+}
+
+/** Retour d’haptique mobile (no-op si indisponible ou désactivé dans Paramètres). */
 function safeVibrate(pattern: number | number[]): void {
   if (typeof navigator === "undefined" || typeof navigator.vibrate !== "function") return;
+  if (!readHapticsEnabled()) return;
   try {
     navigator.vibrate(pattern);
   } catch {

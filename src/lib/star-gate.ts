@@ -1,7 +1,8 @@
 /** Quota d’étoiles cumulées sur les 9 niveaux précédant un Boss pour débloquer l’accès au Boss. */
 export const STAR_GATE_QUOTA = 18;
 
-export function isSagaBossLevel(levelId: number): boolean {
+/** Niveau 10, 20, … — boss de fin de secteur sur la carte des marchés. */
+export function isSectorBossLevel(levelId: number): boolean {
   return levelId > 0 && levelId % 10 === 0;
 }
 
@@ -26,12 +27,12 @@ export function sumStarsInLevelRange(
 
 /** Boss verrouillé tant que le secteur précédent n’a pas assez d’étoiles cumulées. */
 export function isStarGatedBoss(levelId: number, starsByLevel: Record<string, number>): boolean {
-  if (!isSagaBossLevel(levelId)) return false;
+  if (!isSectorBossLevel(levelId)) return false;
   const { from, to } = preBossStarRange(levelId);
   return sumStarsInLevelRange(starsByLevel, from, to) < STAR_GATE_QUOTA;
 }
 
-/** Accès effectif à un niveau (déblocage Saga + porte des étoiles pour les Boss). */
+/** Accès effectif à un niveau (déblocage carte + porte des étoiles pour les Boss). */
 export function canPlayLevel(
   levelId: number,
   unlockedLevels: readonly number[],

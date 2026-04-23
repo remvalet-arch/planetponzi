@@ -1,7 +1,7 @@
 "use client";
 
 import { notFound, useParams, useRouter } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 import { BoostersBar } from "@/src/components/game/BoostersBar";
 import { EndScreen } from "@/src/components/game/EndScreen";
@@ -26,14 +26,16 @@ import { useEconomyStore } from "@/src/store/useEconomyStore";
 import { useLevelRunStore } from "@/src/store/useLevelRunStore";
 import { useProgressStore } from "@/src/store/useProgressStore";
 
-function formatRoi(score: number): string {
-  const sign = score >= 0 ? "+" : "";
-  return `${sign}${score} pts`;
-}
-
 export default function LevelPage() {
   const router = useRouter();
   const { t } = useAppStrings();
+  const formatRoi = useCallback(
+    (score: number) => {
+      const sign = score >= 0 ? "+" : "";
+      return `${sign}${score}${t.entryFlow.msUnit}`;
+    },
+    [t.entryFlow.msUnit],
+  );
   const params = useParams<{ id: string }>();
   const id = Number(params.id);
   const levelValid = Number.isFinite(id) && Boolean(getLevelById(id));
@@ -214,6 +216,7 @@ export default function LevelPage() {
       ) : null}
 
       <AppHeader
+        brandTitle={t.planets[levelPlanetId].name}
         formatRoi={formatRoi}
         onOpenRules={() => setRulesOpen(true)}
         onOpenStats={() => setStatsOpen(true)}

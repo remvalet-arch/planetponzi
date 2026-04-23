@@ -45,7 +45,7 @@ export type ProgressStore = {
    * au moment où la grille est complète (données grille + séquence disponibles).
    */
   commitLevelResult: (levelId: number, stars: StarsCount, score: number) => void;
-  /** Remet la progression Saga locale à zéro (niveau 1 seulement débloqué). */
+  /** Remet la progression sur la carte à zéro (niveau 1 seulement débloqué). */
   resetCareer: () => void;
   consumeBooster: (type: BoosterType) => void;
   addBoosters: (type: BoosterType, amount: number) => void;

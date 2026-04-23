@@ -65,3 +65,23 @@ export function getPendingCeoStoryMilestone(unlockedLevels: readonly number[]): 
   }
   return null;
 }
+
+/** État minimal pour savoir si la carte doit afficher (ou imposer) un mémo CEO majeur. */
+export type HubUnlockMemoPendingState = {
+  unlockedLevels: readonly number[];
+  hasSeenShopUnlockCeoMemo: boolean;
+  hasSeenTowerUnlockCeoMemo: boolean;
+};
+
+/**
+ * Mémo CEO / déblocage hub en attente (carte requise avant d’enchaîner le trimestre suivant).
+ * — Boutique / Tour : seuils `CEO_HUB_UNLOCK_MAX_LEVEL` + flags progression.
+ * — Narration secteur : `getPendingCeoStoryMilestone` (localStorage « vus »).
+ */
+export function hasPendingHubUnlock(state: HubUnlockMemoPendingState): boolean {
+  const maxUnlocked = state.unlockedLevels.length ? Math.max(...state.unlockedLevels) : 1;
+  if (maxUnlocked >= CEO_HUB_UNLOCK_MAX_LEVEL.shop && !state.hasSeenShopUnlockCeoMemo) return true;
+  if (maxUnlocked >= CEO_HUB_UNLOCK_MAX_LEVEL.tower && !state.hasSeenTowerUnlockCeoMemo) return true;
+  if (getPendingCeoStoryMilestone(state.unlockedLevels) != null) return true;
+  return false;
+}

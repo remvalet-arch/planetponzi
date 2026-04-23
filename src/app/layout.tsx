@@ -6,7 +6,12 @@ import { PassiveIncomeLoopProvider } from "@/src/components/providers/PassiveInc
 import { CloudSaveSyncProvider } from "@/src/components/settings/CloudSaveSyncProvider";
 import { InstallAppBanner } from "@/src/components/pwa/InstallAppBanner";
 
-import { OG_TITLE, SITE_DESCRIPTION, SITE_NAME_SHORT } from "@/src/lib/site-metadata-copy";
+import {
+  OG_TITLE,
+  SITE_DESCRIPTION,
+  SITE_METADATA_TITLE,
+  SITE_NAME_SHORT,
+} from "@/src/lib/site-metadata-copy";
 
 import "./globals.css";
 
@@ -26,7 +31,7 @@ export const metadata: Metadata = {
   ),
   applicationName: SITE_NAME_SHORT,
   title: {
-    default: SITE_NAME_SHORT,
+    default: SITE_METADATA_TITLE,
     template: `%s · ${SITE_NAME_SHORT}`,
   },
   description: SITE_DESCRIPTION,
@@ -34,16 +39,17 @@ export const metadata: Metadata = {
     "puzzle",
     "jeu mobile",
     "PWA",
-    "Saga",
+    "réflexion",
+    "capitalisme",
     "grille",
     "casual",
     "spatial",
-    "Planet Ponzi",
+    "Planète Ponzi",
     "open graph",
   ],
-  authors: [{ name: "Planet Ponzi", url: "https://planetponzi.vercel.app/" }],
-  creator: "Planet Ponzi",
-  publisher: "Planet Ponzi",
+  authors: [{ name: "Planète Ponzi", url: "https://planetponzi.vercel.app/" }],
+  creator: "Planète Ponzi",
+  publisher: "Planète Ponzi",
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
@@ -62,11 +68,11 @@ export const metadata: Metadata = {
     description: SITE_DESCRIPTION,
     images: [
       {
-        url: "/og-image.png",
+        url: "/og-image.jpg",
         width: 1200,
         height: 630,
         alt: OG_TITLE,
-        type: "image/png",
+        type: "image/jpeg",
       },
     ],
   },
@@ -74,19 +80,23 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: OG_TITLE,
     description: SITE_DESCRIPTION,
-    images: ["/og-image.png"],
+    images: ["/og-image.jpg"],
   },
   icons: {
-    icon: [{ url: "/icon.svg", type: "image/svg+xml" }],
-    apple: "/icon.svg",
+    icon: [
+      { url: "/icon.svg", type: "image/svg+xml" },
+      { url: "/icon-192x192.png", sizes: "192x192", type: "image/png" },
+      { url: "/icon-512x512.png", sizes: "512x512", type: "image/png" },
+    ],
+    apple: [{ url: "/icon-192x192.png", sizes: "192x192", type: "image/png" }],
   },
   manifest: "/manifest.json",
   robots: { index: true, follow: true },
 };
 
 export const viewport: Viewport = {
-  themeColor: [{ media: "(prefers-color-scheme: light)", color: "#7c3aed" }],
-  colorScheme: "light",
+  themeColor: "#020617",
+  colorScheme: "dark",
   width: "device-width",
   initialScale: 1,
   maximumScale: 1,

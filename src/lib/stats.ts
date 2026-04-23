@@ -139,7 +139,7 @@ function updateStreak(state: PlayerStatsV2, completionDate: string): void {
 }
 
 /**
- * Enregistre une partie terminée (score final + difficulté + niveau Saga).
+ * Enregistre une partie terminée (score final + difficulté + identifiant de niveau).
  * Met à jour séries type Wordle sur la date locale du jour (activité quotidienne).
  */
 export function recordGameCompletion(input: {

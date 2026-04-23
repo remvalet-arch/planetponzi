@@ -44,7 +44,7 @@ const VOID_OBSTACLE: BiomeObstacleSkin = {
     "border-2 border-black bg-gradient-to-b from-zinc-950 via-black to-zinc-950 text-zinc-600 shadow-[inset_0_0_18px_rgba(0,0,0,0.95)]",
 };
 
-/** Secteur 0 — rendu historique « Planet Ponzi ». */
+/** Secteur 0 — rendu historique « Planète Ponzi ». */
 const classic: BiomeThemeDefinition = {
   buildings: {
     habitacle: {

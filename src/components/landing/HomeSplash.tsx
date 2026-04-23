@@ -1,12 +1,13 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
 
 import { BriefingOverlay } from "@/src/components/landing/BriefingOverlay";
 import { CEOContractModal } from "@/src/components/landing/CEOContractModal";
 import { isBriefingAcked } from "@/src/lib/briefing-flags";
+import { useAppStrings } from "@/src/lib/i18n/useAppStrings";
 import { useProgressStore } from "@/src/store/useProgressStore";
 
 function starfieldCss(opacity: number): string {
@@ -31,11 +32,31 @@ const pulseCta = {
   transition: { duration: 2.4, repeat: Number.POSITIVE_INFINITY, ease: "easeInOut" as const },
 };
 
+const BOARD_ROTATE_MS = 4800;
+
 export function HomeSplash() {
+  const { t, locale } = useAppStrings();
   const router = useRouter();
   const [briefingOpen, setBriefingOpen] = useState(false);
   const [busy, setBusy] = useState(false);
   const [ceoOpen, setCeoOpen] = useState(false);
+  const [boardLineIndex, setBoardLineIndex] = useState(0);
+
+  const boardLines = useMemo(
+    () => [t.homeSplash.boardLine1, t.homeSplash.boardLine2, t.homeSplash.boardLine3],
+    [t.homeSplash.boardLine1, t.homeSplash.boardLine2, t.homeSplash.boardLine3],
+  );
+
+  useEffect(() => {
+    setBoardLineIndex(0);
+  }, [locale]);
+
+  useEffect(() => {
+    const id = window.setInterval(() => {
+      setBoardLineIndex((i) => (i + 1) % boardLines.length);
+    }, BOARD_ROTATE_MS);
+    return () => window.clearInterval(id);
+  }, [boardLines]);
 
   useEffect(() => {
     const syncIdentity = () => {
@@ -101,13 +122,18 @@ export function HomeSplash() {
           transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
         >
           <motion.div {...floatTitle}>
-            <p className="pp-kicker mb-2 text-cyan-300/90">Planet Ponzi</p>
-            <h1 className="max-w-lg bg-gradient-to-r from-amber-200 via-white to-cyan-200 bg-clip-text text-3xl font-black tracking-tight text-transparent sm:text-4xl">
-              Planet Ponzi Saga
+            <h1 className="max-w-lg bg-gradient-to-r from-amber-200 via-white to-cyan-200 bg-clip-text font-black tracking-[0.12em] text-transparent sm:text-4xl text-2xl">
+              {t.homeSplash.displayTitle}
             </h1>
+            <p className="pp-kicker mt-3 max-w-md font-mono text-xs font-semibold leading-snug tracking-wide text-cyan-300/90 sm:text-sm">
+              {t.homeSplash.slogan}
+            </p>
           </motion.div>
-          <p className="mt-5 max-w-sm font-mono text-xs leading-relaxed text-slate-400">
-            Conquête · synergies · 100 secteurs
+          <p
+            key={boardLineIndex}
+            className="mt-6 min-h-[3rem] max-w-sm font-mono text-xs leading-relaxed text-slate-300 sm:text-sm"
+          >
+            {boardLines[boardLineIndex]}
           </p>
         </motion.div>
 
@@ -118,7 +144,7 @@ export function HomeSplash() {
           onClick={handleTapStart}
           className="relative z-[2] mt-14 min-h-[3.25rem] rounded-2xl border border-cyan-400/35 bg-gradient-to-r from-violet-600/90 via-fuchsia-600/85 to-cyan-600/90 px-10 py-3 font-mono text-sm font-bold uppercase tracking-[0.2em] text-white shadow-[0_0_40px_rgb(34_211_238/0.35)] backdrop-blur-sm transition-[filter] hover:brightness-110 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-cyan-300/70 disabled:opacity-60"
         >
-          Tap to Start
+          {t.homeSplash.cta}
         </motion.button>
       </div>
 

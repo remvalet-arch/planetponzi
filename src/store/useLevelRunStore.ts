@@ -138,7 +138,7 @@ export type LevelRunStore = {
   /** Incrémenté à chaque fusion méga pour animer un tremblement de grille. */
   gridShakeNonce: number;
   enterLevel: (levelId: number) => void;
-  /** Verrouille le mandat du jour et passe en jeu (deck imposé par la définition Saga). */
+  /** Verrouille le mandat du jour et passe en jeu (deck imposé par la définition du niveau). */
   beginPlacement: () => void;
   placeBuilding: (cellIndex: number) => void;
   /** Marché noir : −200 💰 et remplace la prochaine tuile (`placementSequence[turn]`). Retourne `false` si refusé. */
@@ -150,6 +150,8 @@ export type LevelRunStore = {
   restartCurrentLevel: () => void;
   /** Abandon en cours de partie : −1 vie, reset mandat. Retourne `true` si une partie était en cours. */
   quitGame: () => boolean;
+  /** Dev uniquement : vide la session persistée (hors partie / fin de run). */
+  hardResetSession: () => void;
   getSnapshot: () => GameState;
 };
 
@@ -617,6 +619,14 @@ export const useLevelRunStore = create<LevelRunStore>()(
         useEconomyStore.getState().consumeLife();
         get().resetBoard();
         return true;
+      },
+
+      hardResetSession: () => {
+        if (process.env.NODE_ENV !== "development") return;
+        set({
+          ...emptyRun,
+          grid: createDefaultPlayableGrid(),
+        });
       },
 
       getSnapshot: () => {

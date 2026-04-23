@@ -105,8 +105,8 @@ export function StatsScreen() {
             const row = stats.byLevel[String(lvl)];
             const c = row?.playCount ?? 0;
             const avgRaw = row ? formatAvgScore(row.sumScore, row.playCount) : "—";
-            const avg = avgRaw === "—" ? "—" : `${avgRaw}M$`;
-            const best = row && c > 0 ? `${row.bestScore}M$` : "—";
+            const avg = avgRaw === "—" ? "—" : `${avgRaw}\u202fM$`;
+            const best = row && c > 0 ? `${row.bestScore}\u202fM$` : "—";
             return (
               <li
                 key={lvl}

@@ -14,7 +14,10 @@ const withSerwist = withSerwistInit({
 });
 
 const nextConfig: NextConfig = {
-  /** OG statique `/og-image.png` → image générée (`opengraph-image.tsx`) tant que l’asset PNG n’est pas fourni. */
+  /**
+   * `/og-image.png` → image dynamique tant qu’aucun PNG statique n’est servi depuis `public/`.
+   * Le partage social utilise `/og-image.jpg` (fichier dans `public/`, remplaçable par le client).
+   */
   async rewrites() {
     return [{ source: "/og-image.png", destination: "/opengraph-image" }];
   },

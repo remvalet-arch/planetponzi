@@ -12,6 +12,8 @@ import { useLevelRunStore } from "@/src/store/useLevelRunStore";
 const tap = { scale: 0.92 };
 
 type AppHeaderProps = {
+  /** Titre principal (ex. nom du secteur / planète) — sinon libellé marketing. */
+  brandTitle?: string;
   formatRoi: (score: number) => string;
   onOpenRules: () => void;
   onOpenStats: () => void;
@@ -23,6 +25,7 @@ type AppHeaderProps = {
 };
 
 export function AppHeader({
+  brandTitle,
   formatRoi,
   onOpenRules,
   onOpenStats,
@@ -52,12 +55,12 @@ export function AppHeader({
   return (
     <>
       <header className="pp-header-bar min-h-0 shrink-0">
-        <div className="mx-auto flex w-full max-w-lg items-center gap-1.5 sm:gap-2">
+        <div className="mx-auto flex w-full max-w-lg items-center gap-1 sm:gap-1.5">
           <motion.button
             type="button"
             whileTap={tap}
             onClick={() => setMenuOpen(true)}
-            className="flex size-12 shrink-0 items-center justify-center rounded-pp-md border border-white/10 bg-slate-900/80 text-cyan-200 transition-colors hover:border-cyan-400/40 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-400/55"
+            className="flex size-11 shrink-0 items-center justify-center rounded-pp-md border border-white/10 bg-slate-900/80 text-cyan-200 transition-colors hover:border-cyan-400/40 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-400/55 sm:size-12"
             aria-expanded={menuOpen}
             aria-controls="app-nav-drawer"
             aria-label={t.nav.menu}
@@ -65,29 +68,30 @@ export function AppHeader({
             <Menu className="size-6" strokeWidth={2} />
           </motion.button>
 
-          <div className="min-w-0 flex-1">
-            <p className="font-mono text-[9px] uppercase tracking-[0.28em] text-slate-500 sm:text-[10px] sm:tracking-[0.35em]">
-              Saga · Grille 4×4
-            </p>
-            <h1 className="truncate text-lg font-black tracking-tight sm:text-xl">
+          <div className="min-w-0 flex-1 pr-0.5">
+            <h1
+              className="truncate text-left text-[0.95rem] font-black leading-tight tracking-tight sm:text-lg md:text-xl"
+              title={brandTitle ?? t.brand.name}
+            >
               <span className="bg-gradient-to-r from-pp-gold via-pp-accent to-rose-500 bg-clip-text text-transparent">
-                Planet Ponzi
+                {brandTitle ?? t.brand.name}
               </span>
             </h1>
           </div>
 
-          <EconomyHeader className="max-w-[min(42vw,12rem)] sm:max-w-none" />
+          <EconomyHeader compact className="max-w-[min(38vw,9.5rem)] shrink-0 justify-end sm:max-w-[min(44vw,11rem)] md:max-w-none" />
 
-          <div className="shrink-0 rounded-pp-md border border-slate-600/70 bg-slate-900/80 px-2 py-2 text-right shadow-md shadow-black/30 sm:px-3">
-            <p className="font-mono text-[9px] uppercase tracking-widest text-slate-500 sm:text-[10px]">
-              Score
+          <div className="shrink-0 rounded-pp-md border border-slate-600/70 bg-slate-900/80 px-1.5 py-1.5 text-right shadow-md shadow-black/30 sm:px-2.5 sm:py-2">
+            <p className="font-mono text-[8px] uppercase tracking-widest text-slate-500 sm:text-[9px]">
+              <span className="hidden sm:inline">{t.gameHud.valorization}</span>
+              <span className="sm:hidden">{t.gameHud.valorizationShort}</span>
             </p>
             <motion.p
               key={score}
               initial={{ scale: 1 }}
               animate={{ scale: [1, 1.2, 1] }}
               transition={{ duration: 0.38, ease: [0.22, 1, 0.36, 1] }}
-              className={`whitespace-nowrap font-mono text-sm font-semibold tabular-nums sm:text-base ${
+              className={`whitespace-nowrap font-mono text-xs font-semibold tabular-nums sm:text-sm md:text-base ${
                 score >= 0 ? "text-pp-positive" : "text-pp-negative"
               }`}
             >

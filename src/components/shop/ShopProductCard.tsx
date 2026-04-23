@@ -12,19 +12,19 @@ const accentMap: Record<
   emerald: {
     card: "border-emerald-500/40 bg-gradient-to-br from-emerald-950/50 via-slate-900/95 to-slate-950/90 shadow-[inset_0_1px_0_rgba(52,211,153,0.12)]",
     button:
-      "border-emerald-500/50 bg-gradient-to-b from-emerald-600/90 to-emerald-900/95 text-emerald-50 shadow-[0_0_20px_rgba(16,185,129,0.2)]",
+      "border-emerald-500/50 bg-gradient-to-b from-emerald-600/90 to-emerald-900/95 shadow-[0_0_20px_rgba(16,185,129,0.2)]",
     iconWrap: "border-emerald-400/30 bg-emerald-500/15 text-emerald-200",
   },
   rose: {
     card: "border-rose-500/40 bg-gradient-to-br from-rose-950/45 via-slate-900/95 to-slate-950/90 shadow-[inset_0_1px_0_rgba(251,113,133,0.1)]",
     button:
-      "border-rose-500/50 bg-gradient-to-b from-rose-600/90 to-rose-950/95 text-rose-50 shadow-[0_0_20px_rgba(244,63,94,0.18)]",
+      "border-rose-500/50 bg-gradient-to-b from-rose-600/90 to-rose-950/95 shadow-[0_0_20px_rgba(244,63,94,0.18)]",
     iconWrap: "border-rose-400/30 bg-rose-500/15 text-rose-200",
   },
   violet: {
     card: "border-violet-500/40 bg-gradient-to-br from-violet-950/50 via-slate-900/95 to-slate-950/90 shadow-[inset_0_1px_0_rgba(167,139,250,0.12)]",
     button:
-      "border-violet-500/50 bg-gradient-to-b from-violet-600/90 to-violet-950/95 text-violet-50 shadow-[0_0_20px_rgba(139,92,246,0.2)]",
+      "border-violet-500/50 bg-gradient-to-b from-violet-600/90 to-violet-950/95 shadow-[0_0_20px_rgba(139,92,246,0.2)]",
     iconWrap: "border-violet-400/30 bg-violet-500/15 text-violet-200",
   },
 };
@@ -110,10 +110,16 @@ export function ShopProductCard({
         className={
           isComingSoon
             ? `mt-4 flex w-full min-h-11 items-center justify-center rounded-pp-lg border px-3 font-mono text-xs font-bold uppercase tracking-wide ${comingSoonButton}`
-            : `mt-4 flex w-full min-h-11 items-center justify-center rounded-pp-lg border px-3 font-mono text-xs font-bold uppercase tracking-wide transition-[filter,opacity] hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-45 ${a.button}`
+            : `mt-4 flex w-full min-h-11 items-center justify-center rounded-pp-lg border px-3 font-mono text-xs uppercase transition-[filter,opacity] hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-45 ${a.button}`
         }
       >
-        {isComingSoon ? (soonLabel ?? soonEllipsis ?? "…") : buyLabel}
+        <span
+          className={`font-bold tracking-wide ${
+            isComingSoon ? "text-slate-300" : "text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.85)]"
+          }`}
+        >
+          {isComingSoon ? (soonLabel ?? soonEllipsis ?? "…") : buyLabel}
+        </span>
       </motion.button>
     </article>
   );

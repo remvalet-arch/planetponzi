@@ -20,7 +20,7 @@ function indicesForTopLeft(tl: number): [number, number, number, number] {
 }
 
 /**
- * Détecte un carré 2×2 de **mines** (Usines) — futur : étendre à d’autres méga-patterns.
+ * Détecte un carré 2×2 de **mines** (usines) uniquement — seul pattern méga actif en scoring / SFX.
  * Premier match (scan haut-gauche, ordre lecture).
  */
 export function detectIndustrialMega2x2(grid: Cell[]): IndustrialMega2x2 | null {

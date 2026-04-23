@@ -1,6 +1,7 @@
 import type { BuildingType, Cell, DeckChallengeLevel } from "@/src/types/game";
 import { getBiomeBuildingSkin } from "@/src/lib/game/biomes";
 import { formatMultiplierFr } from "@/src/lib/difficulty";
+import { VALORIZATION_MS_UNIT } from "@/src/lib/i18n/strings";
 import { getMineScoreBonusPerMine } from "@/src/lib/empire-tower";
 import { calculateStars } from "@/src/lib/levels";
 import { getSessionCellScores } from "@/src/lib/session-scoring";
@@ -80,12 +81,12 @@ export function generateShareContent(
   const sign = score >= 0 ? "+" : "";
   const headerLine1 =
     meta?.levelId != null
-      ? `Planet Ponzi Saga 🚀 - Niveau ${meta.levelId}`
-      : `Planet Ponzi Saga 🚀 - ${seed}`;
+      ? `Planète Ponzi 🚀 - Niveau ${meta.levelId}`
+      : `Planète Ponzi 🚀 - ${seed}`;
   const stars = starLineForShare(score, meta?.levelId, grid);
   const header: string[] = [
     headerLine1,
-    `Score : ${sign}${score} pts | ${stars}`,
+    `Valorisation : ${sign}${score}${VALORIZATION_MS_UNIT} | ${stars}`,
   ];
   if (meta && meta.deckChallengeLevel >= 1) {
     const n = meta.deckChallengeLevel;

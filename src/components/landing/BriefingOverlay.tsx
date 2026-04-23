@@ -20,7 +20,7 @@ const tileRows = [
     type: "Eau",
     emoji: "💧",
     Icon: Droplets,
-    text: "Source de vie : synergise avec habitacles et serres pour exploser le score.",
+    text: "Source de vie : synergise avec habitacles et serres pour doper la valorisation M$.",
     accent: "text-sky-300",
   },
   {
@@ -49,9 +49,9 @@ type BriefingOverlayProps = {
 
 /** Briefing CEO en bottom sheet (première visite depuis l’écran d’accueil). */
 const BRIEFING_CONTRACT_DEMOS = [
-  { briefcases: 1, pts: 23 },
-  { briefcases: 2, pts: 39 },
-  { briefcases: 3, pts: 56 },
+  { briefcases: 1, valor: 23 },
+  { briefcases: 2, valor: 39 },
+  { briefcases: 3, valor: 56 },
 ] as const;
 
 export function BriefingOverlay({ open, onComplete }: BriefingOverlayProps) {
@@ -98,14 +98,14 @@ export function BriefingOverlay({ open, onComplete }: BriefingOverlayProps) {
         <p className="mt-5 font-mono text-lg font-bold tracking-tight text-white">{t.entryFlow.objectives}</p>
         <p className="mt-2 text-xs leading-relaxed text-slate-400">{t.briefing.contractTiersBlurb}</p>
         <div className="mt-3 flex flex-wrap items-center justify-center gap-2">
-          {BRIEFING_CONTRACT_DEMOS.map(({ briefcases, pts }) => (
+          {BRIEFING_CONTRACT_DEMOS.map(({ briefcases, valor }) => (
             <span
-              key={pts}
+              key={valor}
               className="inline-flex items-center gap-1.5 rounded-full border border-slate-600/55 bg-slate-900/70 px-3 py-1.5 font-mono text-xs text-slate-100 shadow-md backdrop-blur-sm"
             >
               <ContractIcon count={briefcases as 1 | 2 | 3} size="md" seal="gold" className="shrink-0" />
-              <span className="font-black tabular-nums text-white">{pts}</span>
-              <span className="text-[9px] font-semibold uppercase text-slate-400">{t.entryFlow.ptsSuffix}</span>
+              <span className="font-black tabular-nums text-white">{valor}</span>
+              <span className="text-[9px] font-semibold uppercase text-slate-400">{t.entryFlow.msUnit}</span>
             </span>
           ))}
         </div>
