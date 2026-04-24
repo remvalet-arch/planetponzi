@@ -1,0 +1,51 @@
+"use client";
+
+import Image from "next/image";
+import { useCallback, useState } from "react";
+
+export type CeoMood = "neutral" | "greedy" | "angry" | "happy";
+
+export type CeoAvatarProps = {
+  mood: CeoMood;
+  /** `md` ≈ bulle coach in-game, `lg` ≈ modales. */
+  size?: "md" | "lg";
+  className?: string;
+};
+
+const sizeClasses: Record<NonNullable<CeoAvatarProps["size"]>, string> = {
+  md: "size-16 sm:size-[4.25rem]",
+  lg: "size-20 sm:size-[5.25rem]",
+};
+
+/**
+ * Portrait CEO pour bulles BD / BoardComicShell — humeur → `public/avatars/ceo-{mood}.png`.
+ */
+export function CeoAvatar({ mood, size = "md", className = "" }: CeoAvatarProps) {
+  const [failed, setFailed] = useState(false);
+  const onError = useCallback(() => setFailed(true), []);
+
+  const frame = `relative shrink-0 overflow-hidden rounded-full border-2 border-amber-400 bg-slate-800 shadow-[0_10px_28px_rgba(0,0,0,0.55),0_0_0_1px_rgba(251,191,36,0.35)] ring-2 ring-black/40 ${sizeClasses[size]} ${className}`;
+
+  if (failed) {
+    return (
+      <div className={`flex items-center justify-center ${frame}`} role="img" aria-label="CEO">
+        <span className="select-none text-3xl drop-shadow-md sm:text-[2rem]" aria-hidden>
+          🎩
+        </span>
+      </div>
+    );
+  }
+
+  return (
+    <div className={`${frame}`}>
+      <Image
+        src={`/avatars/ceo-${mood}.png`}
+        alt="CEO"
+        fill
+        className="object-cover object-top"
+        sizes={size === "lg" ? "84px" : "72px"}
+        onError={onError}
+      />
+    </div>
+  );
+}

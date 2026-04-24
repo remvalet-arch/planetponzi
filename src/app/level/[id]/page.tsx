@@ -100,6 +100,22 @@ export default function LevelPage() {
       if (shouldEnter) {
         useLevelRunStore.getState().enterLevel(id);
       }
+      /**
+       * FTUE niveau 1 : après hydratation, un run persisté peut être `ready` avec le bon `levelId`
+       * sans déclencher `enterLevel` (shouldEnter false). Sans `beginPlacement`, la modale mandat
+       * reste ouverte — on force le démarrage grille (idempotent si déjà `playing`).
+       */
+      if (id === 1) {
+        const r = useLevelRunStore.getState();
+        if (
+          r.levelId === 1 &&
+          r.status === "ready" &&
+          r.seed.length > 0 &&
+          r.deckChallengeLockedSeed !== r.seed
+        ) {
+          useLevelRunStore.getState().beginPlacement();
+        }
+      }
     };
 
     const unsubRun = useLevelRunStore.persist.onFinishHydration(bump);
@@ -162,7 +178,7 @@ export default function LevelPage() {
         successPop();
       });
     }
-    if (id !== 1) return;
+    if (id > 3) return;
     if (hasMega && !fusionToastShownRef.current) {
       fusionToastShownRef.current = true;
       queueMicrotask(() =>
@@ -172,6 +188,18 @@ export default function LevelPage() {
       );
     }
   }, [id, gridTemporaryEffects, t.tutorial.level1FusionToast, t.tutorial.level1FusionToastCeo]);
+
+  const pendingCoachMessageKey = useLevelRunStore((s) => s.pendingCoachMessageKey);
+
+  useEffect(() => {
+    if (!pendingCoachMessageKey) return;
+    const coach = t.tutorialCoach as Record<string, string>;
+    const msg = coach[pendingCoachMessageKey];
+    if (msg) {
+      setToastMessage(msg);
+    }
+    useLevelRunStore.setState({ pendingCoachMessageKey: null });
+  }, [pendingCoachMessageKey, t]);
 
   useEffect(() => {
     if (typeof window === "undefined") return;

@@ -4,6 +4,7 @@ import { useCallback, useMemo } from "react";
 import { motion } from "framer-motion";
 import { AlertTriangle, Sparkles } from "lucide-react";
 
+import { BoardComicShell } from "@/src/components/layout/BoardComicShell";
 import { BottomSheetShell } from "@/src/components/ui/BottomSheetShell";
 import { ContractIcon, type ContractIconCount } from "@/src/components/ui/ContractIcon";
 import { markRulesFirstVisitDone } from "@/src/components/ui/RulesModal";
@@ -109,17 +110,19 @@ export function GameEntryFlow({ open }: GameEntryFlowProps) {
       onSwipeDismiss={handlePlay}
       closeOnBackdropPress={false}
       backdropClassName="!z-[100]"
-      panelClassName="!max-h-[min(92dvh,720px)] flex flex-col overflow-hidden border-t border-x border-violet-500/35 bg-gradient-to-b from-slate-950 via-indigo-950 to-slate-950 text-slate-100 shadow-[0_0_48px_rgb(124_58_237/0.25)]"
+      panelClassName="!max-h-[min(92dvh,720px)] flex flex-col overflow-visible border-t border-x border-violet-500/35 bg-gradient-to-b from-slate-950 via-indigo-950 to-slate-950 text-slate-100 shadow-[0_0_48px_rgb(124_58_237/0.25)]"
       footer={footer}
       handleClassName="bg-cyan-400/40"
+      dialogAriaLabel={t.entryFlow.objectives}
     >
-      <div className="flex min-h-0 flex-1 flex-col overflow-y-auto overscroll-y-contain px-4 pb-16 pt-5">
-        <div className="flex items-center gap-2">
-          <Sparkles className="size-4 shrink-0 text-cyan-300" strokeWidth={2} aria-hidden />
-          <p className="font-mono text-[10px] uppercase tracking-widest text-cyan-200/80">
-            {t.entryFlow.mandate} · <span className="text-violet-200/90">{seed || "—"}</span>
-          </p>
-        </div>
+      <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-y-auto overflow-x-visible overscroll-y-contain px-2 pb-16 pt-8">
+        <BoardComicShell variant="modal" mood="neutral" dialogueText={t.modalDialogue.mandat}>
+          <div className="flex items-center gap-2">
+            <Sparkles className="size-4 shrink-0 text-cyan-300" strokeWidth={2} aria-hidden />
+            <p className="font-mono text-[10px] uppercase tracking-widest text-cyan-200/80">
+              {t.entryFlow.mandate} · <span className="text-violet-200/90">{seed || "—"}</span>
+            </p>
+          </div>
 
         {maxEstimated != null ? (
           <motion.div
@@ -165,13 +168,6 @@ export function GameEntryFlow({ open }: GameEntryFlowProps) {
             </ul>
           </motion.div>
         ) : null}
-
-        <h2
-          id="entry-flow-title"
-          className="mt-5 font-mono text-lg font-bold tracking-tight text-white"
-        >
-          {t.entryFlow.objectives}
-        </h2>
 
         {def ? (
           <motion.div
@@ -237,6 +233,7 @@ export function GameEntryFlow({ open }: GameEntryFlowProps) {
         ) : (
           <p className="mt-5 font-mono text-sm text-slate-400">{t.entryFlow.loading}</p>
         )}
+        </BoardComicShell>
       </div>
     </BottomSheetShell>
   );

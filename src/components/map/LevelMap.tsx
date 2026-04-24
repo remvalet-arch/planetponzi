@@ -309,7 +309,7 @@ export function LevelMap({ scrollParentRef }: LevelMapProps) {
       const root = scrollParentRef.current;
       const node = root?.querySelector(`[data-pp-map-level="${currentLevel}"]`);
       /* Ancrer le niveau courant vers le bas de la fenêtre : base de l’ascension, regard vers le haut */
-      node?.scrollIntoView({ behavior, block: "end", inline: "nearest" });
+      node?.scrollIntoView({ behavior, block: "center", inline: "nearest" });
       updateBgFromScroll();
     },
     [currentLevel, scrollParentRef, updateBgFromScroll],

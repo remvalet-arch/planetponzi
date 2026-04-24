@@ -121,7 +121,7 @@ textarea,
   }
 
   .pp-modal-panel {
-    @apply relative z-[101] mx-auto flex w-full max-w-md min-h-0 flex-col overflow-hidden overscroll-contain shadow-2xl;
+    @apply relative z-[101] mx-auto flex w-full max-w-full min-h-0 flex-col overflow-visible overscroll-contain shadow-2xl;
     @apply max-h-[min(92dvh,720px)] sm:max-h-[min(86dvh,680px)];
     @apply rounded-t-[1.35rem] rounded-b-none border-t border-x border-pp-border-strong bg-pp-surface;
     @apply sm:rounded-2xl sm:border;
@@ -220,7 +220,7 @@ textarea,
   }
 
   .pp-end-panel {
-    @apply relative z-[101] mx-auto flex max-h-[min(88dvh,680px)] w-full max-w-md min-h-0 flex-col overflow-hidden overscroll-contain shadow-2xl;
+    @apply relative z-[101] mx-auto flex max-h-[min(88dvh,680px)] w-full max-w-full min-h-0 flex-col overflow-visible overscroll-contain shadow-2xl;
     @apply rounded-t-[1.35rem] rounded-b-none border-t border-x border-slate-700/50 bg-gradient-to-b from-slate-900 to-slate-950 text-slate-100;
     @apply sm:rounded-2xl sm:border;
     box-shadow: var(--pp-shadow-modal);

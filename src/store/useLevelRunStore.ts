@@ -11,9 +11,11 @@ import { lightTap } from "@/src/lib/haptics";
 import { playPlacementPop } from "@/src/lib/game-sounds";
 import { captureGameEvent } from "@/src/lib/analytics";
 import {
-  applyLevel1TutorialOpeningMines,
-  LEVEL1_TUTORIAL_CELL_BY_TURN,
-} from "@/src/lib/level1-tutorial";
+  getScriptedTutorialSequence,
+  getTutorialCoachStep,
+  isTutorialCoachLevel,
+  isTutorialRailsActive,
+} from "@/src/lib/tutorial-config";
 import {
   calculateStars,
   getLevelById,
@@ -137,6 +139,17 @@ export type LevelRunStore = {
   gridTemporaryEffects: GridTemporaryEffect[];
   /** Incrémenté à chaque fusion méga pour animer un tremblement de grille. */
   gridShakeNonce: number;
+  /** Message coach à afficher en Toast (consommé par la page niveau). */
+  pendingCoachMessageKey: string | null;
+  /** Pop +M$ sur une case après placement (runtime, non persisté). */
+  scorePop: { cellIndex: number; amount: number; nonce: number } | null;
+  scorePopNonce: number;
+  /**
+   * Niveau 1 tour 0 : séquence d’intro tap-to-continue (0–2). Non persisté.
+   * À 2 : message placement + grille débloquée.
+   */
+  level1IntroStep: number;
+  advanceLevel1Intro: () => void;
   enterLevel: (levelId: number) => void;
   /** Verrouille le mandat du jour et passe en jeu (deck imposé par la définition du niveau). */
   beginPlacement: () => void;
@@ -198,10 +211,8 @@ function mergePersistedState(persisted: unknown, current: LevelRunStore): LevelR
   const levelId = typeof p.levelId === "number" && Number.isFinite(p.levelId) ? p.levelId : current.levelId;
 
   if (def && placementSequence.length !== expectedLen) {
-    placementSequence = generatePlacementSequence(seed, expectedLen, def.winCondition);
-    if (def.id === 1) {
-      placementSequence = applyLevel1TutorialOpeningMines(placementSequence);
-    }
+    const scripted = getScriptedTutorialSequence(def.id, expectedLen);
+    placementSequence = scripted ?? generatePlacementSequence(seed, expectedLen, def.winCondition);
   }
 
   let grid: Cell[];
@@ -266,6 +277,9 @@ function mergePersistedState(persisted: unknown, current: LevelRunStore): LevelR
     spyPreviewTurnsRemaining: 0,
     gridTemporaryEffects: [],
     gridShakeNonce: 0,
+    scorePop: null,
+    pendingCoachMessageKey: null,
+    scorePopNonce: current.scorePopNonce,
   };
 }
 
@@ -288,6 +302,10 @@ const emptyRun: Pick<
   | "frozenCellIndices"
   | "gridTemporaryEffects"
   | "gridShakeNonce"
+  | "pendingCoachMessageKey"
+  | "scorePop"
+  | "scorePopNonce"
+  | "level1IntroStep"
 > = {
   levelId: 0,
   seed: "",
@@ -306,6 +324,10 @@ const emptyRun: Pick<
   frozenCellIndices: [],
   gridTemporaryEffects: [],
   gridShakeNonce: 0,
+  pendingCoachMessageKey: null,
+  scorePop: null,
+  scorePopNonce: 0,
+  level1IntroStep: 0,
 };
 
 export const useLevelRunStore = create<LevelRunStore>()(
@@ -313,15 +335,21 @@ export const useLevelRunStore = create<LevelRunStore>()(
     (set, get) => ({
       ...emptyRun,
 
+      advanceLevel1Intro: () => {
+        const s = get();
+        if (s.levelId !== 1 || s.turn !== 0 || s.status !== "playing") return;
+        if (s.level1IntroStep >= 2) return;
+        set({ level1IntroStep: s.level1IntroStep + 1 });
+      },
+
       enterLevel: (levelId) => {
         const def = getLevelById(levelId);
         if (!def) return;
 
         const placementLen = getPlacementLengthFromObstacles(def.obstacles);
-        let placementSequence = generatePlacementSequence(def.seed, placementLen, def.winCondition);
-        if (levelId === 1) {
-          placementSequence = applyLevel1TutorialOpeningMines(placementSequence);
-        }
+        const scripted = getScriptedTutorialSequence(levelId, placementLen);
+        const placementSequence =
+          scripted ?? generatePlacementSequence(def.seed, placementLen, def.winCondition);
         const dailyInventory = getDailyStats(placementSequence);
         const deckChallengeLevel = def.deckChallengeLevel ?? 0;
 
@@ -343,7 +371,15 @@ export const useLevelRunStore = create<LevelRunStore>()(
           frozenCellIndices: [],
           gridTemporaryEffects: [],
           gridShakeNonce: 0,
+          pendingCoachMessageKey: null,
+          scorePop: null,
+          scorePopNonce: 0,
+          level1IntroStep: 0,
         });
+        /** FTUE : niveau 1 sans modale mandat — entrée directe sur la grille. */
+        if (levelId === 1) {
+          get().beginPlacement();
+        }
       },
 
       beginPlacement: () => {
@@ -352,10 +388,18 @@ export const useLevelRunStore = create<LevelRunStore>()(
         if (s.deckChallengeLockedSeed === s.seed) return;
         const base = calculateSessionGridScore(s.grid, s.frozenCellIndices, undefined, s.levelId);
         const raw = Math.round(base * getDeckScoreMultiplier(s.deckChallengeLevel));
+        const firstCoach =
+          isTutorialCoachLevel(s.levelId) && s.status === "ready"
+            ? isTutorialRailsActive(s.levelId, "playing", 0)
+              ? null
+              : (getTutorialCoachStep(s.levelId, 0)?.messageKey ?? null)
+            : null;
         set({
           deckChallengeLockedSeed: s.seed,
           status: "playing",
           score: scoreWithPrestige(raw),
+          pendingCoachMessageKey: firstCoach,
+          level1IntroStep: 0,
         });
         captureGameEvent("level_started", {
           level_id: s.levelId,
@@ -366,6 +410,7 @@ export const useLevelRunStore = create<LevelRunStore>()(
       toggleBooster: (type) => {
         if (type !== "demolition") return;
         const s = get();
+        if (isTutorialCoachLevel(s.levelId)) return;
         if (s.status !== "playing") return;
         if (s.turn >= s.placementSequence.length) return;
         if (s.activeBooster === "demolition") {
@@ -380,7 +425,7 @@ export const useLevelRunStore = create<LevelRunStore>()(
       activateSpyBooster: () => {
         const s = get();
         if (s.status !== "playing") return;
-        if (s.levelId === 1 && s.turn < 4) return;
+        if (isTutorialCoachLevel(s.levelId)) return;
         if (s.turn >= s.placementSequence.length) return;
         const stock = useProgressStore.getState().boosters.spy;
         if (stock <= 0) return;
@@ -391,7 +436,7 @@ export const useLevelRunStore = create<LevelRunStore>()(
       activateLobbyingBooster: () => {
         const s = get();
         if (s.status !== "playing") return;
-        if (s.levelId === 1 && s.turn < 4) return;
+        if (isTutorialCoachLevel(s.levelId)) return;
         if (s.turn >= s.placementSequence.length) return;
         if (s.placementSequence.length < 1) return;
         const stock = useProgressStore.getState().boosters.lobbying;
@@ -417,13 +462,9 @@ export const useLevelRunStore = create<LevelRunStore>()(
         const verdict = validatePlacement(placementSlice, cellIndex);
         if (!verdict.ok) return;
 
-        if (
-          state.levelId === 1 &&
-          state.status === "playing" &&
-          state.turn < 4 &&
-          verdict.mode !== "demolition"
-        ) {
-          const allowed = LEVEL1_TUTORIAL_CELL_BY_TURN[state.turn];
+        if (isTutorialCoachLevel(state.levelId) && state.status === "playing" && verdict.mode !== "demolition") {
+          const coachStep = getTutorialCoachStep(state.levelId, state.turn);
+          const allowed = coachStep?.allowedCellIndex;
           if (typeof allowed === "number" && cellIndex !== allowed) {
             return;
           }
@@ -514,6 +555,17 @@ export const useLevelRunStore = create<LevelRunStore>()(
         lightTap();
         playPlacementPop();
 
+        const deltaScore = nextScore - state.score;
+        const nextPopNonce = state.scorePopNonce + 1;
+        const scorePop =
+          deltaScore > 0 ? { cellIndex: verdict.cellIndex, amount: deltaScore, nonce: nextPopNonce } : null;
+        const pendingCoachMessageKey =
+          !finished && isTutorialCoachLevel(state.levelId)
+            ? isTutorialRailsActive(state.levelId, "playing", nextTurn)
+              ? null
+              : (getTutorialCoachStep(state.levelId, nextTurn)?.messageKey ?? null)
+            : null;
+
         set({
           grid: finalGrid,
           turn: nextTurn,
@@ -524,7 +576,18 @@ export const useLevelRunStore = create<LevelRunStore>()(
           frozenCellIndices: triggerOut.nextFrozenCellIndices,
           gridTemporaryEffects: mergedEffects,
           gridShakeNonce: nextShake,
+          scorePop,
+          scorePopNonce: scorePop ? nextPopNonce : state.scorePopNonce,
+          pendingCoachMessageKey,
         });
+
+        if (scorePop) {
+          window.setTimeout(() => {
+            useLevelRunStore.setState((inner) =>
+              inner.scorePop?.nonce === scorePop.nonce ? { scorePop: null } : {},
+            );
+          }, 980);
+        }
 
         if (finished && state.levelId > 0) {
           const stars = calculateStars(nextScore, state.levelId, finalGrid);
@@ -553,7 +616,9 @@ export const useLevelRunStore = create<LevelRunStore>()(
             useEconomyStore.getState().addCoins(stars * 10);
           }
           if (stars < 1) {
-            useEconomyStore.getState().consumeLife();
+            if (state.levelId > 3) {
+              useEconomyStore.getState().consumeLife();
+            }
             useProgressStore.getState().incrementFailures();
           }
           recordGameCompletion({
@@ -570,7 +635,7 @@ export const useLevelRunStore = create<LevelRunStore>()(
       purchaseBlackMarketTile: (building) => {
         const s = get();
         if (s.status !== "playing") return false;
-        if (s.levelId === 1 && s.turn < 4) return false;
+        if (isTutorialCoachLevel(s.levelId)) return false;
         if (s.turn >= s.placementSequence.length) return false;
         if (s.placementSequence.length < 1) return false;
         if (!useEconomyStore.getState().spendCoins(BLACK_MARKET_TILE_COST)) return false;
@@ -587,10 +652,9 @@ export const useLevelRunStore = create<LevelRunStore>()(
         const cargoSeed = def?.seed ?? seed;
         if (!cargoSeed) return;
         const placementLen = def ? getPlacementLengthFromObstacles(def.obstacles) : 16;
-        let placementSequence = generatePlacementSequence(cargoSeed, placementLen, def?.winCondition);
-        if (levelId === 1) {
-          placementSequence = applyLevel1TutorialOpeningMines(placementSequence);
-        }
+        const scripted = def ? getScriptedTutorialSequence(def.id, placementLen) : null;
+        const placementSequence =
+          scripted ?? generatePlacementSequence(cargoSeed, placementLen, def?.winCondition);
         const dailyInventory = getDailyStats(placementSequence);
         const deckChallengeLevel = def?.deckChallengeLevel ?? get().deckChallengeLevel;
         set({
@@ -609,6 +673,10 @@ export const useLevelRunStore = create<LevelRunStore>()(
           frozenCellIndices: [],
           gridTemporaryEffects: [],
           gridShakeNonce: 0,
+          pendingCoachMessageKey: null,
+          scorePop: null,
+          scorePopNonce: 0,
+          level1IntroStep: 0,
         });
       },
 
@@ -620,7 +688,9 @@ export const useLevelRunStore = create<LevelRunStore>()(
       quitGame: () => {
         const s = get();
         if (s.status !== "playing") return false;
-        useEconomyStore.getState().consumeLife();
+        if (s.levelId > 3) {
+          useEconomyStore.getState().consumeLife();
+        }
         get().resetBoard();
         return true;
       },

@@ -173,6 +173,13 @@ export const strings = {
       contractTiersBlurb:
         "Chaque mandat fixe trois seuils de valorisation (M$) : ils déterminent combien de contrats vous signez.",
     },
+    modalDialogue: {
+      mandat:
+        "Voici vos objectifs pour ce secteur, CEO. Ne décevez pas le Board.",
+      win: "Excellente rentabilité ! Le Board est ravi... pour l'instant.",
+      loss: "Des chiffres catastrophiques. Vous êtes un gouffre financier.",
+      daily: "Un petit stimulus pour booster votre productivité. Au travail.",
+    },
     entryFlow: {
       mandate: "Mandat",
       objectives: "Objectifs de Contrats",
@@ -291,6 +298,8 @@ export const strings = {
     },
     blackMarket: {
       title: "Marché noir",
+      ceoDialogue:
+        "Le Board ferme les yeux sur l’origine de cette liquidité. Payez, choisissez, et faites taire la conformité.",
       subtitle: "200 💰 : la prochaine tuile du mandat devient celle que vous choisissez.",
       openAria: "Ouvrir le marché noir",
       close: "Fermer",
@@ -471,7 +480,7 @@ export const strings = {
       summaryRoiFormulaMode: "mode",
       summaryRoiFormulaResult: "arrondi",
       summaryPerCellTitle: "M$ par case",
-      summaryMineBase: "+3 M$",
+      summaryMineBase: "+3 M$ (Évolutif)",
       summarySerreHint:
         "Serre : 1 M$ de base + bonus voisins · Eau : 0 si aucun voisin éligible",
       summaryChip4x4: "4×4",
@@ -486,6 +495,10 @@ export const strings = {
       summaryFormulaWaterNeighbor: "+2 M$ / voisin",
     },
     tutorial: {
+      coachDirectiveKicker: "Coach du Board",
+      coachBubbleTitle: "CEO / Board",
+      coachTapContinue: "▶ Appuyez pour continuer",
+      coachCellHint: "Ici",
       level1PlaceMine: "Placez l'usine ici",
       level1Directive1Title: "Directive #1",
       level1Directive1Body: "Posez ces mines ici. C'est le début de votre empire.",
@@ -501,13 +514,49 @@ export const strings = {
       done: "Choisir le mode",
       step1Title: "Bienvenue, Stagiaire.",
       step1Body:
-        "Posez ces usines en carré 2×2 : c’est une fusion industrielle, pas une coïncidence. Le bloc rapporte 30 M$ (+ bonus mines) mais « pollue » les cases adjacentes (0 M$) — isolez la zone pour sauver le reste du bilan. C’est un ordre — le Board n’aime pas l’improvisation.",
+        "1. Regroupez les bâtiments identiques. 2. Atteignez l'objectif financier. 3. Survivez. Le Board n'accepte aucune excuse.",
       step2Title: "Cadence",
       step2Body:
         "Une case par tour. Voisins = haut, bas, gauche, droite — pas en diagonale : ce n’est pas la philanthropie.",
       step3Title: "Bilan",
       step3Body:
         "Le ROI affiché tranche. Trois contrats si vous performez ; sinon le mandat prime sur la valorisation. Capitalisme, pas crèche.",
+    },
+    /** Messages cyniques du Board pendant le coach (niveaux 1–3). Clés = `tutorial-config`. */
+    tutorialCoach: {
+      intro_1: "Ah, le nouveau CEO ! Bienvenue chez Planète Ponzi.",
+      intro_2: "Notre mission : raser des planètes vierges pour maximiser nos profits.",
+      intro_3: "Commençons l'extraction. Posez cet Habitacle (🏢) sur la case indiquée.",
+      l1_t0:
+        "Commençons l'extraction. Posez cet Habitacle (🏢) sur la case indiquée.",
+      l1_t1:
+        "L'Eau (💧) rapporte +2 M$ par Habitacle adjacent. Collez-les !",
+      l1_t2:
+        "Plus le groupe est grand, plus la valorisation explose. Continuez.",
+      l1_t3:
+        "Dernière case. Remplissez l'espace, le vide ne rapporte rien.",
+      l1_free:
+        "Continuez à regrouper les mêmes couleurs. Le Board vous regarde.",
+      l2_t0:
+        "Nouveau niveau, nouveau contrat. Vous connaissez la base.",
+      l2_t1:
+        "Seuls les voisins directs comptent (Haut, Bas, Gauche, Droite). Pas de diagonales.",
+      l2_t2:
+        "Construisez un bloc solide pour augmenter la valorisation.",
+      l2_t3:
+        "Voici une Mine (⛏️). Elle augmente la valeur de TOUTE la grille. Posez-la !",
+      l2_free:
+        "La Mine est en place. Complétez la grille pour maximiser son effet.",
+      l3_t0:
+        "Attention à l'obstacle (🕳️). Vous ne pouvez rien y construire.",
+      l3_t1:
+        "Regardez le Mandat en bas : il vous faut au moins 2 Habitacles (🏢).",
+      l3_t2:
+        "Gérez bien l'espace. La grille est plus petite cette fois.",
+      l3_t3:
+        "Dernier coup guidé. Maintenant, remplissez l'objectif (Mandat) seul, ou vous êtes viré.",
+      l3_free:
+        "Le Board attend ses résultats. Remplissez le Mandat ou démissionnez.",
     },
   },
   en: {
@@ -661,6 +710,13 @@ export const strings = {
       contractTiersBlurb:
         "Each mandate sets three valuation (M$) thresholds — they determine how many contracts you sign.",
     },
+    modalDialogue: {
+      mandat:
+        "Here are your objectives for this sector, CEO. Don't disappoint the Board.",
+      win: "Excellent ROI! The Board is pleased... for now.",
+      loss: "Catastrophic numbers. You are a financial sinkhole.",
+      daily: "A little stimulus to boost your productivity. Get to work.",
+    },
     entryFlow: {
       mandate: "Mandate",
       objectives: "Contract Objectives",
@@ -777,6 +833,8 @@ export const strings = {
     },
     blackMarket: {
       title: "Black market",
+      ceoDialogue:
+        "The Board looks away from where this liquidity came from. Pay, pick your tile, and keep compliance quiet.",
       subtitle: "200 💰: your next mandate tile becomes the one you pick.",
       openAria: "Open black market",
       close: "Close",
@@ -935,7 +993,7 @@ export const strings = {
       fiscalFreezeTutorialCta: "Got it",
       directive1Label: "Directive #1 — Group synergy",
       directive1Body:
-        "Place four mines in a 2×2 square for the industrial mega-structure fusion — 30 M$ plus mine bonuses on the block; the adjacent ring (Chebyshev distance 1) pays 0 M$, the rest of the board scores as usual (other building types do not mega-fuse).",
+        "Place four mines in a 2×2 square for the industrial mega-structure fusion — 30 M$ plus mine bonuses on the block; the ring of adjacent tiles (including diagonals) around the square pays 0 M$, the rest of the board scores as usual (other building types do not mega-fuse).",
       directive2Label: "Directive #2 — Tax optimization",
       directive2Body:
         "On Boss mandates (every 10 levels), the tax office periodically freezes your top-yielding cell: it pays 0 M$ in the final tally. Plan around the freeze cadence.",
@@ -951,7 +1009,7 @@ export const strings = {
       summaryRoiFormulaMode: "mode",
       summaryRoiFormulaResult: "rounded",
       summaryPerCellTitle: "M$ per cell",
-      summaryMineBase: "+3 M$",
+      summaryMineBase: "+3 M$ (Scales)",
       summarySerreHint:
         "Greenhouse: 1 M$ base + neighbor bonus · Water: 0 if no eligible neighbor",
       summaryChip4x4: "4×4",
@@ -966,6 +1024,10 @@ export const strings = {
       summaryFormulaWaterNeighbor: "+2 M$ / neighbor",
     },
     tutorial: {
+      coachDirectiveKicker: "Board coach",
+      coachBubbleTitle: "CEO / Board",
+      coachTapContinue: "▶ Tap to continue",
+      coachCellHint: "Here",
       level1PlaceMine: "Place the factory here",
       level1Directive1Title: "Directive #1",
       level1Directive1Body: "Drop those mines right here. This is where your empire starts.",
@@ -980,13 +1042,48 @@ export const strings = {
       done: "Pick mode",
       step1Title: "Welcome, Intern.",
       step1Body:
-        "Drop those factories in a 2×2 square — that’s an industrial merger, not serendipity. The block pays 30 M$ (plus mine bonuses) but “pollutes” adjacent tiles (0 M$)—tuck it away to protect the rest of your valuation. It’s an order: the Board despises improv.",
+        "1. Group identical buildings. 2. Hit the financial target. 3. Survive. The Board accepts no excuses.",
       step2Title: "Cadence",
       step2Body:
         "One cell per turn. Neighbors = up, down, left, right — no diagonals; this isn’t charity.",
-      step3Title: "Close",
+      step3Title: "Valuation",
       step3Body:
         "Displayed ROI decides. Three contracts if you deliver; otherwise the mandate beats raw valuation. Capitalism, not daycare.",
+    },
+    tutorialCoach: {
+      intro_1: "Ah, the new CEO! Welcome to Planet Ponzi.",
+      intro_2: "Our mission: exploiting pristine planets for maximum profit.",
+      intro_3: "Let's begin extraction. Place this Habitat (🏢) on the indicated tile.",
+      l1_t0:
+        "Let's begin extraction. Place this Habitat (🏢) on the indicated tile.",
+      l1_t1:
+        "Water (💧) earns +2 M$ per adjacent Habitat. Connect them!",
+      l1_t2:
+        "The bigger the group, the higher the valuation. Keep going.",
+      l1_t3:
+        "Last tile. Fill the space, emptiness pays nothing.",
+      l1_free:
+        "Keep grouping the same colors. The Board is watching.",
+      l2_t0:
+        "New level, new contract. You know the basics.",
+      l2_t1:
+        "Only direct neighbors count (Up, Down, Left, Right). No diagonals.",
+      l2_t2:
+        "Build a solid block to increase valuation.",
+      l2_t3:
+        "Here is a Mine (⛏️). It boosts the value of the ENTIRE grid. Place it!",
+      l2_free:
+        "The Mine is placed. Complete the grid to maximize its effect.",
+      l3_t0:
+        "Watch out for the obstacle (🕳️). You cannot build there.",
+      l3_t1:
+        "Look at the Mandate below: you need at least 2 Habitats (🏢).",
+      l3_t2:
+        "Manage your space well. The grid is smaller this time.",
+      l3_t3:
+        "Last guided move. Now, complete the Mandate alone, or you're fired.",
+      l3_free:
+        "The Board awaits results. Fulfill the Mandate or resign.",
     },
   },
 } as const;

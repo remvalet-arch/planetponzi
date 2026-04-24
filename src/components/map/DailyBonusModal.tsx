@@ -2,6 +2,7 @@
 
 import { useCallback } from "react";
 
+import { BoardComicShell } from "@/src/components/layout/BoardComicShell";
 import { BottomSheetShell } from "@/src/components/ui/BottomSheetShell";
 import { useAppStrings } from "@/src/lib/i18n/useAppStrings";
 import { useEconomyStore } from "@/src/store/useEconomyStore";
@@ -40,12 +41,11 @@ export function DailyBonusModal({ open, onClose }: DailyBonusModalProps) {
       disableSwipeDown
       footer={footer}
     >
-      <div className="pp-modal-scroll pt-1">
-        <div>
+      <div className="min-h-0 flex-1 overflow-y-auto overflow-x-visible overscroll-y-contain px-2 pb-3 pt-8 w-full min-w-0">
+        <BoardComicShell variant="modal" mood="happy" title={t.dailyBonus.title} dialogueText={t.modalDialogue.daily}>
           <p className="pp-kicker text-cyan-300/90">{t.dailyBonus.kicker}</p>
-          <h2 className="mt-2 font-mono text-lg font-bold text-pp-text">{t.dailyBonus.title}</h2>
-          <p className="mt-3 text-sm leading-relaxed text-pp-text-muted">{t.dailyBonus.body}</p>
-        </div>
+          <p className="mt-2 text-sm leading-relaxed text-pp-text-muted">{t.dailyBonus.body}</p>
+        </BoardComicShell>
       </div>
     </BottomSheetShell>
   );

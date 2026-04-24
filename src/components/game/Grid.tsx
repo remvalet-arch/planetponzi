@@ -4,7 +4,9 @@ import { useMemo } from "react";
 import { motion, type Variants } from "framer-motion";
 
 import { Cell } from "@/src/components/game/Cell";
+import { TutorialCoachBubble } from "@/src/components/game/TutorialCoachBubble";
 import { TutorialOverlay } from "@/src/components/game/TutorialOverlay";
+import { TutorialScoreFloat } from "@/src/components/game/TutorialScoreFloat";
 import { getBiomeTheme } from "@/src/lib/game/biomes";
 import { getLevelById } from "@/src/lib/levels";
 import { useAppStrings } from "@/src/lib/i18n/useAppStrings";
@@ -75,7 +77,7 @@ export function Grid({
 
   return (
     <div
-      className={`pp-game-grid-panel mx-auto flex aspect-square w-full max-h-full min-h-0 min-w-0 max-w-[400px] flex-col transition-[box-shadow] duration-200 ${
+      className={`pp-game-grid-panel relative mx-auto flex aspect-square w-full max-h-full min-h-0 min-w-0 max-w-[400px] flex-col transition-[box-shadow] duration-200 ${
         demolitionMode
           ? "cursor-crosshair shadow-[0_0_0_2px_rgb(244_63_94/0.45),0_0_28px_rgb(244_63_94/0.2)]"
           : ""
@@ -118,7 +120,9 @@ export function Grid({
           );
         })}
         <TutorialOverlay />
+        <TutorialScoreFloat />
       </motion.div>
+      <TutorialCoachBubble />
     </div>
   );
 }

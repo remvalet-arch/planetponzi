@@ -471,6 +471,11 @@ export function generateLevels(count: number): LevelDefinition[] {
     else if (id === 16)
       winCondition = { spatialRules: [{ kind: "aligned", building: "serre", minCount: 3 }] };
     else if (id === 17) winCondition = { spatialRules: [{ kind: "isolated", building: "mine" }] };
+    /** Niveau 3 : tutoriel — obstacle + mandat simple (≥2 habitacles). */
+    if (id === 3) {
+      obstacles = [{ index: 0, terrain: "void" }];
+      winCondition = { minHabitacle: 2 };
+    }
 
     const chaos = chaosGameplayForLevel(id);
 

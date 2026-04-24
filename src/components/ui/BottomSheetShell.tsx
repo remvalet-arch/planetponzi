@@ -38,6 +38,8 @@ export type BottomSheetShellProps = {
    * (`fixed inset-x-0 bottom-0`), `max-h-[85dvh]`, entrée depuis le bas de l’écran.
    */
   puzzleShopLayout?: boolean;
+  /** Nom accessible du `role="dialog"` (ex. mandat sans titre visible dans le shell). */
+  dialogAriaLabel?: string;
 };
 
 /**
@@ -61,6 +63,7 @@ export function BottomSheetShell({
   disableSwipeDown = false,
   portalToBody = false,
   puzzleShopLayout = false,
+  dialogAriaLabel,
 }: BottomSheetShellProps) {
   const finishSwipe = onSwipeDismiss ?? onClose;
   const [portalMounted, setPortalMounted] = useState(false);
@@ -125,6 +128,7 @@ export function BottomSheetShell({
           <motion.div
             role="dialog"
             aria-modal="true"
+            aria-label={dialogAriaLabel}
             className={panelMerged}
             initial={panelMotion.initial}
             animate={panelMotion.animate}

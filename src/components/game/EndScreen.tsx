@@ -8,6 +8,7 @@ import { motion } from "framer-motion";
 import { PanelBottomOpen, Share2, X } from "lucide-react";
 
 import { Grid } from "@/src/components/game/Grid";
+import { BoardComicShell } from "@/src/components/layout/BoardComicShell";
 import { ContractIcon } from "@/src/components/ui/ContractIcon";
 import { playErrorBuzzer, playUIClick, playVictoryCash } from "@/src/lib/game-sounds";
 import { failureShock, successPop } from "@/src/lib/haptics";
@@ -339,6 +340,7 @@ export function EndScreen({ onShareFeedback }: EndScreenProps) {
       : null;
   const isOptimalYield = maxScoreEstimate > 0 && score >= maxScoreEstimate;
   const earnedCoins = earnedStars > 0 ? earnedStars * 10 : 0;
+  /** Même seuil que le bloc Redressement / mandat (`FailureStatusBlock`) : 0–1★. */
   const showWeakResultBeforeGrid = earnedStars <= 1;
 
   const nextId = levelId + 1;
@@ -438,7 +440,7 @@ export function EndScreen({ onShareFeedback }: EndScreenProps) {
       className="pp-end-backdrop"
       role="dialog"
       aria-modal="true"
-      aria-labelledby="end-title"
+      aria-label={t.endScreen.rewardsTitle}
       onMouseDown={(e) => {
         if (e.target === e.currentTarget) setMinimized(true);
       }}
@@ -458,13 +460,15 @@ export function EndScreen({ onShareFeedback }: EndScreenProps) {
           <X className="size-5" strokeWidth={2} />
         </button>
 
-        <div className="pp-allow-select min-h-0 flex-1 overflow-y-auto overscroll-y-contain px-5 pb-0 pt-2 text-slate-100">
-          <p className="pr-14 font-mono text-[10px] uppercase tracking-[0.35em] text-slate-500">
+        <div className="pp-allow-select min-h-0 min-w-0 flex-1 overflow-y-auto overflow-x-visible overscroll-y-contain px-2 pb-0 pt-8 text-slate-100">
+          <BoardComicShell
+            variant="modal"
+            mood={earnedStars > 1 ? "happy" : "angry"}
+            dialogueText={earnedStars > 1 ? t.modalDialogue.win : t.modalDialogue.loss}
+          >
+          <p className="font-mono text-[10px] uppercase tracking-[0.35em] text-slate-500">
             {t.endScreen.levelKicker(levelId)}
           </p>
-          <h2 id="end-title" className="mt-1 text-xl font-bold tracking-tight text-white">
-            {t.endScreen.rewardsTitle}
-          </h2>
 
           <div
             className="my-1 flex flex-col items-center"
@@ -528,7 +532,7 @@ export function EndScreen({ onShareFeedback }: EndScreenProps) {
           ) : null}
 
           <div
-            className="pointer-events-none relative mx-auto mt-2 max-w-[min(100%,22rem)] origin-top scale-[0.75]"
+            className="pointer-events-none relative mx-auto mt-2 w-full max-w-full origin-top scale-[0.82] sm:scale-90"
             aria-hidden
           >
             <Grid
@@ -609,6 +613,7 @@ export function EndScreen({ onShareFeedback }: EndScreenProps) {
               </div>
             </div>
           ) : null}
+          </BoardComicShell>
         </div>
 
         <div className={thumbZone}>

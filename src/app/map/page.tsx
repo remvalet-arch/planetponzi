@@ -1,5 +1,6 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { BottomNav } from "@/src/components/layout/BottomNav";
@@ -21,6 +22,7 @@ import { useEmpireStore } from "@/src/store/useEmpireStore";
 import { useProgressStore } from "@/src/store/useProgressStore";
 
 export default function MapPage() {
+  const router = useRouter();
   const { t, locale } = useAppStrings();
   const tRef = useRef(t);
   tRef.current = t;
@@ -31,8 +33,10 @@ export default function MapPage() {
   );
   const [storyDismissGen, setStoryDismissGen] = useState(0);
   const [mapHint, setMapHint] = useState<string | null>(null);
+  const ftueRedirectRef = useRef(false);
 
   const unlockedLevels = useProgressStore((s) => s.unlockedLevels);
+  const starsByLevel = useProgressStore((s) => s.starsByLevel);
   const hasSeenShopUnlockCeoMemo = useProgressStore((s) => s.hasSeenShopUnlockCeoMemo);
   const hasSeenTowerUnlockCeoMemo = useProgressStore((s) => s.hasSeenTowerUnlockCeoMemo);
   const markShopUnlockCeoMemoSeen = useProgressStore((s) => s.markShopUnlockCeoMemoSeen);
@@ -46,6 +50,18 @@ export default function MapPage() {
   useEffect(() => {
     return useProgressStore.persist.onFinishHydration(() => setProgressHydrated(true));
   }, []);
+
+  /** FTUE : premier mandat — accès direct niveau 1 sans interaction carte. */
+  useEffect(() => {
+    if (!progressHydrated) return;
+    if (ftueRedirectRef.current) return;
+    const maxU = unlockedLevels.length ? Math.max(...unlockedLevels) : 1;
+    const starsL1 = starsByLevel["1"] ?? 0;
+    if (maxU === 1 && starsL1 === 0) {
+      ftueRedirectRef.current = true;
+      router.replace("/level/1");
+    }
+  }, [progressHydrated, unlockedLevels, starsByLevel, router]);
 
   useEffect(() => {
     if (!progressHydrated) return;
@@ -111,6 +127,7 @@ export default function MapPage() {
         key: `sector-${sectorMilestone}`,
         memoHeader: t.storyModal.memoHeader(sectorMilestone),
         memo,
+        mood: "neutral" as const,
       };
     }
     if (unlockKind === "shop") {
@@ -118,6 +135,7 @@ export default function MapPage() {
         key: "unlock-shop",
         memoHeader: t.unlockMemos.shopMemoHeader,
         memo: { kicker: t.unlockMemos.shopKicker, quote: t.unlockMemos.shopQuote },
+        mood: "greedy" as const,
       };
     }
     if (unlockKind === "tower") {
@@ -125,23 +143,35 @@ export default function MapPage() {
         key: "unlock-tower",
         memoHeader: t.unlockMemos.towerMemoHeader,
         memo: { kicker: t.unlockMemos.towerKicker, quote: t.unlockMemos.towerQuote },
+        mood: "neutral" as const,
       };
     }
     return null;
   }, [t, sectorMilestone, unlockKind]);
 
+  /**
+   * Cadeau quotidien : pas d’auto-modale tant que max niveau débloqué ≤ 3 (FTUE).
+   * Nouvelle sauvegarde : ancrer silencieusement `lastBonusDate` au jour courant si null
+   * pour éviter le pop-up juste après le niveau 3 le même jour.
+   */
   useEffect(() => {
     const run = () => {
-      if (!useEconomyStore.persist.hasHydrated()) return;
+      if (!progressHydrated || !useEconomyStore.persist.hasHydrated()) return;
       useEconomyStore.getState().checkLifeRecharge();
-      const { lastBonusDate } = useEconomyStore.getState();
       const today = getLocalDateSeed();
+      const maxU = unlockedLevels.length ? Math.max(...unlockedLevels) : 1;
+      const { lastBonusDate } = useEconomyStore.getState();
+      if (maxU <= 3 && lastBonusDate === null) {
+        useEconomyStore.setState({ lastBonusDate: today });
+        return;
+      }
+      if (maxU <= 3) return;
       if (lastBonusDate !== today) setBonusOpen(true);
     };
     const unsub = useEconomyStore.persist.onFinishHydration(run);
     run();
     return unsub;
-  }, []);
+  }, [progressHydrated, unlockedLevels]);
 
   useEffect(() => {
     const applyOffline = () => {
@@ -198,6 +228,7 @@ export default function MapPage() {
           open
           memo={storyPayload.memo}
           memoHeader={storyPayload.memoHeader}
+          mood={storyPayload.mood}
           closeLabel={t.storyModal.closeCta}
           onClose={closeStoryModal}
         />

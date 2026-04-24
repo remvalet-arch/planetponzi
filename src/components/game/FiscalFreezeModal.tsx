@@ -3,6 +3,7 @@
 import { useEffect } from "react";
 import { X } from "lucide-react";
 
+import { BoardComicShell } from "@/src/components/layout/BoardComicShell";
 import { BottomSheetShell } from "@/src/components/ui/BottomSheetShell";
 import { useAppStrings } from "@/src/lib/i18n/useAppStrings";
 
@@ -23,40 +24,35 @@ export function FiscalFreezeModal({ open, onClose }: FiscalFreezeModalProps) {
     return () => window.removeEventListener("keydown", onKey);
   }, [open, onClose]);
 
-  const footer = (
-    <div className="pp-modal-footer flex flex-col gap-2 border-white/10 bg-slate-950/95">
-      <button
-        type="button"
-        onClick={onClose}
-        className="flex min-h-12 w-full items-center justify-center rounded-pp-lg border border-cyan-500/45 bg-cyan-600/90 px-4 font-mono text-sm font-bold uppercase tracking-widest text-white shadow-[0_0_20px_rgb(34_211_238/0.25)] transition-[filter] hover:brightness-110"
-      >
-        {t.rules.fiscalFreezeTutorialCta}
-      </button>
-    </div>
-  );
-
   return (
     <BottomSheetShell
       open={open}
       onClose={onClose}
-      footer={footer}
-      panelClassName="pp-modal-panel--dark"
+      panelClassName="pp-modal-panel--dark overflow-visible"
       handleClassName="!bg-slate-600/80 !ring-slate-500/40"
     >
-      <div className="pp-modal-header">
-        <div className="min-w-0">
-          <p className="pp-kicker">Boss</p>
-          <h2 id="fiscal-freeze-modal-title" className="mt-1 font-mono text-base font-bold tracking-tight text-white">
-            {t.rules.fiscalBossTitle}
-          </h2>
-        </div>
-        <button type="button" onClick={onClose} className="pp-btn-icon" aria-label={t.energy.dismiss}>
-          <X className="size-5" strokeWidth={2} />
-        </button>
-      </div>
-
-      <div className="pp-modal-scroll pp-allow-select py-5 text-slate-100">
-        <p className="text-sm leading-relaxed text-slate-400">{t.rules.fiscalFreezeTutorialBody}</p>
+      <div className="min-h-0 flex-1 overflow-y-auto overflow-x-visible overscroll-y-contain px-2 pb-4 pt-8">
+        <BoardComicShell
+          variant="modal"
+          mood="angry"
+          title={t.rules.fiscalBossTitle}
+          titleId="fiscal-freeze-modal-title"
+          dialogueText={t.rules.fiscalFreezeTutorialBody}
+          bubbleClassName="!border-cyan-500/30"
+        >
+          <div className="mb-3 flex justify-end">
+            <button type="button" onClick={onClose} className="pp-btn-icon" aria-label={t.energy.dismiss}>
+              <X className="size-5" strokeWidth={2} />
+            </button>
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            className="flex min-h-12 w-full items-center justify-center rounded-pp-lg border border-cyan-500/45 bg-cyan-600/90 px-4 font-mono text-sm font-bold uppercase tracking-widest text-white shadow-[0_0_20px_rgb(34_211_238/0.25)] transition-[filter] hover:brightness-110"
+          >
+            {t.rules.fiscalFreezeTutorialCta}
+          </button>
+        </BoardComicShell>
       </div>
     </BottomSheetShell>
   );
