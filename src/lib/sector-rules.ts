@@ -4,6 +4,7 @@
  */
 
 import { getMineScoreBonusPerMine } from "@/src/lib/empire-tower";
+import { INDUSTRIAL_MEGA_TOTAL_SCORE } from "@/src/lib/megas";
 import { fnv1a32 } from "@/src/lib/rng";
 
 export type ChaosGameplayFlags = {
@@ -59,7 +60,7 @@ export function isFluxTendusSector(levelId: number): boolean {
   return chaosGameplayForLevel(levelId)?.fluxAlign === true;
 }
 
-/** Niveaux 51–60 — Série B : méga 2×2 mines rapporte 60 M$ au lieu de 40. */
+/** Niveaux 51–60 — pavillon secteur « Série B » (chaos : `mega60`). Le score méga utilise une base fixe. */
 export function isMegaPlateauSector(levelId: number): boolean {
   if (levelId < 1) return false;
   if (Math.floor((levelId - 1) / 10) === 5) return true;
@@ -87,11 +88,11 @@ export function isSiliconMineQuotaLevel(levelId: number): boolean {
 }
 
 /**
- * Score méga-industriel (2×2 mines) : base secteur (40 ou 60) + bonus Tour × 4 mines
- * (aligné sur quatre cases du bloc — la méga reste compétitive en fin de partie).
+ * Score méga-industriel (2×2 mines) : base 30 M$ + bonus Tour × 4 mines
+ * (aligné sur les quatre cases du bloc).
  */
-export function industrialMegaTotalForLevel(levelId: number, mineScoreBonusPerMine?: number): number {
-  const base = isMegaPlateauSector(levelId) ? 60 : 40;
+export function industrialMegaTotalForLevel(_levelId: number, mineScoreBonusPerMine?: number): number {
+  const base = INDUSTRIAL_MEGA_TOTAL_SCORE;
   const bonus =
     mineScoreBonusPerMine !== undefined ? mineScoreBonusPerMine : getMineScoreBonusPerMine();
   const mineBonus = Math.max(0, Math.floor(bonus));

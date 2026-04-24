@@ -443,7 +443,7 @@ export const strings = {
       fiscalStampLabel: "GELÉ",
       megaStructureTitle: "Méga-structures (fusion 2×2)",
       megaStructureBody:
-        "Placez quatre mines (usines) en carré 2×2 pour former le Complexe industriel : la valorisation M$ de ces quatre cases est remplacée par un bonus massif unique (monopole industriel).",
+        "Placez quatre mines (usines) en carré 2×2 pour former le Complexe industriel : 30 M$ de ligne unique (plus le bonus Tour sur les quatre mines). La couronne d’une case tout autour du carré — côtés et diagonales — ne rapporte aucun M$ au bilan ; le reste de la grille compte normalement.",
       fiscalBossTitle: "Contrôle fiscal (Boss)",
       fiscalBossBody:
         "Tous les 10 niveaux (Niveaux Boss), le Fisc s'invite ! Tous les 4 tours de jeu, le Fisc gèlera votre case la plus rentable. Une case gelée rapporte 0 M$ à la fin de la partie. Construisez intelligemment pour minimiser les pertes.",
@@ -452,7 +452,7 @@ export const strings = {
       fiscalFreezeTutorialCta: "J'ai compris",
       directive1Label: "Directive n°1 — Synergie de groupe",
       directive1Body:
-        "Alignez quatre mines en carré 2×2 : fusion « méga-structure » industrielle — le bilan comptabilise un bonus unique à la place des quatre cases (autres bâtiments : pas de fusion méga).",
+        "Alignez quatre mines en carré 2×2 : fusion « méga-structure » industrielle — 30 M$ + bonus mines sur le bloc ; la couronne adjacente (rayon 1) est valorisée à 0 M$, le reste du plateau compte comme d’habitude (autres bâtiments : pas de fusion méga).",
       directive2Label: "Directive n°2 — Optimisation fiscale",
       directive2Body:
         "Sur les mandats Boss (tous les 10 niveaux), le fisc fige périodiquement votre case la plus rentable : elle tombe à 0 M$ au bilan. Anticipez la cadence des gels.",
@@ -498,7 +498,7 @@ export const strings = {
       done: "Choisir le mode",
       step1Title: "Bienvenue, Stagiaire.",
       step1Body:
-        "Posez ces usines en carré 2×2 : c’est une fusion industrielle, pas une coïncidence. C’est un ordre — le Board n’aime pas l’improvisation.",
+        "Posez ces usines en carré 2×2 : c’est une fusion industrielle, pas une coïncidence. Le bloc rapporte 30 M$ (+ bonus mines) mais « pollue » les cases adjacentes (0 M$) — isolez la zone pour sauver le reste du bilan. C’est un ordre — le Board n’aime pas l’improvisation.",
       step2Title: "Cadence",
       step2Body:
         "Une case par tour. Voisins = haut, bas, gauche, droite — pas en diagonale : ce n’est pas la philanthropie.",
@@ -921,7 +921,7 @@ export const strings = {
       fiscalStampLabel: "FROZEN",
       megaStructureTitle: "Mega-structures (2×2 fusion)",
       megaStructureBody:
-        "Place four mines (factories) in a 2×2 square to form the Industrial Complex: the M$ valuation of those four tiles collapses into one huge line item (industrial monopoly).",
+        "Place four mines (factories) in a 2×2 square to form the Industrial Complex: one 30 M$ line item (plus your per-mine tower bonus on all four tiles). The one-tile ring around the square—including diagonals—scores 0 M$; the rest of the grid scores normally.",
       fiscalBossTitle: "Tax audit (Boss levels)",
       fiscalBossBody:
         "Every 10 levels (Boss levels), the taxman shows up! Every 4 turns, the taxman freezes your highest‑yielding cell. A frozen cell pays 0 M$ at the end of the run. Build smart to limit the damage.",
@@ -930,7 +930,7 @@ export const strings = {
       fiscalFreezeTutorialCta: "Got it",
       directive1Label: "Directive #1 — Group synergy",
       directive1Body:
-        "Place four mines in a 2×2 square for the industrial mega-structure fusion — one big line item instead of four tiles (other building types do not mega-fuse).",
+        "Place four mines in a 2×2 square for the industrial mega-structure fusion — 30 M$ plus mine bonuses on the block; the adjacent ring (Chebyshev distance 1) pays 0 M$, the rest of the board scores as usual (other building types do not mega-fuse).",
       directive2Label: "Directive #2 — Tax optimization",
       directive2Body:
         "On Boss mandates (every 10 levels), the tax office periodically freezes your top-yielding cell: it pays 0 M$ in the final tally. Plan around the freeze cadence.",
@@ -975,7 +975,7 @@ export const strings = {
       done: "Pick mode",
       step1Title: "Welcome, Intern.",
       step1Body:
-        "Drop those factories in a 2×2 square — that’s an industrial merger, not serendipity. It’s an order: the Board despises improv.",
+        "Drop those factories in a 2×2 square — that’s an industrial merger, not serendipity. The block pays 30 M$ (plus mine bonuses) but “pollutes” adjacent tiles (0 M$)—tuck it away to protect the rest of your valuation. It’s an order: the Board despises improv.",
       step2Title: "Cadence",
       step2Body:
         "One cell per turn. Neighbors = up, down, left, right — no diagonals; this isn’t charity.",

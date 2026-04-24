@@ -1,7 +1,10 @@
 import type { BuildingType, Cell } from "@/src/types/game";
 
 import { getMineScoreBonusPerMine } from "@/src/lib/empire-tower";
-import { detectIndustrialMega2x2 } from "@/src/lib/megas";
+import {
+  detectIndustrialMega2x2,
+  industrialMegaPollutionCrownIndices,
+} from "@/src/lib/megas";
 import {
   industrialMegaTotalForLevel,
   isFluxTendusSector,
@@ -50,7 +53,7 @@ function fluxTripleAlignmentBonus(grid: Cell[]): number {
 }
 
 /**
- * Score de session : méga 2×2 **mines uniquement** (`detectIndustrialMega2x2`) → total secteur ;
+ * Score de session : méga 2×2 **mines** → bonus méga + cases hors « couronne » polluée ;
  * sinon somme des cases avec gels fiscaux à 0.
  * @param mineScoreBonusPerMine — bonus Tour par mine ; si omis, lecture Empire (client).
  */
@@ -61,8 +64,23 @@ export function calculateSessionGridScore(
   levelId = 0,
 ): number {
   if (grid.length !== CELL_COUNT) return 0;
-  if (detectIndustrialMega2x2(grid))
-    return industrialMegaTotalForLevel(levelId, resolveMineBonus(mineScoreBonusPerMine));
+  const mega = detectIndustrialMega2x2(grid);
+  if (mega) {
+    const mine = resolveMineBonus(mineScoreBonusPerMine);
+    const frozen = new Set(frozenCellIndices);
+    const raw = getCellScores(grid, { mineScoreBonusPerMine: mine, levelId: levelId || undefined });
+    const pollution = industrialMegaPollutionCrownIndices(mega);
+    const megaSet = new Set<number>(mega.indices);
+    let sum = industrialMegaTotalForLevel(levelId, mine);
+    for (let i = 0; i < CELL_COUNT; i++) {
+      if (megaSet.has(i) || pollution.has(i) || frozen.has(i)) continue;
+      sum += raw[i] ?? 0;
+    }
+    if (levelId >= 1 && isFluxTendusSector(levelId)) {
+      sum += fluxTripleAlignmentBonus(grid);
+    }
+    return sum;
+  }
 
   const mine = resolveMineBonus(mineScoreBonusPerMine);
   const frozen = new Set(frozenCellIndices);
@@ -90,9 +108,17 @@ export function getSessionCellScores(
   const mega = detectIndustrialMega2x2(grid);
   if (mega) {
     const megaSet = new Set<number>(mega.indices);
+    const pollution = industrialMegaPollutionCrownIndices(mega);
     const total = industrialMegaTotalForLevel(levelId, resolveMineBonus(mineScoreBonusPerMine));
     const per = total / 4;
-    return Array.from({ length: CELL_COUNT }, (_, i) => (megaSet.has(i) ? per : 0));
+    const mine = resolveMineBonus(mineScoreBonusPerMine);
+    const frozen = new Set(frozenCellIndices);
+    const raw = getCellScores(grid, { mineScoreBonusPerMine: mine, levelId: levelId || undefined });
+    return Array.from({ length: CELL_COUNT }, (_, i) => {
+      if (megaSet.has(i)) return per;
+      if (pollution.has(i)) return 0;
+      return frozen.has(i) ? 0 : raw[i] ?? 0;
+    });
   }
   const mine = resolveMineBonus(mineScoreBonusPerMine);
   const frozen = new Set(frozenCellIndices);
