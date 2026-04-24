@@ -76,6 +76,8 @@ type FailureStatusBlockProps = {
   showFiscalStamp: boolean;
   mandateBreach: boolean;
   mandateMissingDetail: string | null;
+  /** 0 ou 1 lorsque ce bloc est affiché — pilote le corps hors mandat (vie perdue seulement si 0★). */
+  earnedStars: number;
   /** Espacement vertical du conteneur (ex. avant grille vs après). */
   containerClassName?: string;
 };
@@ -84,6 +86,7 @@ function FailureStatusBlock({
   showFiscalStamp,
   mandateBreach,
   mandateMissingDetail,
+  earnedStars,
   containerClassName = "mt-3",
 }: FailureStatusBlockProps) {
   const { t } = useAppStrings();
@@ -126,7 +129,9 @@ function FailureStatusBlock({
         </>
       ) : (
         <p className="max-w-xs font-mono text-[10px] leading-relaxed text-rose-200/85">
-          {t.endScreen.insufficientBody}
+          {earnedStars >= 1
+            ? t.endScreen.insufficientBodyPartialSuccess
+            : t.endScreen.insufficientBody}
         </p>
       )}
     </div>
@@ -334,7 +339,7 @@ export function EndScreen({ onShareFeedback }: EndScreenProps) {
       : null;
   const isOptimalYield = maxScoreEstimate > 0 && score >= maxScoreEstimate;
   const earnedCoins = earnedStars > 0 ? earnedStars * 10 : 0;
-  const isZeroContracts = earnedStars === 0;
+  const showWeakResultBeforeGrid = earnedStars <= 1;
 
   const nextId = levelId + 1;
   const hasNextLevel = LEVELS.some((l) => l.id === nextId);
@@ -512,11 +517,12 @@ export function EndScreen({ onShareFeedback }: EndScreenProps) {
             )}
           </div>
 
-          {isZeroContracts ? (
+          {showWeakResultBeforeGrid ? (
             <FailureStatusBlock
-              showFiscalStamp
+              showFiscalStamp={earnedStars === 0}
               mandateBreach={mandateBreach}
               mandateMissingDetail={mandateMissingDetail}
+              earnedStars={earnedStars}
               containerClassName="mt-2 mb-1"
             />
           ) : null}
@@ -552,14 +558,6 @@ export function EndScreen({ onShareFeedback }: EndScreenProps) {
                 </p>
               </div>
             </motion.div>
-          ) : null}
-
-          {earnedStars === 1 ? (
-            <FailureStatusBlock
-              showFiscalStamp={false}
-              mandateBreach={mandateBreach}
-              mandateMissingDetail={mandateMissingDetail}
-            />
           ) : null}
 
           {earnedStars >= 1 && pendingHubMemo ? (
