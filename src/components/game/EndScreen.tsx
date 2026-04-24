@@ -72,6 +72,67 @@ function EndScreenHeatmapOverlay({ scores }: { scores: readonly number[] }) {
   );
 }
 
+type FailureStatusBlockProps = {
+  showFiscalStamp: boolean;
+  mandateBreach: boolean;
+  mandateMissingDetail: string | null;
+  /** Espacement vertical du conteneur (ex. avant grille vs après). */
+  containerClassName?: string;
+};
+
+function FailureStatusBlock({
+  showFiscalStamp,
+  mandateBreach,
+  mandateMissingDetail,
+  containerClassName = "mt-3",
+}: FailureStatusBlockProps) {
+  const { t } = useAppStrings();
+  return (
+    <div
+      className={`relative flex flex-col items-center gap-1 overflow-visible rounded-xl border border-rose-900/50 bg-gradient-to-b from-rose-950/50 to-slate-950/40 px-3 py-2 text-center shadow-inner ${containerClassName}`}
+      role="status"
+    >
+      {showFiscalStamp ? (
+        <motion.div
+          className="pointer-events-none absolute inset-0 z-20 flex items-center justify-center px-2"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.2 }}
+        >
+          <motion.div
+            initial={{ scale: 3, opacity: 0, rotate: -14 }}
+            animate={{ scale: 1, opacity: 1, rotate: -10 }}
+            transition={{ type: "spring", bounce: 0.5 }}
+            className="max-w-[min(100%,18rem)] rounded-md border-4 border-red-600 bg-red-950/40 px-3 py-2 text-center font-mono text-xs font-black uppercase leading-tight tracking-[0.2em] text-red-600 shadow-[0_0_24px_rgba(220_38_38/0.45)] ring-2 ring-red-500/40 sm:text-sm"
+          >
+            {t.endScreen.failureStampText}
+          </motion.div>
+        </motion.div>
+      ) : null}
+      <span className="text-2xl leading-none" aria-hidden>
+        💔
+      </span>
+      <p className="font-mono text-sm font-bold tracking-tight text-rose-100">
+        {mandateBreach ? t.endScreen.mandateFailedTitle : t.endScreen.insufficientTitle}
+      </p>
+      {mandateBreach ? (
+        <>
+          <p className="max-w-sm font-mono text-[11px] font-semibold leading-snug text-amber-100/95">
+            {t.endScreen.mandateFailedLead}
+          </p>
+          <p className="max-w-sm font-mono text-[11px] leading-relaxed text-rose-100/95">
+            {mandateMissingDetail ?? t.endScreen.mandateFailedBody}
+          </p>
+        </>
+      ) : (
+        <p className="max-w-xs font-mono text-[10px] leading-relaxed text-rose-200/85">
+          {t.endScreen.insufficientBody}
+        </p>
+      )}
+    </div>
+  );
+}
+
 type EndScreenProps = {
   onShareFeedback: (message: string) => void;
 };
@@ -273,6 +334,7 @@ export function EndScreen({ onShareFeedback }: EndScreenProps) {
       : null;
   const isOptimalYield = maxScoreEstimate > 0 && score >= maxScoreEstimate;
   const earnedCoins = earnedStars > 0 ? earnedStars * 10 : 0;
+  const isZeroContracts = earnedStars === 0;
 
   const nextId = levelId + 1;
   const hasNextLevel = LEVELS.some((l) => l.id === nextId);
@@ -450,6 +512,15 @@ export function EndScreen({ onShareFeedback }: EndScreenProps) {
             )}
           </div>
 
+          {isZeroContracts ? (
+            <FailureStatusBlock
+              showFiscalStamp
+              mandateBreach={mandateBreach}
+              mandateMissingDetail={mandateMissingDetail}
+              containerClassName="mt-2 mb-1"
+            />
+          ) : null}
+
           <div
             className="pointer-events-none relative mx-auto mt-2 max-w-[min(100%,22rem)] origin-top scale-[0.75]"
             aria-hidden
@@ -483,49 +554,12 @@ export function EndScreen({ onShareFeedback }: EndScreenProps) {
             </motion.div>
           ) : null}
 
-          {earnedStars <= 1 ? (
-            <div
-              className="relative mt-3 flex flex-col items-center gap-1 overflow-visible rounded-xl border border-rose-900/50 bg-gradient-to-b from-rose-950/50 to-slate-950/40 px-3 py-2 text-center shadow-inner"
-              role="status"
-            >
-              {earnedStars === 0 ? (
-                <motion.div
-                  className="pointer-events-none absolute inset-0 z-20 flex items-center justify-center px-2"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ duration: 0.2 }}
-                >
-                  <motion.div
-                    initial={{ scale: 3, opacity: 0, rotate: -14 }}
-                    animate={{ scale: 1, opacity: 1, rotate: -10 }}
-                    transition={{ type: "spring", bounce: 0.5 }}
-                    className="max-w-[min(100%,18rem)] rounded-md border-4 border-red-600 bg-red-950/40 px-3 py-2 text-center font-mono text-xs font-black uppercase leading-tight tracking-[0.2em] text-red-600 shadow-[0_0_24px_rgba(220_38_38/0.45)] ring-2 ring-red-500/40 sm:text-sm"
-                  >
-                    {t.endScreen.failureStampText}
-                  </motion.div>
-                </motion.div>
-              ) : null}
-              <span className="text-2xl leading-none" aria-hidden>
-                💔
-              </span>
-              <p className="font-mono text-sm font-bold tracking-tight text-rose-100">
-                {mandateBreach ? t.endScreen.mandateFailedTitle : t.endScreen.insufficientTitle}
-              </p>
-              {mandateBreach ? (
-                <>
-                  <p className="max-w-sm font-mono text-[11px] font-semibold leading-snug text-amber-100/95">
-                    {t.endScreen.mandateFailedLead}
-                  </p>
-                  <p className="max-w-sm font-mono text-[11px] leading-relaxed text-rose-100/95">
-                    {mandateMissingDetail ?? t.endScreen.mandateFailedBody}
-                  </p>
-                </>
-              ) : (
-                <p className="max-w-xs font-mono text-[10px] leading-relaxed text-rose-200/85">
-                  {t.endScreen.insufficientBody}
-                </p>
-              )}
-            </div>
+          {earnedStars === 1 ? (
+            <FailureStatusBlock
+              showFiscalStamp={false}
+              mandateBreach={mandateBreach}
+              mandateMissingDetail={mandateMissingDetail}
+            />
           ) : null}
 
           {earnedStars >= 1 && pendingHubMemo ? (
