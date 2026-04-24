@@ -367,10 +367,9 @@ export function getSolverLevelContext(def: LevelDefinition): SolverLevelContext 
  * Les cibles **ne sont pas** une progression arithmétique fixe sur l’id niveau : elles sont
  * **proportionnelles au plafond glouton** `estimateMaxScore(seed, deck, ctx)` pour chaque mandat.
  *
- * - **Forme** : `one = max(15, ⌊0.55×max⌋)`, `two = ⌊0.70×max⌋`, `three = ⌊0.85×max⌋` (avec +1 si
- *   égalités pour garder 1 < 2 < 3). Courbe **plus exigeante** que la calibration « humain » pure :
- *   les contrats restent proportionnels au plafond glouton mais resserrent l’écart 1★/2★/3★ pour
- *   soutenir la tension (pertes de vies, recharge, monétisation légère) sans casser la lisibilité mandat.
+ * - **Forme** : `one = max(15, ⌊0.50×max⌋)`, `two = ⌊0.76×max⌋`, `three = ⌊0.85×max⌋` (avec +1 si
+ *   égalités pour garder 1 < 2 < 3). Le **2★** est volontairement plus haut vs le glouton (moins de
+ *   « deux contrats au hasard ») ; le **1★** reste un palier d’accès un peu plus bas ; le **3★** inchangé.
  * - **Deck / multiplicateur** : `deckChallengeForLevel` — mode 0 jusqu’au 20, puis 2 jusqu’au 80, puis 3
  *   (sauf 4 réservé). Saut de difficulté **par paliers d’ids**, pas par planetId seul.
  * - **Secteur (planetId)** : obstacles / chaos / mandats (`winCondition`, sismique niv.100) modulent le
@@ -387,8 +386,8 @@ const STAR_INFLATION_MULT = 1.2 as const;
 /** Seuils 1★ / 2★ / 3★ à partir du plafond glouton `greedyMax` (avant inflation secteur). */
 function starThresholdsFromGreedyMax(greedyMax: number): LevelStarThresholds {
   let three = Math.floor(greedyMax * 0.85);
-  let two = Math.floor(greedyMax * 0.7);
-  const one = Math.max(15, Math.floor(greedyMax * 0.55));
+  let two = Math.floor(greedyMax * 0.76);
+  const one = Math.max(15, Math.floor(greedyMax * 0.5));
   if (two <= one) two = one + 1;
   if (three <= two) three = two + 1;
   return { one, two, three };
