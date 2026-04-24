@@ -49,8 +49,10 @@ export type EconomyStore = {
   lastLifeRechargeTime: number | null;
   /** Dernier jour (YYYY-MM-DD local) où le bonus quotidien carte a été encaissé. */
   lastBonusDate: string | null;
-  /** Dernier tick (ms) du revenu passif online (1 min) — ancre pour éviter le double comptage avec le catch-up hors-ligne. */
+  /** Dernier tick (ms) du revenu passif online — ancre pour crédit proportionnel + catch-up hors-ligne. */
   lastTickTimestamp: number | null;
+  /** Fraction de pièce en attente entre deux ticks passifs (non persisté). */
+  passiveIncomeAccrual: number;
   /** Pulse UI court après crédit passif online (non persisté). */
   passiveIncomePop: { amount: number; id: number } | null;
 
@@ -70,7 +72,7 @@ export type EconomyStore = {
    * `useProgressStore` — appeler `incrementPrestige()` après cette wipe (ex. page Tour).
    */
   wipeEconomyForPrestige: () => void;
-  /** Tick revenu passif pendant la session (crédit si taux &gt; 0). Met à jour `lastTickTimestamp`. */
+  /** Tick revenu passif pendant la session (crédit proportionnel au temps écoulé). Met à jour `lastTickTimestamp`. */
   applyOnlinePassiveIncomeTick: (unlockedNodes: Record<string, boolean>) => void;
   /**
    * Crédite le passif hors-ligne depuis `lastTickTimestamp` (plafond 24 h).
@@ -92,6 +94,7 @@ export const useEconomyStore = create<EconomyStore>()(
       lastLifeRechargeTime: null,
       lastBonusDate: null,
       lastTickTimestamp: null,
+      passiveIncomeAccrual: 0,
       passiveIncomePop: null,
       adWatchCount: 0,
 
@@ -230,6 +233,7 @@ export const useEconomyStore = create<EconomyStore>()(
             lastLifeRechargeTime:
               nextLives < maxLives ? (s.lastLifeRechargeTime ?? Date.now()) : null,
             lastTickTimestamp: Date.now(),
+            passiveIncomeAccrual: 0,
             passiveIncomePop: null,
           };
         });

@@ -402,19 +402,18 @@ function applyInflationToStarThresholds(t: LevelStarThresholds): LevelStarThresh
 }
 
 /**
- * Plafond glouton affiché au joueur (mandat / bilan) : inclut ×1,2 si le secteur gonfle les contrats,
- * pour rester cohérent avec `def.stars` générés dans `generateLevels`.
+ * Plafond estimé affiché (mandat / bilan) : **même** `estimateMaxScore` / contexte solver que
+ * `generateLevels` pour `def.stars` (sans bonus mine joueur), puis ×1,2 si secteur inflation.
+ * Jamais en dessous du seuil 3★ (+ marge 5 % si besoin).
  */
-export function getDisplayedEstimatedMaxScoreForLevel(
-  def: LevelDefinition,
-  mineScoreBonusPerMine?: number,
-): number {
-  const greedyMax = estimateMaxScore(def.seed, def.deckChallengeLevel ?? 0, {
-    ...getSolverLevelContext(def),
-    ...(mineScoreBonusPerMine !== undefined ? { mineScoreBonusPerMine } : {}),
-  });
-  if (!isInflationStarSector(def.id)) return greedyMax;
-  return Math.ceil(greedyMax * STAR_INFLATION_MULT);
+export function getDisplayedEstimatedMaxScoreForLevel(def: LevelDefinition): number {
+  const greedyMax = estimateMaxScore(def.seed, def.deckChallengeLevel ?? 0, getSolverLevelContext(def));
+  let display = isInflationStarSector(def.id) ? Math.ceil(greedyMax * STAR_INFLATION_MULT) : greedyMax;
+  const three = def.stars.three;
+  if (display < three) {
+    display = Math.ceil(three * 1.05);
+  }
+  return display;
 }
 
 /** Après inflation éventuelle : borne `three` au plafond affiché et rétablit 1 < 2 < 3. */
@@ -551,9 +550,10 @@ export function starsFromScore(
 export function calculateStars(score: number, levelId: number, grid?: Cell[]): 0 | 1 | 2 | 3 {
   const def = getLevelById(levelId);
   if (!def) return 0;
-  const s = starsFromScore(score, def.stars);
   if (grid && !satisfiesWinCondition(grid, def.winCondition)) return 0;
-  return s;
+  const ceiling = getDisplayedEstimatedMaxScoreForLevel(def);
+  if (ceiling > 0 && score * 100 < ceiling * 65) return 0;
+  return starsFromScore(score, def.stars);
 }
 
 /**

@@ -234,8 +234,8 @@ export function EndScreen({ onShareFeedback }: EndScreenProps) {
   const levelDef = useMemo(() => (levelId >= 1 ? getLevelById(levelId) : undefined), [levelId]);
   const maxScoreEstimate = useMemo(() => {
     if (!levelDef) return 0;
-    return getDisplayedEstimatedMaxScoreForLevel(levelDef, mineEmpireBonus);
-  }, [levelDef, mineEmpireBonus]);
+    return getDisplayedEstimatedMaxScoreForLevel(levelDef);
+  }, [levelDef]);
 
   const sessionCellScores = useMemo(() => {
     if (grid.length !== 16) return Array.from({ length: 16 }, () => 0);

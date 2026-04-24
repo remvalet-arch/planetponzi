@@ -1,6 +1,8 @@
 "use client";
 
 import type { ReactNode } from "react";
+import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import { AnimatePresence, motion, type PanInfo } from "framer-motion";
 
 export type BottomSheetShellProps = {
@@ -26,6 +28,16 @@ export type BottomSheetShellProps = {
   onSwipeDismiss?: () => void;
   /** Désactive le geste de fermeture par glisser vers le bas. */
   disableSwipeDown?: boolean;
+  /**
+   * Rend la coque dans `document.body` (évite clip `overflow-hidden` / transforms ancêtres).
+   * Attend l’hydratation client pour ne pas casser le SSR.
+   */
+  portalToBody?: boolean;
+  /**
+   * Bottom sheet « puzzle » : scrim plus dense, z-index élevé, panneau ancré en bas sur mobile
+   * (`fixed inset-x-0 bottom-0`), `max-h-[85dvh]`, entrée depuis le bas de l’écran.
+   */
+  puzzleShopLayout?: boolean;
 };
 
 /**
@@ -47,16 +59,60 @@ export function BottomSheetShell({
   handleClassName = "",
   onSwipeDismiss,
   disableSwipeDown = false,
+  portalToBody = false,
+  puzzleShopLayout = false,
 }: BottomSheetShellProps) {
   const finishSwipe = onSwipeDismiss ?? onClose;
+  const [portalMounted, setPortalMounted] = useState(false);
 
-  return (
+  useEffect(() => {
+    if (!portalToBody && !puzzleShopLayout) return;
+    setPortalMounted(true);
+  }, [portalToBody, puzzleShopLayout]);
+
+  const usePortal = (portalToBody || puzzleShopLayout) && portalMounted;
+
+  const backdropMerged = [
+    "pp-modal-backdrop",
+    puzzleShopLayout
+      ? "!z-[999] !bg-slate-950/80 !backdrop-blur-md max-sm:!items-end max-sm:!justify-center max-sm:!p-0 max-sm:!pt-0 max-sm:!pb-0"
+      : "",
+    backdropClassName,
+  ]
+    .join(" ")
+    .trim();
+
+  const panelMerged = [
+    "pp-modal-panel",
+    puzzleShopLayout
+      ? "max-sm:!fixed max-sm:!bottom-0 max-sm:!left-1/2 max-sm:!mx-0 max-sm:!w-full max-sm:!max-w-md max-sm:!-translate-x-1/2 max-sm:!max-h-[85dvh] sm:!relative sm:!bottom-auto sm:!left-auto sm:!translate-x-0 sm:!mx-auto"
+      : "",
+    panelClassName,
+  ]
+    .join(" ")
+    .trim();
+
+  const panelMotion = puzzleShopLayout
+    ? {
+        initial: { y: "62vh", opacity: 0 },
+        animate: { y: 0, opacity: 1 },
+        exit: { y: "36vh", opacity: 0 },
+        transition: { type: "spring" as const, stiffness: 420, damping: 34 },
+      }
+    : {
+        initial: { y: 28, opacity: 0 },
+        animate: { y: 0, opacity: 1 },
+        exit: { y: 20, opacity: 0 },
+        transition: { type: "spring" as const, stiffness: 420, damping: 32 },
+      };
+
+  const tree = (
     <AnimatePresence>
       {open ? (
         <motion.div
           key="pp-bottom-sheet"
           role="presentation"
-          className={`pp-modal-backdrop ${backdropClassName}`.trim()}
+          className={backdropMerged}
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
@@ -69,11 +125,11 @@ export function BottomSheetShell({
           <motion.div
             role="dialog"
             aria-modal="true"
-            className={`pp-modal-panel ${panelClassName}`.trim()}
-            initial={{ y: 28, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            exit={{ y: 20, opacity: 0 }}
-            transition={{ type: "spring", stiffness: 420, damping: 32 }}
+            className={panelMerged}
+            initial={panelMotion.initial}
+            animate={panelMotion.animate}
+            exit={panelMotion.exit}
+            transition={panelMotion.transition}
             onMouseDown={(e) => e.stopPropagation()}
             drag={disableSwipeDown ? false : "y"}
             dragConstraints={{ top: 0, bottom: 0 }}
@@ -96,4 +152,14 @@ export function BottomSheetShell({
       ) : null}
     </AnimatePresence>
   );
+
+  if (usePortal && typeof document !== "undefined") {
+    return createPortal(tree, document.body);
+  }
+
+  if ((portalToBody || puzzleShopLayout) && !portalMounted) {
+    return null;
+  }
+
+  return tree;
 }

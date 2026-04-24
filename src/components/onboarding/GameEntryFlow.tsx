@@ -8,11 +8,9 @@ import { BottomSheetShell } from "@/src/components/ui/BottomSheetShell";
 import { ContractIcon, type ContractIconCount } from "@/src/components/ui/ContractIcon";
 import { markRulesFirstVisitDone } from "@/src/components/ui/RulesModal";
 import { useAppStrings } from "@/src/lib/i18n/useAppStrings";
-import { computePassiveModifiers } from "@/src/lib/empire-tower";
 import { isFiscalBossLevel } from "@/src/lib/level-run-engine";
 import { getDisplayedEstimatedMaxScoreForLevel, getLevelById } from "@/src/lib/levels";
 import { markTutorialCompleted } from "@/src/lib/onboarding-flags";
-import { useEmpireStore } from "@/src/store/useEmpireStore";
 import { useLevelRunStore } from "@/src/store/useLevelRunStore";
 
 const thumbPad =
@@ -32,17 +30,13 @@ export function GameEntryFlow({ open }: GameEntryFlowProps) {
   const lockedSeed = useLevelRunStore((s) => s.deckChallengeLockedSeed);
   const levelId = useLevelRunStore((s) => s.levelId);
   const beginPlacement = useLevelRunStore((s) => s.beginPlacement);
-  const mineEmpireBonus = useEmpireStore((s) =>
-    computePassiveModifiers(s.unlockedNodes).mineScoreBonusPerMine,
-  );
-
   const sheetOpen = open && lockedSeed !== seed;
   const def = levelId > 0 ? getLevelById(levelId) : undefined;
 
   const maxEstimated = useMemo(() => {
     if (!def) return null;
-    return getDisplayedEstimatedMaxScoreForLevel(def, mineEmpireBonus);
-  }, [def, mineEmpireBonus]);
+    return getDisplayedEstimatedMaxScoreForLevel(def);
+  }, [def]);
 
   const specialDirectives = useMemo(() => {
     if (!def) return [];
