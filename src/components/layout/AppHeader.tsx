@@ -60,7 +60,7 @@ export function AppHeader({
             type="button"
             whileTap={tap}
             onClick={() => setMenuOpen(true)}
-            className="flex size-11 shrink-0 items-center justify-center rounded-pp-md border border-white/10 bg-slate-900/80 text-cyan-200 transition-colors hover:border-cyan-400/40 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-400/55 sm:size-12"
+            className="flex size-11 shrink-0 items-center justify-center rounded-pp-md border border-cyan-500/30 bg-[#15161E] text-cyan-200 shadow-[0_0_12px_rgba(6,182,212,0.16)] transition-colors hover:border-cyan-400/60 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-400/55 sm:size-12"
             aria-expanded={menuOpen}
             aria-controls="app-nav-drawer"
             aria-label={t.nav.menu}
@@ -81,7 +81,7 @@ export function AppHeader({
 
           <EconomyHeader compact className="max-w-[min(38vw,9.5rem)] shrink-0 justify-end sm:max-w-[min(44vw,11rem)] md:max-w-none" />
 
-          <div className="shrink-0 rounded-pp-md border border-slate-600/70 bg-slate-900/80 px-1.5 py-1.5 text-right shadow-md shadow-black/30 sm:px-2.5 sm:py-2">
+          <div className="shrink-0 rounded-pp-md border border-white/10 bg-[#15161E] px-1.5 py-1.5 text-right shadow-md shadow-black/40 sm:px-2.5 sm:py-2">
             <p className="font-mono text-[8px] uppercase tracking-widest text-slate-500 sm:text-[9px]">
               <span className="hidden sm:inline">{t.gameHud.valorization}</span>
               <span className="sm:hidden">{t.gameHud.valorizationShort}</span>
@@ -92,7 +92,9 @@ export function AppHeader({
               animate={{ scale: [1, 1.2, 1] }}
               transition={{ duration: 0.38, ease: [0.22, 1, 0.36, 1] }}
               className={`whitespace-nowrap font-mono text-xs font-semibold tabular-nums sm:text-sm md:text-base ${
-                score >= 0 ? "text-pp-positive" : "text-pp-negative"
+                score >= 0
+                  ? "text-cyan-400 drop-shadow-[0_0_8px_rgba(6,182,212,0.4)]"
+                  : "text-rose-400 drop-shadow-[0_0_8px_rgba(244,63,94,0.35)]"
               }`}
             >
               {formatRoi(score)}

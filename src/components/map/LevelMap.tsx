@@ -355,7 +355,7 @@ export function LevelMap({ scrollParentRef }: LevelMapProps) {
       aria-label="Carte de progression des niveaux"
     >
       <div
-        className="relative w-full shrink-0 overflow-hidden rounded-2xl border border-violet-500/25 shadow-[0_0_40px_rgba(124,58,237,0.15)] transition-[background] duration-300 ease-out"
+        className="relative w-full shrink-0 overflow-hidden rounded-2xl border border-white/10 shadow-[0_0_36px_rgba(6,182,212,0.08)] transition-[background] duration-300 ease-out"
         style={{
           height: heightPx,
           minHeight: heightPx,
@@ -434,7 +434,7 @@ export function LevelMap({ scrollParentRef }: LevelMapProps) {
 
         {starGateHint ? (
           <div
-            className="pointer-events-none fixed bottom-[max(6rem,env(safe-area-inset-bottom)+5rem)] left-1/2 z-[60] w-[min(92vw,22rem)] -translate-x-1/2 rounded-pp-md border border-amber-500/50 bg-slate-950/95 px-4 py-3 text-center font-mono text-xs leading-snug text-amber-100 shadow-lg backdrop-blur-md"
+            className="pointer-events-none fixed bottom-[max(6rem,env(safe-area-inset-bottom)+5rem)] left-1/2 z-[60] w-[min(92vw,22rem)] -translate-x-1/2 rounded-pp-md border border-amber-500/50 bg-[#0B0F19] px-4 py-3 text-center font-mono text-xs leading-snug text-amber-100 shadow-lg"
             role="status"
             aria-live="polite"
           >
@@ -522,7 +522,7 @@ export function LevelMap({ scrollParentRef }: LevelMapProps) {
               style={{ top: `${(b.yCenterPx / heightPx) * 100}%` }}
             >
               <div
-                className="rounded-xl border border-slate-800 border-l-4 bg-slate-950/60 px-4 py-3 text-left shadow-lg backdrop-blur-md"
+                className="rounded-xl border border-slate-800 border-l-4 bg-[#0B0F19]/96 px-4 py-3 text-left shadow-lg"
                 style={{ borderLeftColor: `rgb(${r} ${g} ${bl})` }}
               >
                 <p className="font-mono text-sm font-medium uppercase tracking-wider text-slate-200">{b.title}</p>
@@ -554,7 +554,7 @@ export function LevelMap({ scrollParentRef }: LevelMapProps) {
 
             const nodeSize = "size-[clamp(2.85rem,12vw,3.35rem)]";
             /** Orbe « verre » sans backdrop-blur coûteux (sauf nœud actif). */
-            const orbGlassBase = `${nodeSize} rounded-full border border-slate-500/30 bg-slate-900/60 shadow-[inset_0_4px_12px_rgba(255,255,255,0.05),0_4px_15px_rgba(0,0,0,0.5)]`;
+            const orbGlassBase = `${nodeSize} rounded-full border border-white/10 bg-[#15161E] shadow-[inset_0_4px_12px_rgba(255,255,255,0.04),0_4px_15px_rgba(0,0,0,0.55)]`;
 
             return (
               <div
@@ -599,7 +599,7 @@ export function LevelMap({ scrollParentRef }: LevelMapProps) {
                         <button
                           type="button"
                           onClick={() => setStarGateHint(t.map.starGateHint)}
-                          className={`${orbGlassBase} relative flex cursor-pointer flex-col items-center justify-center gap-0.5 border-amber-500/50 bg-slate-950/80 text-amber-100 ring-2 ring-amber-400/35 transition-transform hover:scale-[1.03] active:scale-[0.97]`}
+                          className={`${orbGlassBase} pp-glow-amber relative flex cursor-pointer flex-col items-center justify-center gap-0.5 bg-[#15161E] text-amber-100 ring-1 ring-amber-400/35 transition-transform hover:scale-[1.03] active:scale-[0.97]`}
                           aria-label={t.map.starGateHint}
                         >
                           <span className="text-base leading-none" aria-hidden>
@@ -616,7 +616,7 @@ export function LevelMap({ scrollParentRef }: LevelMapProps) {
                       <button
                         type="button"
                         onClick={() => setStarGateHint(t.map.starGateHint)}
-                        className={`${orbGlassBase} relative flex cursor-pointer flex-col items-center justify-center gap-0.5 border-amber-500/50 bg-slate-950/80 text-amber-100 ring-2 ring-amber-400/35 transition-transform hover:scale-[1.03] active:scale-[0.97]`}
+                        className={`${orbGlassBase} pp-glow-amber relative flex cursor-pointer flex-col items-center justify-center gap-0.5 bg-[#15161E] text-amber-100 ring-1 ring-amber-400/35 transition-transform hover:scale-[1.03] active:scale-[0.97]`}
                         aria-label={t.map.starGateHint}
                       >
                         <span className="text-base leading-none" aria-hidden>
@@ -637,7 +637,7 @@ export function LevelMap({ scrollParentRef }: LevelMapProps) {
                       aria-label={`Niveau ${level.id} terminé, rejouer`}
                     >
                       <div
-                        className={`${orbGlassBase} flex items-center justify-center border-2 border-emerald-400/70 font-mono text-sm font-black text-emerald-200 shadow-[inset_0_4px_12px_rgba(255,255,255,0.06),0_4px_15px_rgba(0,0,0,0.5),0_0_18px_rgba(52,211,153,0.4)] transition-transform group-hover:scale-[1.04] group-active:scale-[0.96]`}
+                        className={`${orbGlassBase} flex items-center justify-center border border-cyan-400/45 font-mono text-sm font-black text-cyan-300 shadow-[inset_0_4px_12px_rgba(255,255,255,0.06),0_4px_15px_rgba(0,0,0,0.5),0_0_18px_rgba(6,182,212,0.3)] transition-transform group-hover:scale-[1.04] group-active:scale-[0.96]`}
                       >
                         <Check className="size-6 stroke-[3] text-emerald-200 drop-shadow-[0_0_6px_rgba(167,243,208,0.7)]" aria-hidden />
                       </div>
@@ -657,7 +657,7 @@ export function LevelMap({ scrollParentRef }: LevelMapProps) {
                         aria-label={`Niveau ${level.id} — à jouer`}
                       >
                         <div
-                          className={`${nodeSize} flex items-center justify-center rounded-full border-2 border-amber-400 bg-gradient-to-b from-violet-300/85 via-fuchsia-300/80 to-cyan-300/85 font-mono text-base font-black text-violet-950 backdrop-blur-sm shadow-[inset_0_4px_12px_rgba(255,255,255,0.2),0_0_20px_rgba(251,191,36,0.6)] transition-transform group-hover:scale-[1.05] group-active:scale-[0.95]`}
+                          className={`${nodeSize} pp-glow-cyan flex items-center justify-center rounded-full border border-cyan-400/60 bg-gradient-to-b from-slate-100/95 via-cyan-200/85 to-cyan-400/85 font-mono text-base font-black text-slate-950 shadow-[inset_0_4px_12px_rgba(255,255,255,0.2),0_0_20px_rgba(6,182,212,0.35)] transition-transform group-hover:scale-[1.05] group-active:scale-[0.95]`}
                         >
                           {level.id}
                         </div>

@@ -383,7 +383,7 @@ export const strings = {
       insufficientBody: "Le Board vous retire sa confiance. (−1 vie)",
       /** 1★ sans mandat cassé : pas de perte de vie côté économie — message aligné. */
       insufficientBodyPartialSuccess:
-        "Un seul contrat : le Board limite les dégâts. Aucune vie perdue sur ce trimestre — viser 2 ou 3 contrats au prochain bilan.",
+        "Un seul contrat signé. Le Board vous a à l'oeil.",
       mandateFailedTitle: "Mandat non tenu",
       mandateFailedLead:
         "Le mandat grille n’a pas été respecté (pas un problème de valorisation M$ seule).",
@@ -915,7 +915,7 @@ export const strings = {
       insufficientTitle: "Chapter 11 Bankruptcy",
       insufficientBody: "The Board has lost confidence in you. (−1 life)",
       insufficientBodyPartialSuccess:
-        "Only one contract signed—the damage is contained. No life lost this quarter—aim for 2–3 contracts next time.",
+        "Only one contract signed. The Board is watching you.",
       mandateFailedTitle: "Mandate not met",
       mandateFailedLead: "Grid mandate failed (not just M$ valuation).",
       mandateFailedBody:

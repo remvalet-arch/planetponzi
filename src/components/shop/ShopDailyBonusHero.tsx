@@ -22,7 +22,7 @@ export function ShopDailyBonusHero() {
 
   if (bonusAvailable) {
     return (
-      <section className="relative overflow-hidden rounded-2xl border-2 border-cyan-400/50 bg-gradient-to-br from-slate-950 via-indigo-950/95 to-slate-950 p-5 shadow-[0_0_28px_rgb(34_211_238/0.35)]">
+      <section className="pp-panel-sci pp-glow-cyan relative overflow-hidden rounded-2xl border bg-gradient-to-br from-[#15161E] via-indigo-950/70 to-[#15161E] p-5 shadow-[0_0_28px_rgb(34_211_238/0.25)]">
         <motion.div
           className="pointer-events-none absolute inset-0 bg-gradient-to-r from-violet-600/20 via-fuchsia-500/15 to-cyan-500/20"
           animate={{ opacity: [0.35, 0.65, 0.35] }}
@@ -49,7 +49,7 @@ export function ShopDailyBonusHero() {
   }
 
   return (
-    <section className="rounded-2xl border border-slate-700/60 bg-slate-900/55 p-5 opacity-90">
+    <section className="pp-panel-sci rounded-2xl border p-5 opacity-90">
       <div className="flex items-center gap-2 opacity-80">
         <Sparkles className="size-5 shrink-0 text-slate-500" strokeWidth={2} aria-hidden />
         <p className="font-mono text-[10px] uppercase tracking-widest text-slate-500">

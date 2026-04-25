@@ -27,7 +27,7 @@ export function TutorialScoreFloat() {
               initial={{ opacity: 0, y: 6, scale: 0.85 }}
               animate={{ opacity: [0, 1, 1, 0], y: [6, -6, -32, -44], scale: [0.85, 1.05, 1, 0.92] }}
               transition={{ duration: 0.95, ease: [0.22, 1, 0.36, 1] }}
-              className="mt-1 font-mono text-[11px] font-black tabular-nums text-emerald-300 drop-shadow-[0_0_8px_rgba(52,211,153,0.55)] sm:text-xs"
+              className="mt-1 font-mono text-[11px] font-black tabular-nums text-cyan-400 drop-shadow-[0_0_8px_rgba(6,182,212,0.55)] sm:text-xs"
             >
               +{scorePop.amount}
               {t.entryFlow.msUnit}

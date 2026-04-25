@@ -18,7 +18,7 @@ export function RulesVisualFusion({ planetId }: RulesVisualFusionProps) {
   const { emoji, color } = getBuildingTheme("mine", planetId);
   return (
     <div
-      className="mx-auto grid w-max grid-cols-2 gap-1 rounded-lg border border-cyan-500/35 bg-slate-950/80 p-2 shadow-inner shadow-cyan-950/40"
+      className="pp-panel-sci mx-auto grid w-max grid-cols-2 gap-1 rounded-lg border border-cyan-500/35 bg-[#15161E] p-2 shadow-inner shadow-cyan-950/40"
       aria-hidden
     >
       {[0, 1, 2, 3].map((i) => (

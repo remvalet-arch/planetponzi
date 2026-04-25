@@ -36,7 +36,7 @@ function TileBox({
   return (
     <span
       className={`inline-flex min-h-10 min-w-10 items-center justify-center rounded-lg px-2 text-lg shadow-inner ${
-        tileClassName ?? "border border-slate-600/70 bg-slate-900/80 text-slate-100"
+        tileClassName ?? "border border-white/10 bg-[#15161E] text-slate-100"
       }`}
       title={label}
     >
@@ -70,8 +70,8 @@ function FormulaRow({
 
 function DirectiveCard({ label, children }: { label: string; children?: ReactNode }) {
   return (
-    <section className="space-y-3 rounded-xl border border-slate-600/50 bg-slate-900/40 p-3 shadow-inner sm:p-4">
-      <h3 className="border-b border-slate-600/40 pb-2 font-mono text-[11px] font-bold uppercase tracking-wide text-amber-200/95 sm:text-xs">
+    <section className="pp-panel-sci space-y-3 rounded-xl p-3 shadow-inner sm:p-4">
+      <h3 className="border-b border-white/10 pb-2 font-mono text-[11px] font-bold uppercase tracking-wide text-amber-200/95 sm:text-xs">
         {label}
       </h3>
       {children}
@@ -96,7 +96,7 @@ export function RulesSummaryBody() {
 
   return (
     <div className="space-y-5 text-slate-100">
-      <header className="space-y-1 border-b border-slate-700/50 pb-4">
+      <header className="space-y-1 border-b border-white/10 pb-4">
         <p className="font-mono text-[10px] font-semibold uppercase tracking-[0.28em] text-violet-300/90">
           {r.inductionKicker}
         </p>
@@ -122,23 +122,23 @@ export function RulesSummaryBody() {
         <p className="text-center font-mono text-[11px] leading-relaxed text-slate-400">{r.directive3Body}</p>
       </DirectiveCard>
 
-      <section className="space-y-2 border-t border-slate-700/50 pt-4">
+      <section className="space-y-2 border-t border-white/10 pt-4">
         <SectionTitle>{r.summaryPartyTitle}</SectionTitle>
-        <div className="flex flex-wrap items-center justify-center gap-2 rounded-xl border border-slate-700/60 bg-slate-900/55 px-3 py-3 font-mono text-[11px] text-slate-400">
-          <span className="rounded border border-slate-600/80 bg-slate-950 px-2 py-1 text-slate-100">
+        <div className="pp-panel-sci flex flex-wrap items-center justify-center gap-2 rounded-xl px-3 py-3 font-mono text-[11px] text-slate-400">
+          <span className="rounded border border-white/10 bg-[#0B0C10] px-2 py-1 text-slate-100">
             {r.summaryChip4x4}
           </span>
           <span>{r.summaryPartyFixedOrder}</span>
           <span className="text-slate-600">·</span>
           <span>{r.summaryPartyNeighbors}</span>
-          <span className="rounded border border-slate-600/80 bg-slate-950 px-2 py-1 text-slate-100">
+          <span className="rounded border border-white/10 bg-[#0B0C10] px-2 py-1 text-slate-100">
             {r.summaryChipOrth}
           </span>
           <span className="text-[10px]">{r.summaryPartyNoDiag}</span>
         </div>
       </section>
 
-      <section className="space-y-2 border-t border-slate-700/50 pt-4">
+      <section className="space-y-2 border-t border-white/10 pt-4">
         <SectionTitle>{r.summaryRoiTitle}</SectionTitle>
         <FormulaRow
           left={<span className="text-slate-100">{r.summaryRoiFormulaLeft}</span>}
@@ -146,7 +146,7 @@ export function RulesSummaryBody() {
           right={<span className="text-slate-100">{r.summaryRoiFormulaMode}</span>}
           result={<span className="text-slate-100">{r.summaryRoiFormulaResult}</span>}
         />
-        <ul className="divide-y divide-slate-700/50 font-mono text-[11px] text-slate-400">
+        <ul className="divide-y divide-white/10 font-mono text-[11px] text-slate-400">
           {DECK_CHALLENGE_LEVELS.map((lvl) => (
             <li key={lvl} className="flex items-center justify-between gap-3 py-2">
               <span className="text-slate-100">{getDeckChallengeTitle(lvl as DeckChallengeLevel)}</span>
@@ -158,9 +158,9 @@ export function RulesSummaryBody() {
         </ul>
       </section>
 
-      <section className="space-y-1 border-t border-slate-700/50 pt-4">
+      <section className="space-y-1 border-t border-white/10 pt-4">
         <SectionTitle>{r.summaryPerCellTitle}</SectionTitle>
-        <div className="divide-y divide-slate-700/50 rounded-xl border border-slate-700/60 bg-slate-900/45">
+        <div className="pp-panel-sci divide-y divide-white/10 rounded-xl">
           <div className="flex flex-wrap items-center justify-center gap-2 py-2.5 font-mono text-[11px]">
             <TileBox emoji={mineSkin.emoji} label={r.summaryLabelMine} tileClassName={mineSkin.color} />
             <span className="text-slate-600">=</span>

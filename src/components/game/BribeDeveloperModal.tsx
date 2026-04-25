@@ -50,7 +50,7 @@ export function BribeDeveloperModal({
         <motion.div
           key="bribe-developer"
           role="presentation"
-          className="fixed inset-0 z-[200] flex items-center justify-center overscroll-contain bg-slate-950/65 p-4 backdrop-blur-xl"
+          className="fixed inset-0 z-[200] flex items-center justify-center overscroll-contain bg-slate-950/98 p-4"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
@@ -63,7 +63,7 @@ export function BribeDeveloperModal({
             role="dialog"
             aria-modal="true"
             aria-labelledby="bribe-modal-title"
-            className="relative w-full max-w-md overflow-hidden rounded-2xl border border-emerald-900/50 bg-slate-950/90 shadow-2xl shadow-black/50 ring-1 ring-white/5 backdrop-blur-xl"
+            className="relative w-full max-w-md overflow-hidden rounded-2xl border border-emerald-900/50 bg-[#0B0F19] shadow-2xl shadow-black/50 ring-1 ring-white/5"
             initial={{ scale: 0.94, opacity: 0, y: 8 }}
             animate={{ scale: 1, opacity: 1, y: 0 }}
             exit={{ scale: 0.96, opacity: 0, y: 6 }}
@@ -75,7 +75,7 @@ export function BribeDeveloperModal({
               strokeWidth={1}
               aria-hidden
             />
-            <div className="relative z-[1] flex flex-col gap-5 px-6 pb-6 pt-8 font-sans">
+            <div className="relative z-[1] flex flex-col gap-5 px-6 pb-6 pt-8">
               <div>
                 <h2
                   id="bribe-modal-title"

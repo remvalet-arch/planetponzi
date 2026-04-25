@@ -52,7 +52,7 @@ export function BlackMarketModal({ open, onClose, copy, onToast }: BlackMarketMo
   };
 
   const footer = (
-    <div className="pp-modal-footer border-emerald-500/25 bg-slate-950/95">
+    <div className="pp-modal-footer border-amber-500/25 bg-[#15161E]">
       <p className="text-center font-mono text-xs leading-relaxed text-amber-200/95">
         <span className="font-semibold text-white">Coût : {BLACK_MARKET_TILE_COST}</span>
         <span aria-hidden> 💰</span>
@@ -69,7 +69,7 @@ export function BlackMarketModal({ open, onClose, copy, onToast }: BlackMarketMo
       onClose={onClose}
       disableSwipeDown
       puzzleShopLayout
-      panelClassName="pp-modal-panel--dark overflow-visible border-emerald-500/40 shadow-[0_0_40px_rgba(16,185,129,0.18)]"
+      panelClassName="pp-modal-panel--dark pp-panel-sci pp-glow-amber overflow-visible border-amber-500/35"
       footer={footer}
     >
       <div className="flex min-h-0 flex-1 flex-col overflow-y-auto overflow-x-visible overscroll-y-contain">
@@ -80,7 +80,7 @@ export function BlackMarketModal({ open, onClose, copy, onToast }: BlackMarketMo
             title={copy.title}
             titleId="pp-black-market-title"
             dialogueText={copy.ceoDialogue}
-            bubbleClassName="!border-emerald-500/35"
+            bubbleClassName="!border-amber-500/35"
           >
             <p className="mb-3 text-sm leading-snug text-slate-400">{copy.subtitle}</p>
             <div className="mb-3 flex justify-end">
@@ -101,7 +101,7 @@ export function BlackMarketModal({ open, onClose, copy, onToast }: BlackMarketMo
                     key={bt}
                     type="button"
                     onClick={() => handlePick(bt)}
-                    className="flex w-full flex-col items-center gap-1 rounded-lg border border-white/10 bg-white/5 p-2 text-center transition hover:border-emerald-400/45 hover:bg-emerald-500/10 sm:gap-1.5 sm:rounded-xl sm:p-3"
+                    className="pp-panel-sci flex w-full flex-col items-center gap-1 rounded-lg border border-white/10 bg-[#15161E] p-2 text-center transition hover:border-amber-400/55 hover:bg-amber-500/10 hover:shadow-[0_0_15px_rgba(245,158,11,0.3)] sm:gap-1.5 sm:rounded-xl sm:p-3"
                   >
                     <span
                       className={`flex size-10 items-center justify-center rounded-md text-[1.15rem] sm:size-12 sm:rounded-lg sm:text-2xl ${th.color}`}

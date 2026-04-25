@@ -10,27 +10,27 @@ const accentMap: Record<
   { card: string; button: string; iconWrap: string }
 > = {
   emerald: {
-    card: "border-emerald-500/40 bg-gradient-to-br from-emerald-950/50 via-slate-900/95 to-slate-950/90 shadow-[inset_0_1px_0_rgba(52,211,153,0.12)]",
+    card: "pp-panel-sci border-emerald-500/25 bg-gradient-to-br from-[#15161E] via-slate-950/95 to-[#15161E] shadow-[inset_0_1px_0_rgba(52,211,153,0.08)]",
     button:
-      "border-emerald-500/50 bg-gradient-to-b from-emerald-600/90 to-emerald-900/95 shadow-[0_0_20px_rgba(16,185,129,0.2)]",
+      "border-amber-500/45 bg-gradient-to-b from-amber-500/85 to-amber-700/95 shadow-[0_0_16px_rgba(245,158,11,0.2)] hover:shadow-[0_0_15px_rgba(245,158,11,0.3)]",
     iconWrap: "border-emerald-400/30 bg-emerald-500/15 text-emerald-200",
   },
   rose: {
-    card: "border-rose-500/40 bg-gradient-to-br from-rose-950/45 via-slate-900/95 to-slate-950/90 shadow-[inset_0_1px_0_rgba(251,113,133,0.1)]",
+    card: "pp-panel-sci border-rose-500/25 bg-gradient-to-br from-[#15161E] via-slate-950/95 to-[#15161E] shadow-[inset_0_1px_0_rgba(251,113,133,0.08)]",
     button:
-      "border-rose-500/50 bg-gradient-to-b from-rose-600/90 to-rose-950/95 shadow-[0_0_20px_rgba(244,63,94,0.18)]",
+      "border-amber-500/45 bg-gradient-to-b from-amber-500/85 to-amber-700/95 shadow-[0_0_16px_rgba(245,158,11,0.2)] hover:shadow-[0_0_15px_rgba(245,158,11,0.3)]",
     iconWrap: "border-rose-400/30 bg-rose-500/15 text-rose-200",
   },
   violet: {
-    card: "border-violet-500/40 bg-gradient-to-br from-violet-950/50 via-slate-900/95 to-slate-950/90 shadow-[inset_0_1px_0_rgba(167,139,250,0.12)]",
+    card: "pp-panel-sci border-violet-500/25 bg-gradient-to-br from-[#15161E] via-slate-950/95 to-[#15161E] shadow-[inset_0_1px_0_rgba(167,139,250,0.08)]",
     button:
-      "border-violet-500/50 bg-gradient-to-b from-violet-600/90 to-violet-950/95 shadow-[0_0_20px_rgba(139,92,246,0.2)]",
+      "border-amber-500/45 bg-gradient-to-b from-amber-500/85 to-amber-700/95 shadow-[0_0_16px_rgba(245,158,11,0.2)] hover:shadow-[0_0_15px_rgba(245,158,11,0.3)]",
     iconWrap: "border-violet-400/30 bg-violet-500/15 text-violet-200",
   },
 };
 
 const comingSoonCard =
-  "border border-dashed border-slate-500/45 bg-gradient-to-br from-slate-900/60 via-slate-950/90 to-black/40 opacity-95 shadow-[inset_0_1px_0_rgba(148,163,184,0.08)]";
+  "pp-panel-sci border border-dashed border-white/10 bg-gradient-to-br from-[#15161E]/80 via-slate-950/90 to-black/40 opacity-95 shadow-[inset_0_1px_0_rgba(148,163,184,0.08)]";
 
 const comingSoonIconWrap =
   "border border-slate-500/35 bg-slate-800/50 text-slate-300 grayscale-[0.35]";
@@ -81,7 +81,7 @@ export function ShopProductCard({
 
   return (
     <article
-      className={`relative overflow-hidden rounded-2xl border p-4 backdrop-blur-sm transition-opacity duration-200 ${cardClass} ${
+      className={`relative overflow-hidden rounded-2xl border p-4 transition-opacity duration-200 ${cardClass} ${
         dimmed ? "opacity-55" : ""
       }`}
     >

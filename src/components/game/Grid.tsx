@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useCallback, useMemo } from "react";
 import { motion, type Variants } from "framer-motion";
 
 import { Cell } from "@/src/components/game/Cell";
@@ -72,6 +72,12 @@ export function Grid({
     activeBooster === "demolition";
 
   const frozenSet = useMemo(() => new Set(frozenCellIndices), [frozenCellIndices]);
+  const handleCellClick = useCallback(
+    (cellIndex: number) => {
+      placeBuilding(cellIndex);
+    },
+    [placeBuilding],
+  );
 
   const gridAria = demolitionMode ? t.grid.ariaGridDemolition : t.grid.ariaGrid;
 
@@ -101,7 +107,7 @@ export function Grid({
           const canDemolish =
             status === "playing" && demolitionMode && cell.building !== null;
           const onClick =
-            canPlace || canDemolish ? () => placeBuilding(cell.index) : undefined;
+            canPlace || canDemolish ? () => handleCellClick(cell.index) : undefined;
           const flashNonce =
             demolishFlash?.index === cell.index ? demolishFlash.nonce : 0;
 

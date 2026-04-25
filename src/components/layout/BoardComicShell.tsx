@@ -39,6 +39,13 @@ export function BoardComicShell({
   variant = "inline",
   dialogueText,
 }: BoardComicShellProps) {
+  const modalGlowClass =
+    mood === "angry"
+      ? "pp-glow-rose"
+      : mood === "greedy" || mood === "happy"
+        ? "pp-glow-amber"
+        : "pp-glow-cyan";
+
   if (variant === "modal") {
     return (
       <div className={`relative mt-8 w-full min-w-0 ${className}`}>
@@ -51,11 +58,11 @@ export function BoardComicShell({
         </div>
 
         <div
-          className={`w-full min-w-0 overflow-visible rounded-xl border-2 border-slate-700 bg-[#14141f] shadow-[0_12px_40px_rgba(0,0,0,0.55),inset_0_1px_0_rgba(255,255,255,0.06)] ${bubbleClassName}`}
+          className={`pp-panel-sci ${modalGlowClass} w-full min-w-0 overflow-visible rounded-xl bg-[#15161E] shadow-[0_12px_40px_rgba(0,0,0,0.55),inset_0_1px_0_rgba(255,255,255,0.06)] ${bubbleClassName}`}
         >
           {dialogueText ? (
-            <div className="rounded-t-xl border-b border-slate-700/50 bg-slate-800/30 pb-3 pl-24 pr-4 pt-4 sm:pl-28">
-              <p className="m-0 min-w-0 text-sm italic leading-snug text-amber-100 sm:text-[15px] sm:leading-relaxed">
+            <div className="rounded-t-xl border-b border-white/10 bg-slate-900/35 pb-3 pl-24 pr-4 pt-4 sm:pl-28">
+              <p className="m-0 min-w-0 text-sm italic leading-snug text-slate-100 sm:text-[15px] sm:leading-relaxed">
                 {dialogueText}
               </p>
             </div>
@@ -65,12 +72,12 @@ export function BoardComicShell({
             {title ? (
               <p
                 id={titleId}
-                className="font-mono text-[10px] font-black uppercase tracking-[0.2em] text-amber-200/95 sm:text-[11px]"
+                className="font-mono text-[10px] font-black uppercase tracking-[0.2em] text-cyan-200/90 sm:text-[11px]"
               >
                 {title}
               </p>
             ) : null}
-            <div className={title ? "mt-2 min-w-0 text-slate-100" : "min-w-0 text-slate-100"}>{children}</div>
+            <div className={title ? "mt-2 min-w-0 text-slate-200" : "min-w-0 text-slate-200"}>{children}</div>
           </div>
         </div>
       </div>
@@ -92,17 +99,17 @@ export function BoardComicShell({
         />
 
         <div
-          className={`relative rounded-2xl border-2 border-slate-700 bg-[#14141f] px-3.5 py-3 shadow-[0_12px_40px_rgba(0,0,0,0.55),inset_0_1px_0_rgba(255,255,255,0.06)] sm:px-4 sm:py-3.5 ${bubbleClassName}`}
+          className={`relative rounded-2xl border border-white/10 bg-[#15161E] px-3.5 py-3 shadow-[0_12px_40px_rgba(0,0,0,0.55),inset_0_1px_0_rgba(255,255,255,0.06)] sm:px-4 sm:py-3.5 ${bubbleClassName}`}
         >
           {title ? (
             <p
               id={titleId}
-              className="font-mono text-[10px] font-black uppercase tracking-[0.2em] text-amber-200/95 sm:text-[11px]"
+              className="font-mono text-[10px] font-black uppercase tracking-[0.2em] text-cyan-200/90 sm:text-[11px]"
             >
               {title}
             </p>
           ) : null}
-          <div className={title ? "mt-2 min-w-0 text-slate-100" : "min-w-0 text-slate-100"}>{children}</div>
+          <div className={title ? "mt-2 min-w-0 text-slate-200" : "min-w-0 text-slate-200"}>{children}</div>
         </div>
       </div>
     </div>

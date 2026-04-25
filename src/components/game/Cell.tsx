@@ -1,5 +1,6 @@
 "use client";
 
+import { memo } from "react";
 import { motion } from "framer-motion";
 
 import { clampPlanetId, getBiomeBuildingSkin, getBiomeObstacleSkin } from "@/src/lib/game/biomes";
@@ -40,7 +41,7 @@ export type CellProps = {
   minimalMode?: boolean;
 };
 
-export function Cell({
+function CellBase({
   cell,
   planetId = 0,
   onClick,
@@ -97,7 +98,7 @@ export function Cell({
         transition={
           hasFlash ? { duration: 0.44, ease: [0.22, 1, 0.36, 1] } : { duration: 0.15 }
         }
-        className={`${baseTileClasses} border-2 border-dashed border-slate-600/55 bg-slate-900/45 text-slate-500 backdrop-blur-sm transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-400/55 ${
+        className={`${baseTileClasses} border border-dashed border-white/10 bg-slate-900/35 text-slate-500 transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-400/55 ${
           interactive
             ? "cursor-pointer hover:border-cyan-400/45 hover:bg-amber-500/10 hover:text-slate-200"
             : "cursor-not-allowed opacity-55"
@@ -118,7 +119,7 @@ export function Cell({
   const freezeOverlay =
     !minimalMode && fiscalFrozen ? (
       <span
-        className="pointer-events-none absolute right-0.5 top-0.5 flex size-6 items-center justify-center rounded-md border border-sky-400/50 bg-slate-950/80 text-sm shadow-md backdrop-blur-sm"
+        className="pointer-events-none absolute right-0.5 top-0.5 flex size-6 items-center justify-center rounded-md border border-sky-400/50 bg-[#0B0C10] text-sm shadow-md"
         title={t.grid.fiscalFreezeTitle}
         aria-hidden
       >
@@ -130,10 +131,9 @@ export function Cell({
     return (
       <motion.button
         type="button"
-        layout
         whileTap={{ scale: 0.94 }}
         onClick={onClick}
-        className={`relative ${baseTileClasses} ${theme.color} shadow-inner shadow-white/25 ring-2 transition-shadow focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-rose-400/80 ${
+        className={`relative ${baseTileClasses} ${theme.color} shadow-inner shadow-white/15 ring-1 transition-shadow focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-rose-400/80 ${
           demolitionTarget
             ? "cursor-crosshair ring-rose-500/90 shadow-[0_0_22px_rgb(244_63_94/0.5)]"
             : "ring-transparent"
@@ -152,11 +152,10 @@ export function Cell({
 
   return (
     <motion.div
-      layout
       initial={{ scale: 0.82, opacity: 0 }}
       animate={{ scale: 1, opacity: 1 }}
       transition={{ type: "spring", stiffness: 420, damping: 22 }}
-      className={`relative ${baseTileClasses} ${theme.color} shadow-inner shadow-white/25 ${
+      className={`relative ${baseTileClasses} ${theme.color} shadow-inner shadow-white/15 ${
         demolitionTarget ? "ring-2 ring-rose-500/55" : ""
       } ${fiscalFrozen ? "ring-2 ring-sky-400/45" : ""}`}
       aria-label={t.grid.cellBuilding(buildingLabel)}
@@ -170,3 +169,5 @@ export function Cell({
     </motion.div>
   );
 }
+
+export const Cell = memo(CellBase);

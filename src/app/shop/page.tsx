@@ -140,13 +140,13 @@ export default function ShopPage() {
   );
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col bg-[#0B0F19] text-slate-100">
+    <div className="flex min-h-0 flex-1 flex-col bg-[#0B0C10] text-slate-100">
       <HubShellBar title={t.nav.shop} variant="dark" />
 
       <div className="min-h-0 flex-1 space-y-6 overflow-y-auto overscroll-y-contain px-4 pb-[calc(5.5rem+env(safe-area-inset-bottom))] pt-4">
-        <header className="rounded-2xl border border-slate-700/60 bg-gradient-to-b from-slate-900/95 to-slate-950/90 px-4 py-5 text-center shadow-[inset_0_1px_0_rgba(251,191,36,0.06)] shadow-black/30">
+        <header className="pp-panel-sci pp-glow-amber rounded-2xl border px-4 py-5 text-center shadow-[inset_0_1px_0_rgba(251,191,36,0.06)] shadow-black/30">
           <p className="font-mono text-[10px] uppercase tracking-[0.35em] text-slate-500">{t.shop.coinsLabel}</p>
-          <p className="mt-1 flex items-center justify-center gap-2 text-4xl font-black tabular-nums text-amber-400">
+          <p className="mt-1 flex items-center justify-center gap-2 font-mono text-4xl font-black tabular-nums text-amber-400">
             <span aria-hidden>💰</span>
             <motion.span
               key={coins}
@@ -241,7 +241,7 @@ export default function ShopPage() {
 
       {toast ? (
         <div
-          className="pointer-events-none fixed bottom-24 left-1/2 z-[90] max-w-sm -translate-x-1/2 rounded-pp-lg border border-slate-600/70 bg-slate-900/95 px-4 py-2 font-mono text-xs text-slate-100 shadow-xl shadow-black/40"
+          className="pointer-events-none fixed bottom-24 left-1/2 z-[90] max-w-sm -translate-x-1/2 rounded-pp-lg border border-cyan-500/30 bg-[#0B0C10]/95 px-4 py-2 font-mono text-xs text-cyan-200 shadow-[0_0_15px_rgba(6,182,212,0.15)]"
           role="status"
         >
           {toast}

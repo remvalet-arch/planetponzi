@@ -54,8 +54,8 @@ export function BottomNav({ variant = "light" }: BottomNavProps) {
     <nav
       className={
         isDark
-          ? "pointer-events-auto fixed bottom-0 left-0 right-0 z-50 border-t border-slate-700/60 bg-slate-950/95 pb-[max(0.5rem,env(safe-area-inset-bottom))] pt-1.5 text-slate-100 backdrop-blur-lg"
-          : "pointer-events-auto fixed bottom-0 left-0 right-0 z-50 border-t border-pp-border-strong bg-pp-surface/80 pb-[max(0.5rem,env(safe-area-inset-bottom))] pt-1.5 backdrop-blur-lg"
+          ? "pointer-events-auto fixed bottom-0 left-0 right-0 z-50 border-t border-cyan-500/20 bg-[#0B0C10] pb-[max(0.5rem,env(safe-area-inset-bottom))] pt-1.5 text-slate-100 shadow-[0_-5px_15px_rgba(6,182,212,0.05)]"
+          : "pointer-events-auto fixed bottom-0 left-0 right-0 z-50 border-t border-cyan-500/20 bg-[#0B0C10] pb-[max(0.5rem,env(safe-area-inset-bottom))] pt-1.5 shadow-[0_-5px_15px_rgba(6,182,212,0.05)]"
       }
       aria-label="Navigation principale"
     >

@@ -78,7 +78,7 @@ export function BottomSheetShell({
   const backdropMerged = [
     "pp-modal-backdrop",
     puzzleShopLayout
-      ? "!z-[999] !bg-slate-950/80 !backdrop-blur-md max-sm:!items-end max-sm:!justify-center max-sm:!p-0 max-sm:!pt-0 max-sm:!pb-0"
+      ? "!z-[999] !bg-[#0B0C10]/96 max-sm:!items-end max-sm:!justify-center max-sm:!p-0 max-sm:!pt-0 max-sm:!pb-0"
       : "",
     backdropClassName,
   ]

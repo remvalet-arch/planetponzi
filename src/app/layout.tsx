@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Space_Grotesk, Space_Mono } from "next/font/google";
 
 import { PostHogProvider } from "@/src/components/analytics/PostHogProvider";
 import { PassiveIncomeLoopProvider } from "@/src/components/providers/PassiveIncomeLoopProvider";
@@ -15,14 +15,15 @@ import {
 
 import "./globals.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const spaceGrotesk = Space_Grotesk({
+  variable: "--font-space-grotesk",
   subsets: ["latin"],
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
+const spaceMono = Space_Mono({
+  variable: "--font-space-mono",
   subsets: ["latin"],
+  weight: ["400", "700"],
 });
 
 export const metadata: Metadata = {
@@ -110,8 +111,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="fr" className={`${geistSans.variable} ${geistMono.variable} h-full`}>
-      <body className="flex min-h-0 min-h-dvh w-full justify-center overflow-hidden overscroll-y-none bg-zinc-950 text-slate-200 antialiased">
+    <html lang="fr" className="h-full">
+      <body
+        className={`${spaceGrotesk.variable} ${spaceMono.variable} flex min-h-0 min-h-dvh w-full justify-center overflow-hidden overscroll-y-none bg-zinc-950 text-slate-200 antialiased`}
+      >
         <main
           className="relative flex h-[100dvh] min-h-0 w-full max-w-md flex-col overflow-hidden overscroll-y-none bg-pp-bg text-pp-text shadow-2xl ring-1 ring-black/15 [transform:translateZ(0)] sm:my-2 sm:max-h-[min(100dvh,56rem)] sm:rounded-3xl"
           id="pp-game-shell"

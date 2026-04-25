@@ -16,14 +16,14 @@ export default function SettingsPage() {
   const { t } = useAppStrings();
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col bg-[#0B0F19] text-slate-100">
+    <div className="flex min-h-0 flex-1 flex-col bg-[#0B0C10] text-slate-100">
       <HubShellBar title={t.nav.settings} variant="dark" />
       <div className="flex min-h-0 flex-1 flex-col items-center gap-4 overflow-y-auto px-6 pb-[calc(5.5rem+env(safe-area-inset-bottom))] pt-4">
         <SettingsLanguageRow />
         <SettingsHapticsRow />
         <SettingsSoundRow />
         <SettingsCeoDisplayName />
-        <div className="flex w-full max-w-sm flex-col gap-3 rounded-pp-xl border border-slate-700/60 bg-slate-900/55 p-4">
+        <div className="pp-panel-sci flex w-full max-w-sm flex-col gap-3 rounded-pp-xl p-4">
           <p className="font-mono text-[10px] uppercase tracking-widest text-slate-500">
             {t.cloudSave.sectionTitle}
           </p>
