@@ -261,11 +261,10 @@ export default function LevelPage() {
 
       {persistReady && deckUnlocked && !noEnergyOpen ? (
         <main className="relative flex min-h-0 flex-1 flex-col overflow-hidden">
-          <div className="flex w-full shrink-0 flex-col gap-2 px-2 pt-2 md:flex-row md:items-start md:gap-4 md:px-3 md:pt-3">
-            <div className="min-w-0 shrink-0 md:w-64">
+          <div className="flex w-full shrink-0 px-2 pt-2 md:px-3 md:pt-3">
+            <div className="min-w-0 w-full md:w-64">
               <Manifest />
             </div>
-            <BoostersBar onToast={setToastMessage} />
           </div>
 
           <div className="flex min-h-0 flex-1 items-center justify-center overflow-hidden p-2">
@@ -294,6 +293,7 @@ export default function LevelPage() {
               </div>
             </div>
           ) : null}
+          <BoostersBar onToast={setToastMessage} />
         </main>
       ) : persistReady && !noEnergyOpen ? (
         <main

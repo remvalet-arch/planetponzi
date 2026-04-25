@@ -210,6 +210,7 @@ export const strings = {
         forests: "Forêts (serres)",
       },
       trackerLine: (label: string, current: number, required: number) => `${label} : ${current}/${required}`,
+      trackerCompactSummary: (done: number, total: number) => `Objectif : ${done}/${total} validés`,
       spatialIsolatedBrief: (label: string) =>
         `Mandat spatial — ${label} isolés : aucune paire du même type ne doit être orthogonalement adjacente.`,
       spatialAlignedBrief: (label: string, n: number) =>
@@ -379,6 +380,8 @@ export const strings = {
       shareFeedbackCopied: "Résumé copié dans le presse-papiers.",
       shareFeedbackError: "Copie impossible sur cet appareil.",
       closeSeeGrid: "Fermer — voir la grille",
+      showDetailedReport: "Voir le rapport détaillé",
+      hideDetailedReport: "Masquer le rapport détaillé",
       insufficientTitle: "Redressement Judiciaire",
       insufficientBody: "Le Board vous retire sa confiance. (−1 vie)",
       /** 1★ sans mandat cassé : pas de perte de vie côté économie — message aligné. */
@@ -747,6 +750,7 @@ export const strings = {
         forests: "Forests (greenhouses)",
       },
       trackerLine: (label: string, current: number, required: number) => `${label}: ${current}/${required}`,
+      trackerCompactSummary: (done: number, total: number) => `Objective: ${done}/${total} complete`,
       spatialIsolatedBrief: (label: string) =>
         `Spatial mandate — isolated ${label}: no orthogonal adjacency between two tiles of that type.`,
       spatialAlignedBrief: (label: string, n: number) =>
@@ -912,6 +916,8 @@ export const strings = {
       shareFeedbackCopied: "Summary copied to clipboard.",
       shareFeedbackError: "Could not copy on this device.",
       closeSeeGrid: "Close — view grid",
+      showDetailedReport: "View detailed report",
+      hideDetailedReport: "Hide detailed report",
       insufficientTitle: "Chapter 11 Bankruptcy",
       insufficientBody: "The Board has lost confidence in you. (−1 life)",
       insufficientBodyPartialSuccess:
